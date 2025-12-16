@@ -273,7 +273,7 @@ Once you've completed your research and documented it, output the following mess
 ```
 ✅ I have documented this spec's research and requirements in `agent-os/specs/[this-spec]/planning`.
 
-Next step: Run the command, `1-create-spec.md`.
+Next step: Run the command, `write-spec.md`.
 ```
 
 After all steps complete, inform the user:

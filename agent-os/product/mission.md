@@ -3,6 +3,8 @@
 ## Pitch
 Shaomeme Fighter is a personalized mobile web fighting game that helps my girlfriend blow off steam by fighting playful caricatures of family and annoyances, rewarding victories with cherished photo memories from our travels.
 
+**Inspiration:** The gameplay mechanics, controls, and visual style are heavily inspired by 90s arcade classics like *Street Fighter II* and *Mortal Kombat* (2D plane, sprite-based animation, health bars, round-based combat).
+
 ## Users
 
 ### Primary Customers

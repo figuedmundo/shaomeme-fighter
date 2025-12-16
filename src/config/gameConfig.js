@@ -16,8 +16,8 @@ const gameConfig = {
   physics: {
     default: "arcade",
     arcade: {
-      gravity: { y: 0 }, // Top-down/Side-scroller hybrid usually 0 or simulated manually for beat-em-up
-      debug: false,
+      gravity: { y: 1000 },
+      debug: true,
     },
   },
   scene: [BootScene, MainMenuScene, WorldMapScene, FightScene],

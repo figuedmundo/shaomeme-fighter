@@ -7,6 +7,17 @@ export default class PreloadScene extends Phaser.Scene {
 
   preload() {
     this.load.image("logo", "assets/logo.png");
+
+    // Load Fighter Spritesheets
+    // Frame size 100x200 as defined in generator
+    this.load.spritesheet("ryu", "assets/fighters/ryu/ryu.png", {
+      frameWidth: 100,
+      frameHeight: 200,
+    });
+    this.load.spritesheet("ken", "assets/fighters/ken/ken.png", {
+      frameWidth: 100,
+      frameHeight: 200,
+    });
   }
 
   create() {

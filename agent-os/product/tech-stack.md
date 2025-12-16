@@ -4,7 +4,7 @@
 - **Game Engine:** Phaser 3 (JavaScript)
 - **Runtime:** Node.js (>=16)
 - **Backend Framework:** Express.js (for serving game & photo API)
-- **Package Manager:** npm (>=8)
+- **Package Manager:** pnpm
 
 ## Frontend
 - **Bundler:** Vite
@@ -19,7 +19,8 @@
 ## Testing & Quality
 - **Linting:** ESLint (Airbnb configuration)
 - **Formatting:** Prettier
-- **Testing:** Manual Playtesting (Prototype phase), potentially Jest for logic in future
+- **Testing:** Vitest (Unit/Integration testing for game logic and backend services)
+- **Manual Testing:** Playtesting (Prototype phase)
 
 ## Deployment & Infrastructure
 - **Development Server:** Vite Dev Server

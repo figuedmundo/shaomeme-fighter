@@ -1,8 +1,8 @@
 # Product Roadmap
 
-1. [ ] **Project Initialization & Phaser Setup** — Set up Phaser 3 with Vite, create basic scene structure (Boot, MainMenu, Fight), and ensure the Node.js backend serves the app. `XS`
-2. [ ] **Core Combat System (Phaser Port)** — Port physics, hitboxes, and state machine (Idle, Walk, Attack, Hit) from `temp_clone` to Phaser 3 sprites. `M`
-3. [ ] **Invisible Combat Zones (Touch Controls)** — Implement split-screen touch input handling for mobile/tablet (Tap/Swipe to attack/move) to replace keyboard input. `S`
+1. [x] **Project Initialization & Phaser Setup** — Set up Phaser 3 with Vite, create basic scene structure (Boot, MainMenu, Fight), and ensure the Node.js backend serves the app. `XS`
+2. [x] **Core Combat System (Phaser Port)** — Port physics, hitboxes, and state machine (Idle, Walk, Attack, Hit) from `temp_clone` to Phaser 3 sprites. `M`
+3. [x] **Invisible Combat Zones (Touch Controls)** — Implement split-screen touch input handling for mobile/tablet (Tap/Swipe to attack/move) to replace keyboard input. `S`
 4. [ ] **Photo Asset Service** — Implement Node.js backend endpoint `/api/photos` to scan and serve images from the `photos/` directory structure. `S`
 5. [ ] **Dynamic Arena Selector** — Create a scene to select arenas based on available folders in `photos/`, stylizing the selection UI. `M`
 6. [ ] **Character Roster Integration** — Implement the character selection screen and load custom spritesheets (placeholder or generated) for the specific roster. `M`

@@ -2,55 +2,62 @@
 
 ## Project Overview
 
-Shaomeme Fighter is a personalized mobile web fighting game built with **Phaser 3** and **Vite**. The game is designed primarily for iPad/iPhone and features touch-based controls ("Invisible Combat Zones"), a custom roster of characters, and "Memory Arenas" where winning unlocks photo slideshows.
+Shaomeme Fighter is a personalized mobile web fighting game built with **Phaser 3** and **Vite**, inspired by 90s arcade classics. The game is designed primarily for iPad/iPhone and features touch-based controls ("Invisible Combat Zones"), a custom roster of characters, and "Memory Arenas" where winning unlocks photo slideshows.
 
 The project consists of:
 *   **Frontend:** A Phaser 3 game utilizing ES Modules, bundled with Vite.
 *   **Backend:** A Node.js/Express server that serves the static game files and provides an API (`/api/photos`) to access photo assets stored on the file system.
+*   **Testing:** Unit tests powered by **Vitest**.
 
 ## Building and Running
 
 ### Prerequisites
 *   Node.js (>=16)
-*   npm (>=8)
+*   pnpm
 
 ### Key Commands
 
 *   **Install Dependencies:**
     ```bash
-    npm install
+    pnpm install
     ```
 
 *   **Start Development Server:**
     ```bash
-    npm run dev
+    pnpm run dev
     ```
     Starts the Vite development server for the frontend.
 
+*   **Run Tests:**
+    ```bash
+    pnpm test
+    ```
+    Runs the Vitest unit tests.
+
 *   **Build for Production:**
     ```bash
-    npm run build
+    pnpm run build
     ```
     Compiles the frontend assets using Vite.
 
 *   **Start Backend Server:**
     ```bash
-    npm run server
+    pnpm run server
     ```
     Runs the Node.js/Express server (located in `server/index.js`).
 
 *   **Linting & Formatting:**
     ```bash
-    npm run lint
-    npm run lint:fix
+    pnpm run lint
+    pnpm run lint:fix
     ```
     Checks and fixes code style issues using ESLint (Airbnb config) and Prettier.
 
 ## Development Conventions
 
-*   **Code Style:** The project strictly follows **ESLint** (Airbnb) and **Prettier** rules. Always run `npm run lint:fix` before committing.
+*   **Code Style:** The project strictly follows **ESLint** (Airbnb) and **Prettier** rules. Always run `pnpm run lint:fix` before committing.
 *   **Architecture:**
-    *   **Game Logic:** Located in `src/javascript/`, split into `components` (game entities), `helpers`, and `services`.
+    *   **Game Logic:** Located in `src/components/` (Entities like `Fighter.js`) and `src/systems/` (Logic like `TouchInputController.js`).
     *   **Scenes:** Phaser scenes are managed in `src/scenes/` (e.g., `BootScene`, `MainMenuScene`, `FightScene`).
     *   **Configuration:** Game constants and settings are in `src/config/`.
     *   **Backend:** Server-side logic resides in the `server/` directory.
