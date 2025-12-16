@@ -1,12 +1,12 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from "vite";
 
-const config = () => {
-    return defineConfig({
-        server: {
-            host: 'localhost',
-            port: 7600
-        }
-    });
-};
-
-export default config;
+export default defineConfig({
+  build: {
+    outDir: "dist",
+    assetsDir: "assets",
+  },
+  server: {
+    host: "localhost",
+    port: 7600,
+  },
+});

@@ -1,26 +1,31 @@
 # Product Tech Stack
 
+## Framework & Runtime
+- **Game Engine:** Phaser 3 (JavaScript)
+- **Runtime:** Node.js (>=16)
+- **Backend Framework:** Express.js (for serving game & photo API)
+- **Package Manager:** npm (>=8)
+
 ## Frontend
-- **Framework**: Phaser 3 (Game Engine)
-- **Language**: JavaScript (ES Modules)
-- **Styling**: Vanilla CSS (for game container/UI overlays)
-- **Bundler**: Vite (inferred from existing files)
+- **Bundler:** Vite
+- **Language:** JavaScript (ES Modules)
+- **CSS:** Custom CSS (Arena, Fighter, UI styles)
+- **Input Handling:** Phaser Input Plugin (Touch/Pointer) for "Invisible Combat Zones"
 
-## Backend
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Responsibilities**: 
-  - Serving game static files
-  - Serving Photo API (`/api/photos`)
-  - Serving photo assets from file system
+## Database & Storage
+- **Data Storage:** File System (Local `photos/` directory structure for "Memory Arenas")
+- **Asset Management:** Local `resources/` and `assets/` directories
 
-## Data & Storage
-- **Primary Data Source**: Local File System (synced via external Nextcloud client)
-- **Data Structure**: Directory-based (Folders = Cities/Arenas)
-- **Configuration**: Simple JSON files for Fighter stats/mappings if needed.
+## Testing & Quality
+- **Linting:** ESLint (Airbnb configuration)
+- **Formatting:** Prettier
+- **Testing:** Manual Playtesting (Prototype phase), potentially Jest for logic in future
 
-## Infrastructure & Deployment
-- **Target OS**: Ubuntu Linux (Home Lab)
-- **Process Management**: Docker or PM2
-- **Hardware**: Laptop Server
-- **Client Device**: iPad / iPhone (Safari) - Requires Touch Events support
+## Deployment & Infrastructure
+- **Development Server:** Vite Dev Server
+- **Production Build:** Vite Build (Static Assets) served by Node.js
+- **Target Platform:** Mobile Web (iPad/iPhone focus)
+
+## Key Libraries (Project Specific)
+- **Phaser 3:** Core game loop, physics, rendering.
+- **Express:** Simple API to bridge file system photos to the frontend.

@@ -1,0 +1,1 @@
+**Project Initialization & Phaser Setup** — Set up Phaser 3 with Vite, create basic scene structure (Boot, MainMenu, Fight), and ensure the Node.js backend serves the app.

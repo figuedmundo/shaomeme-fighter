@@ -1,9 +1,16 @@
 # Product Roadmap
 
-1. [x] **Core Combat Engine** — Implement Phaser scene with invisible split-screen touch zones. `S`
-2. [x] **Backend Photo API** — Enhanced Node.js API for serving city-based photos. `XS`
-3. [x] **RPG Stat Integration** — Ported `getDamage`, `getHitPower`, `getBlockPower` into `CombatSystem`. Added Health Bars and configurable Stats. `S`
-4. [ ] **Asset Pipeline: Logo & Style** — Generate new "Shaomeme Fighter" logo and implement a "Cutout" sprite system for personal photos (Mortal Kombat style). `S`
-5. [x] **Stage Selection & World Map** — Implemented `MainMenuScene` and `WorldMapScene`. Fetching cities from `/api/cities`. Passing selection to `FightScene`. `S`
-6. [ ] **Character Implementation** — Configure Fighter stats (Attack/Defense) and hook up the Cutout sprites. `M`
-7. [ ] **Victory Reward System** — Implement the post-match slideshow overlay. `S`
+1. [ ] **Project Initialization & Phaser Setup** — Set up Phaser 3 with Vite, create basic scene structure (Boot, MainMenu, Fight), and ensure the Node.js backend serves the app. `XS`
+2. [ ] **Core Combat System (Phaser Port)** — Port physics, hitboxes, and state machine (Idle, Walk, Attack, Hit) from `temp_clone` to Phaser 3 sprites. `M`
+3. [ ] **Invisible Combat Zones (Touch Controls)** — Implement split-screen touch input handling for mobile/tablet (Tap/Swipe to attack/move) to replace keyboard input. `S`
+4. [ ] **Photo Asset Service** — Implement Node.js backend endpoint `/api/photos` to scan and serve images from the `photos/` directory structure. `S`
+5. [ ] **Dynamic Arena Selector** — Create a scene to select arenas based on available folders in `photos/`, stylizing the selection UI. `M`
+6. [ ] **Character Roster Integration** — Implement the character selection screen and load custom spritesheets (placeholder or generated) for the specific roster. `M`
+7. [ ] **Victory Slideshow Reward** — Implement the post-match sequence that fetches and displays a photo slideshow from the arena's location upon winning. `M`
+8. [ ] **Visual Polish & Branding** — Integrate the new "Shaomeme Fighter" logos, add UI sounds, and apply "game style" filters to background photos. `S`
+
+> Notes
+> - **Foundation**: Items 1 & 2 establish the game engine and core loop.
+> - **Input**: Item 3 is critical for the target device (iPad).
+> - **Personalization**: Items 4, 5, 6, & 7 implement the unique "Personalized Gift" aspect.
+> - **Polish**: Item 8 ties it all together visually.
