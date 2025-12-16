@@ -1,0 +1,24 @@
+#mobile-controls {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    display: flex;
+    pointer-events: none; /* Let clicks pass through for debugging if needed, but we handle touch */
+}
+
+.control-zone {
+    width: 50%;
+    height: 100%;
+    pointer-events: auto;
+}
+
+#left-zone {
+    background: rgba(0, 255, 0, 0.1); /* Debug visualization */
+}
+
+#right-zone {
+    background: rgba(255, 0, 0, 0.1); /* Debug visualization */
+}

@@ -1,0 +1,89 @@
+@import 'arena.css';
+@import 'fighters.css';
+@import 'fighterPreview.css';
+@import 'previewContainer.css';
+@import 'modal.css';
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  user-select: none;
+}
+
+img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+#loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: rgba(255, 255, 255, 0.7);
+  visibility: hidden;
+}/* Victory Screen */
+.victory-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    color: white;
+    font-family: sans-serif;
+}
+
+.victory-title {
+    font-size: 3rem;
+    color: #ffd700;
+    text-shadow: 0 0 10px #ff0000;
+    margin-bottom: 1rem;
+}
+
+.victory-image-container {
+    margin: 20px;
+    max-width: 90%;
+    max-height: 60vh;
+    border: 5px solid white;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.victory-image {
+    max-width: 100%;
+    max-height: 60vh;
+    display: block;
+}
+
+.victory-close {
+    padding: 10px 20px;
+    font-size: 1.5rem;
+    background: #ff0000;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
