@@ -17,7 +17,7 @@ export default class MainMenuScene extends Phaser.Scene {
       .setInteractive();
 
     startText.on("pointerdown", () => {
-      this.scene.start("FightScene");
+      this.scene.start("CharacterSelectScene");
     });
 
     startText.on("pointerover", () => {

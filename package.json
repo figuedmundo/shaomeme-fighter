@@ -15,14 +15,16 @@
         "server": "node server/index.js",
         "lint": "eslint --ext .js .",
         "lint:fix": "pnpm run lint -- --fix",
-            "test": "vitest",
-            "prepare": "simple-git-hooks"
-          },    "author": "Edmundo Figueroa",
+        "test": "vitest --run",
+        "prepare": "simple-git-hooks"
+    },
+    "author": "Edmundo Figueroa",
     "license": "ISC",
     "devDependencies": {
         "@commitlint/cli": "^20.2.0",
         "@commitlint/config-conventional": "^20.2.0",
         "@types/node": "^22.19.3",
+        "canvas": "^3.2.0",
         "commitlint": "^20.2.0",
         "eslint": "^8.57.1",
         "eslint-config-airbnb": "^19.0.4",
@@ -32,6 +34,7 @@
         "lint-staged": "^13.2.2",
         "prettier": "^3.7.4",
         "simple-git-hooks": "^2.8.1",
+        "supertest": "^7.1.4",
         "vite": "^7.3.0",
         "vitest": "^4.0.16"
     },
@@ -47,6 +50,8 @@
     "dependencies": {
         "cors": "^2.8.5",
         "express": "^5.2.1",
-        "phaser": "^3.90.0"
+        "heic-convert": "^2.1.0",
+        "phaser": "^3.90.0",
+        "sharp": "^0.34.5"
     }
 }

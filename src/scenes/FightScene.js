@@ -6,11 +6,58 @@ import TouchVisuals from "../components/TouchVisuals";
 export default class FightScene extends Phaser.Scene {
   constructor() {
     super("FightScene");
+    this.backgroundUrl = null;
+    this.backgroundKey = null;
+    this.city = "Unknown";
+    this.playerCharacter = null;
+  }
+
+  init(data) {
+    if (data) {
+      this.city = data.city || "Unknown";
+      this.backgroundUrl = data.backgroundUrl;
+      this.backgroundKey = data.backgroundKey;
+      this.playerCharacter = data.playerCharacter;
+      // eslint-disable-next-line no-console
+      console.log(`Fight initialized with character: ${this.playerCharacter}`);
+    }
+  }
+
+  preload() {
+    // If a specific background was passed and it's not already in cache (or we want to ensure it's loaded)
+    // We can try to load it. If it was preloaded in ArenaSelectScene, we might just reuse the key.
+    
+    // Check if the key exists in texture manager
+    if (this.backgroundKey && this.textures.exists(this.backgroundKey)) {
+      // It's already loaded, no action needed
+      // eslint-disable-next-line no-console
+      console.log(`Using cached background: ${this.backgroundKey}`);
+    } else if (this.backgroundUrl) {
+      // Dynamic load needed (e.g. direct deep link or reload)
+      this.backgroundKey = `dynamic_bg_${Date.now()}`;
+      this.load.image(this.backgroundKey, this.backgroundUrl);
+    } else {
+      // Fallback
+      this.backgroundKey = 'default_bg';
+      // Ensure default is loaded if not already (assuming PreloadScene usually does this)
+      // Since PreloadScene isn't fully robust yet, let's just use the placeholder or check cache
+      if (!this.textures.exists('default_bg')) {
+         // Assuming 'resources/main-bg.jpg' is available from public/resources or similar
+         // But let's check what PreloadScene does. For now, strict fallback logic:
+         this.load.image('default_bg', 'resources/main-bg.jpg');
+      }
+    }
   }
 
   create() {
-    // 1. Setup Scene Geometry (Floor)
     const { width, height } = this.scale;
+
+    // 0. Background
+    // Use the determined key, or fallback to 'default_bg'
+    const bgKey = this.textures.exists(this.backgroundKey) ? this.backgroundKey : 'default_bg';
+    this.add.image(width / 2, height / 2, bgKey).setDisplaySize(width, height);
+
+    // 1. Setup Scene Geometry (Floor)
     const floorHeight = 50;
 
     // Static physics group for the floor
@@ -22,7 +69,7 @@ export default class FightScene extends Phaser.Scene {
       width,
       floorHeight,
       0x00ff00,
-      0.5 // Alpha 0.5 for debug visibility
+      0.0 // Invisible floor (alpha 0) since we have a real background now
     );
     this.floor.add(floorRect);
 

@@ -3,81 +3,122 @@ import cors from "cors";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { processImage } from "./ImageProcessor.js"; // Import ImageProcessor
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express();
+export const app = express();
 const PORT = 3000;
 
 app.use(cors());
 
-// Configuration: Path to photos
+// Configuration: Path to photos and cache
 const PHOTOS_DIR = process.env.PHOTOS_DIR || path.join(__dirname, "../photos");
+const CACHE_DIR = process.env.CACHE_DIR || path.join(__dirname, "../cache");
 
 // Ensure photos dir exists
 if (!fs.existsSync(PHOTOS_DIR)) {
   fs.mkdirSync(PHOTOS_DIR, { recursive: true });
 }
 
-// Serve static photos
+// Ensure cache dir exists
+if (!fs.existsSync(CACHE_DIR)) {
+  fs.mkdirSync(CACHE_DIR, { recursive: true });
+}
+
+// Serve static photos and cache
 app.use("/photos", express.static(PHOTOS_DIR));
+app.use("/cache", express.static(CACHE_DIR));
+
+// Placeholder response for invalid/missing city
+const PLACEHOLDER_IMAGE = [
+  {
+    url: "/resources/logo.png",
+    filename: "placeholder.png",
+    type: "image/png",
+  },
+];
 
 // API to list photos
-app.get("/api/photos", (req, res) => {
+app.get("/api/photos", async (req, res) => {
   const { city } = req.query;
 
-  // Determine target directory: root or subdirectory
-  let targetDir = PHOTOS_DIR;
-  let urlPrefix = "/photos";
+  // Sanitize city name if provided
+  const sanitizedCity = city ? city.replace(/[^a-zA-Z0-9_-]/g, "") : "";
+  const targetDir = path.join(PHOTOS_DIR, sanitizedCity);
 
-  if (city) {
-    // Sanitize city name to prevent traversal attacks
-    const sanitizedCity = city.replace(/[^a-zA-Z0-9_-]/g, "");
-    targetDir = path.join(PHOTOS_DIR, sanitizedCity);
-    urlPrefix = `/photos/${sanitizedCity}`;
-
-    if (!fs.existsSync(targetDir)) {
-      // For now, if city folder doesn't exist, just return empty list or fallback?
-      // Returning empty is safer.
-      return res.json([]);
-    }
+  // Return placeholder if city is missing or directory doesn't exist
+  if (!city || !fs.existsSync(targetDir)) {
+    return res.json(PLACEHOLDER_IMAGE);
   }
 
-  return fs.readdir(targetDir, (err, files) => {
-    if (err) {
-      console.error(err); // eslint-disable-line no-console
-      return res.status(500).json({ error: "Failed to scan photos directory" });
-    }
+  try {
+    const files = await fs.promises.readdir(targetDir);
 
-    // Filter for images
-    const images = files.filter((file) => {
+    // Filter for supported extensions
+    const supportedExtensions = [".jpg", ".jpeg", ".png", ".heic", ".heif", ".webp"];
+    const imageFiles = files.filter((file) => {
       const ext = path.extname(file).toLowerCase();
-      return [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(ext);
+      return supportedExtensions.includes(ext);
     });
 
-    // Return full URLs
-    // Note: urlPrefix needs to allow for browser to find it.
-    const imageUrls = images.map((file) => `${urlPrefix}/${file}`);
+    // Process images in parallel
+    const processedImages = await Promise.all(
+      imageFiles.map(async (filename) => {
+        const sourcePath = path.join(targetDir, filename);
+        // Create a unique cache filename (e.g., maintain original name but .webp)
+        const cacheFilename = `${path.parse(filename).name}.webp`;
+        // Maintain city structure in cache
+        const cachePath = path.join(CACHE_DIR, sanitizedCity, cacheFilename);
 
-    return res.json(imageUrls);
-  });
+        try {
+          await processImage(sourcePath, cachePath);
+          return {
+            url: `/cache/${sanitizedCity}/${cacheFilename}`,
+            filename: filename,
+            type: "image/webp",
+          };
+        } catch (error) {
+          console.error(`Failed to process ${filename}:`, error); // eslint-disable-line no-console
+          return null;
+        }
+      })
+    );
+
+    // Filter out any failures
+    const validImages = processedImages.filter((img) => img !== null);
+
+    return res.json(validImages);
+  } catch (err) {
+    console.error(err); // eslint-disable-line no-console
+    return res.status(500).json({ error: "Failed to scan photos directory" });
+  }
 });
 
 // API to list available cities (subdirectories)
-app.get("/api/cities", (req, res) => {
-  fs.readdir(PHOTOS_DIR, { withFileTypes: true }, (err, files) => {
-    if (err) {
-      console.error(err); // eslint-disable-line no-console
-      return res.status(500).json({ error: "Failed to scan cities" });
-    }
+app.get("/api/cities", async (req, res) => {
+  try {
+    const files = await fs.promises.readdir(PHOTOS_DIR, {
+      withFileTypes: true,
+    });
 
     const cities = files
-      .filter((dirent) => dirent.isDirectory())
+      .filter((dirent) => {
+        return (
+          dirent.isDirectory() &&
+          !dirent.name.startsWith(".") &&
+          dirent.name !== "__MACOSX" &&
+          dirent.name !== "System Volume Information"
+        );
+      })
       .map((dirent) => dirent.name);
 
     return res.json(cities);
-  });
+  } catch (err) {
+    console.error(err); // eslint-disable-line no-console
+    return res.status(500).json({ error: "Failed to scan cities" });
+  }
 });
 
 // Serve static files from dist in production
@@ -89,18 +130,21 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`Server running on http://localhost:${PORT}`);
-  if (process.env.NODE_ENV === "production") {
+// Start server only if run directly
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  app.listen(PORT, () => {
     // eslint-disable-next-line no-console
-    console.log("Serving production build from ../dist");
-  } else {
+    console.log(`Server running on http://localhost:${PORT}`);
+    if (process.env.NODE_ENV === "production") {
+      // eslint-disable-next-line no-console
+      console.log("Serving production build from ../dist");
+    } else {
+      // eslint-disable-next-line no-console
+      console.log(
+        "Development mode: Frontend not served by Express. Use 'npm run dev'."
+      );
+    }
     // eslint-disable-next-line no-console
-    console.log(
-      "Development mode: Frontend not served by Express. Use 'npm run dev'."
-    );
-  }
-  // eslint-disable-next-line no-console
-  console.log(`Serving photos from: ${PHOTOS_DIR}`);
-});
+    console.log(`Serving photos from: ${PHOTOS_DIR}`);
+  });
+}

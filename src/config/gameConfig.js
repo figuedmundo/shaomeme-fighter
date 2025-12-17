@@ -1,6 +1,8 @@
 import Phaser from "phaser";
 import BootScene from "../scenes/BootScene";
 import MainMenuScene from "../scenes/MainMenuScene";
+import CharacterSelectScene from "../scenes/CharacterSelectScene";
+import ArenaSelectScene from "../scenes/ArenaSelectScene";
 import WorldMapScene from "../scenes/WorldMapScene";
 import FightScene from "../scenes/FightScene";
 
@@ -20,7 +22,7 @@ const gameConfig = {
       debug: true,
     },
   },
-  scene: [BootScene, MainMenuScene, WorldMapScene, FightScene],
+  scene: [BootScene, MainMenuScene, CharacterSelectScene, ArenaSelectScene, WorldMapScene, FightScene],
 };
 
 export default gameConfig;

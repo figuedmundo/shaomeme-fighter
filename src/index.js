@@ -4,6 +4,8 @@ import Phaser from "phaser";
 import BootScene from "./scenes/BootScene";
 import PreloadScene from "./scenes/PreloadScene";
 import MainMenuScene from "./scenes/MainMenuScene";
+import CharacterSelectScene from "./scenes/CharacterSelectScene";
+import ArenaSelectScene from "./scenes/ArenaSelectScene";
 import FightScene from "./scenes/FightScene";
 
 const config = {
@@ -15,7 +17,7 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, PreloadScene, MainMenuScene, FightScene],
+  scene: [BootScene, PreloadScene, MainMenuScene, CharacterSelectScene, ArenaSelectScene, FightScene],
 };
 
 // eslint-disable-next-line no-new
