@@ -17,7 +17,14 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, PreloadScene, MainMenuScene, CharacterSelectScene, ArenaSelectScene, FightScene],
+  scene: [
+    BootScene,
+    PreloadScene,
+    MainMenuScene,
+    CharacterSelectScene,
+    ArenaSelectScene,
+    FightScene,
+  ],
 };
 
 // eslint-disable-next-line no-new

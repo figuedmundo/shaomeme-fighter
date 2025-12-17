@@ -22,7 +22,14 @@ const gameConfig = {
       debug: true,
     },
   },
-  scene: [BootScene, MainMenuScene, CharacterSelectScene, ArenaSelectScene, WorldMapScene, FightScene],
+  scene: [
+    BootScene,
+    MainMenuScene,
+    CharacterSelectScene,
+    ArenaSelectScene,
+    WorldMapScene,
+    FightScene,
+  ],
 };
 
 export default gameConfig;

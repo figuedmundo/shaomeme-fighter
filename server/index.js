@@ -57,7 +57,14 @@ app.get("/api/photos", async (req, res) => {
     const files = await fs.promises.readdir(targetDir);
 
     // Filter for supported extensions
-    const supportedExtensions = [".jpg", ".jpeg", ".png", ".heic", ".heif", ".webp"];
+    const supportedExtensions = [
+      ".jpg",
+      ".jpeg",
+      ".png",
+      ".heic",
+      ".heif",
+      ".webp",
+    ];
     const imageFiles = files.filter((file) => {
       const ext = path.extname(file).toLowerCase();
       return supportedExtensions.includes(ext);
@@ -76,14 +83,14 @@ app.get("/api/photos", async (req, res) => {
           await processImage(sourcePath, cachePath);
           return {
             url: `/cache/${sanitizedCity}/${cacheFilename}`,
-            filename: filename,
+            filename,
             type: "image/webp",
           };
         } catch (error) {
           console.error(`Failed to process ${filename}:`, error); // eslint-disable-line no-console
           return null;
         }
-      })
+      }),
     );
 
     // Filter out any failures
@@ -141,7 +148,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     } else {
       // eslint-disable-next-line no-console
       console.log(
-        "Development mode: Frontend not served by Express. Use 'npm run dev'."
+        "Development mode: Frontend not served by Express. Use 'npm run dev'.",
       );
     }
     // eslint-disable-next-line no-console

@@ -1,8 +1,8 @@
-import Phaser from 'phaser';
+import Phaser from "phaser";
 
 export default class ArenaSelectScene extends Phaser.Scene {
   constructor() {
-    super('ArenaSelectScene');
+    super("ArenaSelectScene");
     this.arenas = [];
     this.selectedArenaIndex = 0;
     this.thumbnails = [];
@@ -18,7 +18,7 @@ export default class ArenaSelectScene extends Phaser.Scene {
   preload() {
     // Preload a default placeholder or UI assets if needed
     // The dynamic arena images will be loaded on the fly or in 'create'
-    this.load.image('placeholder', 'resources/combat-arena.png'); // Fallback
+    this.load.image("placeholder", "resources/combat-arena.png"); // Fallback
   }
 
   create() {
@@ -26,69 +26,85 @@ export default class ArenaSelectScene extends Phaser.Scene {
 
     // 1. Hero Background (Full Screen)
     // Initialize with black or a default until data loads
-    this.heroBackground = this.add.image(width / 2, height / 2, 'placeholder')
+    this.heroBackground = this.add
+      .image(width / 2, height / 2, "placeholder")
       .setOrigin(0.5)
       .setDisplaySize(width, height);
-    
+
     // Apply Cinematic Filter (Sepia + Contrast)
     if (this.heroBackground.preFX) {
-        this.heroBackground.preFX.addColorMatrix().sepia(0.3);
-        this.heroBackground.preFX.addColorMatrix().contrast(1.2);
+      this.heroBackground.preFX.addColorMatrix().sepia(0.3);
+      this.heroBackground.preFX.addColorMatrix().contrast(1.2);
     }
 
     // Add a dark gradient/overlay at the bottom for the grid readability
     const gradient = this.add.graphics();
-    gradient.fillGradientStyle(0x000000, 0x000000, 0x000000, 0x000000, 0, 0, 0.8, 0.8);
+    gradient.fillGradientStyle(
+      0x000000,
+      0x000000,
+      0x000000,
+      0x000000,
+      0,
+      0,
+      0.8,
+      0.8,
+    );
     gradient.fillRect(0, height * 0.6, width, height * 0.4);
 
     // 2. Title Text
-    this.titleText = this.add.text(width / 2, height * 0.1, 'LOADING...', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '32px', // Reduced size for pixel font
-      color: '#ffd700',
-      stroke: '#880000',
-      strokeThickness: 6,
-      shadow: { blur: 0, color: '#000000', fill: true }
-    }).setOrigin(0.5);
+    this.titleText = this.add
+      .text(width / 2, height * 0.1, "LOADING...", {
+        fontFamily: '"Press Start 2P"',
+        fontSize: "32px", // Reduced size for pixel font
+        color: "#ffd700",
+        stroke: "#880000",
+        strokeThickness: 6,
+        shadow: { blur: 0, color: "#000000", fill: true },
+      })
+      .setOrigin(0.5);
 
     // 3. Loading Indicator
-    this.loadingText = this.add.text(width / 2, height / 2, 'Fetching Arenas...', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '16px',
-      fill: '#ffffff'
-    }).setOrigin(0.5);
+    this.loadingText = this.add
+      .text(width / 2, height / 2, "Fetching Arenas...", {
+        fontFamily: '"Press Start 2P"',
+        fontSize: "16px",
+        fill: "#ffffff",
+      })
+      .setOrigin(0.5);
 
     // 4. Back Button
-    const backBtn = this.add.text(50, 50, '< BACK', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '16px',
-      fill: '#ffffff',
-      backgroundColor: '#333333',
-      padding: { x: 10, y: 10 }
-    })
-    .setInteractive({ useHandCursor: true })
-    .on('pointerdown', () => {
-        this.sound.play('ui-select');
-        this.scene.start('MainMenuScene');
-    });
+    const backBtn = this.add
+      .text(50, 50, "< BACK", {
+        fontFamily: '"Press Start 2P"',
+        fontSize: "16px",
+        fill: "#ffffff",
+        backgroundColor: "#333333",
+        padding: { x: 10, y: 10 },
+      })
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => {
+        this.sound.play("ui-select");
+        this.scene.start("MainMenuScene");
+      });
 
     // 5. Fight Button (Confirm)
-    this.fightBtn = this.add.text(width - 150, height - 100, 'FIGHT >', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '24px',
-      fill: '#ffd700', // Gold
-      backgroundColor: '#330000',
-      padding: { x: 20, y: 10 },
-      stroke: '#ffd700',
-      strokeThickness: 0 // Pixel fonts don't need heavy stroke usually
-    })
-    .setOrigin(0.5)
-    .setInteractive({ useHandCursor: true })
-    .setVisible(false) // Hide until loaded
-    .on('pointerdown', () => {
-        this.sound.play('ui-select');
+    this.fightBtn = this.add
+      .text(width - 150, height - 100, "FIGHT >", {
+        fontFamily: '"Press Start 2P"',
+        fontSize: "24px",
+        fill: "#ffd700", // Gold
+        backgroundColor: "#330000",
+        padding: { x: 20, y: 10 },
+        stroke: "#ffd700",
+        strokeThickness: 0, // Pixel fonts don't need heavy stroke usually
+      })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
+      .setVisible(false) // Hide until loaded
+      .on("pointerdown", () => {
+        this.sound.play("ui-select");
         this.confirmSelection();
-    });
+      });
 
     // Start Fetching Data
     this.fetchArenas();
@@ -96,11 +112,11 @@ export default class ArenaSelectScene extends Phaser.Scene {
 
   async fetchArenas() {
     try {
-      const apiBase = 'http://localhost:3000'; // Adjust for prod if needed
-      
+      const apiBase = "http://localhost:3000"; // Adjust for prod if needed
+
       // Fetch Cities
       const citiesRes = await fetch(`${apiBase}/api/cities`);
-      if (!citiesRes.ok) throw new Error('Failed to fetch cities');
+      if (!citiesRes.ok) throw new Error("Failed to fetch cities");
       const cities = await citiesRes.json();
 
       // Fetch one photo for each city to use as preview
@@ -114,7 +130,7 @@ export default class ArenaSelectScene extends Phaser.Scene {
             // For now assuming localhost dev environment or same origin serving.
             return {
               name: city,
-              url: `${apiBase}${photos[0].url}` 
+              url: `${apiBase}${photos[0].url}`,
             };
           }
         } catch (e) {
@@ -124,31 +140,30 @@ export default class ArenaSelectScene extends Phaser.Scene {
       });
 
       const results = await Promise.all(arenaPromises);
-      this.arenas = results.filter(a => a !== null);
+      this.arenas = results.filter((a) => a !== null);
 
       if (this.arenas.length > 0) {
         this.loadArenaImages();
       } else {
-        this.loadingText.setText('No Arenas Found.');
+        this.loadingText.setText("No Arenas Found.");
       }
-
     } catch (err) {
       console.error(err);
-      this.loadingText.setText('Error Loading Arenas');
+      this.loadingText.setText("Error Loading Arenas");
     }
   }
 
   loadArenaImages() {
-    this.loadingText.setText('Loading Images...');
-    
+    this.loadingText.setText("Loading Images...");
+
     // Load images into Phaser Texture Manager
-    let loadedCount = 0;
+    const loadedCount = 0;
     this.arenas.forEach((arena, index) => {
       const key = `arena_bg_${index}`;
       this.load.image(key, arena.url);
     });
 
-    this.load.once('complete', () => {
+    this.load.once("complete", () => {
       this.loadingText.setVisible(false);
       this.buildGrid();
       this.selectArena(0); // Select first one
@@ -163,41 +178,48 @@ export default class ArenaSelectScene extends Phaser.Scene {
     const thumbnailWidth = 200;
     const thumbnailHeight = 120;
     const gap = 20;
-    const startX = width / 2 - ((this.arenas.length * (thumbnailWidth + gap)) / 2) + (thumbnailWidth / 2);
+    const startX =
+      width / 2 -
+      (this.arenas.length * (thumbnailWidth + gap)) / 2 +
+      thumbnailWidth / 2;
     const yPos = height - 150;
 
     this.arenas.forEach((arena, index) => {
       const key = `arena_bg_${index}`;
-      
+
       // Thumbnail Image
-      const thumb = this.add.image(startX + (index * (thumbnailWidth + gap)), yPos, key)
+      const thumb = this.add
+        .image(startX + index * (thumbnailWidth + gap), yPos, key)
         .setDisplaySize(thumbnailWidth, thumbnailHeight)
         .setInteractive({ useHandCursor: true })
-        .on('pointerdown', () => this.selectArena(index));
+        .on("pointerdown", () => this.selectArena(index));
 
       // Border (initially invisible or grey)
-      const border = this.add.rectangle(
-        startX + (index * (thumbnailWidth + gap)), 
-        yPos, 
-        thumbnailWidth + 8, 
-        thumbnailHeight + 8
-      ).setStrokeStyle(4, 0x333333).setFillStyle(); // Transparent fill
+      const border = this.add
+        .rectangle(
+          startX + index * (thumbnailWidth + gap),
+          yPos,
+          thumbnailWidth + 8,
+          thumbnailHeight + 8,
+        )
+        .setStrokeStyle(4, 0x333333)
+        .setFillStyle(); // Transparent fill
 
-      this.thumbnails.push({ img: thumb, border: border });
+      this.thumbnails.push({ img: thumb, border });
     });
   }
 
   selectArena(index) {
     if (index < 0 || index >= this.arenas.length) return;
-    
+
     this.selectedArenaIndex = index;
     const arena = this.arenas[index];
     const key = `arena_bg_${index}`;
 
     // Update Hero Background
     this.heroBackground.setTexture(key);
-    // Maintain aspect ratio cover or fit? 
-    // For hero background, we usually want 'cover'. 
+    // Maintain aspect ratio cover or fit?
+    // For hero background, we usually want 'cover'.
     // Phaser setDisplaySize stretches. Let's force stretch for now or implement cover logic.
     this.heroBackground.setDisplaySize(this.scale.width, this.scale.height);
 
@@ -216,13 +238,13 @@ export default class ArenaSelectScene extends Phaser.Scene {
 
   confirmSelection() {
     const arena = this.arenas[this.selectedArenaIndex];
-    this.scene.start('FightScene', { 
-      city: arena.name, 
+    this.scene.start("FightScene", {
+      city: arena.name,
       backgroundUrl: arena.url,
       // Pass the preloaded texture key so FightScene doesn't have to fetch it again if possible,
       // OR FightScene can rely on the cache since we loaded it here.
       backgroundKey: `arena_bg_${this.selectedArenaIndex}`,
-      playerCharacter: this.playerCharacter
+      playerCharacter: this.playerCharacter,
     });
   }
 }

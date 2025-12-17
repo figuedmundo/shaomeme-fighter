@@ -15,10 +15,10 @@ export default class VictorySlideshow {
       if (res.ok) {
         this.photos = await res.json();
       } else {
-        console.warn('Failed to fetch photos');
+        console.warn("Failed to fetch photos");
       }
     } catch (e) {
-      console.error('Error fetching photos:', e);
+      console.error("Error fetching photos:", e);
     }
 
     // 2. Create UI
@@ -37,36 +37,36 @@ export default class VictorySlideshow {
 
   createOverlay() {
     // Create Overlay Container
-    this.overlay = document.createElement('div');
-    this.overlay.className = 'victory-overlay';
+    this.overlay = document.createElement("div");
+    this.overlay.className = "victory-overlay";
 
     // Title
-    const title = document.createElement('h1');
-    title.className = 'victory-title';
-    title.innerText = 'YOU WIN!';
+    const title = document.createElement("h1");
+    title.className = "victory-title";
+    title.innerText = "YOU WIN!";
     this.overlay.appendChild(title);
 
     // Image Container
-    const imgContainer = document.createElement('div');
-    imgContainer.className = 'victory-image-container';
+    const imgContainer = document.createElement("div");
+    imgContainer.className = "victory-image-container";
 
     // Image Element
-    this.imgElement = document.createElement('img');
-    this.imgElement.className = 'victory-image cinematic-filter';
-    this.imgElement.alt = 'Memory';
+    this.imgElement = document.createElement("img");
+    this.imgElement.className = "victory-image cinematic-filter";
+    this.imgElement.alt = "Memory";
     imgContainer.appendChild(this.imgElement);
 
     // Smoke Border (Overlay on top of image)
-    const smokeBorder = document.createElement('div');
-    smokeBorder.className = 'smoke-border';
+    const smokeBorder = document.createElement("div");
+    smokeBorder.className = "smoke-border";
     imgContainer.appendChild(smokeBorder);
 
     this.overlay.appendChild(imgContainer);
 
     // Exit Button
-    const exitBtn = document.createElement('button');
-    exitBtn.className = 'victory-close';
-    exitBtn.innerText = 'EXIT >';
+    const exitBtn = document.createElement("button");
+    exitBtn.className = "victory-close";
+    exitBtn.innerText = "EXIT >";
     exitBtn.onclick = () => this.exit();
     this.overlay.appendChild(exitBtn);
 
@@ -85,10 +85,10 @@ export default class VictorySlideshow {
 
   showPhoto(index) {
     if (!this.imgElement || !this.photos[index]) return;
-    
+
     // Simple opacity fade
     this.imgElement.style.opacity = 0;
-    
+
     setTimeout(() => {
       this.imgElement.src = this.photos[index].url;
       this.imgElement.style.opacity = 1;
@@ -97,11 +97,11 @@ export default class VictorySlideshow {
 
   showFallback() {
     if (this.imgElement) {
-      this.imgElement.style.display = 'none';
+      this.imgElement.style.display = "none";
     }
-    const msg = document.createElement('p');
-    msg.innerText = 'No memories found for this location yet.';
-    msg.style.color = 'white';
+    const msg = document.createElement("p");
+    msg.innerText = "No memories found for this location yet.";
+    msg.style.color = "white";
     this.overlay.appendChild(msg);
   }
 
@@ -110,13 +110,15 @@ export default class VictorySlideshow {
     this.scene.sound.stopAll();
 
     // Play KO sound immediately
-    this.scene.sound.play('KO', { volume: 0.8 });
+    this.scene.sound.play("KO", { volume: 0.8 });
 
     // Wait slightly then play victory/slideshow music
     setTimeout(() => {
       // Use specific soundtrack if available
-      const trackKey = this.scene.cache.audio.exists('soundtrack') ? 'soundtrack' : 'arena';
-      
+      const trackKey = this.scene.cache.audio.exists("soundtrack")
+        ? "soundtrack"
+        : "arena";
+
       this.music = this.scene.sound.add(trackKey, { loop: true, volume: 0.5 });
       this.music.play();
     }, 1500);
@@ -129,8 +131,8 @@ export default class VictorySlideshow {
       document.body.removeChild(this.overlay);
       this.overlay = null;
     }
-    
+
     // Navigate back
-    this.scene.scene.start('ArenaSelectScene');
+    this.scene.scene.start("ArenaSelectScene");
   }
 }

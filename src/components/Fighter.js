@@ -105,7 +105,11 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     this.play(`${this.texture.key}-${newState}`, true);
 
     // Reset physics on certain state changes
-    if (newState === FighterState.CROUCH || newState === FighterState.IDLE || newState === FighterState.DIE) {
+    if (
+      newState === FighterState.CROUCH ||
+      newState === FighterState.IDLE ||
+      newState === FighterState.DIE
+    ) {
       this.setVelocityX(0);
     }
   }
@@ -122,10 +126,11 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
       this.setState(FighterState.HIT);
       this.isHit = true;
       this.setTint(0xff0000);
-      
+
       // Simple Hitstun
       this.scene.time.delayedCall(300, () => {
-        if (this.health > 0) { // Only recover if still alive
+        if (this.health > 0) {
+          // Only recover if still alive
           this.clearTint();
           this.isHit = false;
           this.setState(FighterState.IDLE);
@@ -137,12 +142,12 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
   update() {
     // If dead, ensure we stay dead and don't process inputs
     if (this.health <= 0) {
-        if (this.currentState !== FighterState.DIE) {
-            this.setState(FighterState.DIE);
-        }
-        return;
+      if (this.currentState !== FighterState.DIE) {
+        this.setState(FighterState.DIE);
+      }
+      return;
     }
-    
+
     if (!this.cursors) return;
 
     // State Machine Logic
@@ -164,7 +169,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         () => {
           this.setState(FighterState.IDLE);
         },
-        this
+        this,
       );
       return;
     }

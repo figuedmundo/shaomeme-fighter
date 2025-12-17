@@ -28,7 +28,7 @@ export default class FightScene extends Phaser.Scene {
   preload() {
     // If a specific background was passed and it's not already in cache (or we want to ensure it's loaded)
     // We can try to load it. If it was preloaded in ArenaSelectScene, we might just reuse the key.
-    
+
     // Check if the key exists in texture manager
     if (this.backgroundKey && this.textures.exists(this.backgroundKey)) {
       // It's already loaded, no action needed
@@ -40,13 +40,13 @@ export default class FightScene extends Phaser.Scene {
       this.load.image(this.backgroundKey, this.backgroundUrl);
     } else {
       // Fallback
-      this.backgroundKey = 'default_bg';
+      this.backgroundKey = "default_bg";
       // Ensure default is loaded if not already (assuming PreloadScene usually does this)
       // Since PreloadScene isn't fully robust yet, let's just use the placeholder or check cache
-      if (!this.textures.exists('default_bg')) {
-         // Assuming 'resources/main-bg.jpg' is available from public/resources or similar
-         // But let's check what PreloadScene does. For now, strict fallback logic:
-         this.load.image('default_bg', 'resources/main-bg.jpg');
+      if (!this.textures.exists("default_bg")) {
+        // Assuming 'resources/main-bg.jpg' is available from public/resources or similar
+        // But let's check what PreloadScene does. For now, strict fallback logic:
+        this.load.image("default_bg", "resources/main-bg.jpg");
       }
     }
   }
@@ -57,7 +57,9 @@ export default class FightScene extends Phaser.Scene {
 
     // 0. Background
     // Use the determined key, or fallback to 'default_bg'
-    const bgKey = this.textures.exists(this.backgroundKey) ? this.backgroundKey : 'default_bg';
+    const bgKey = this.textures.exists(this.backgroundKey)
+      ? this.backgroundKey
+      : "default_bg";
     this.add.image(width / 2, height / 2, bgKey).setDisplaySize(width, height);
 
     // 1. Setup Scene Geometry (Floor)
@@ -72,7 +74,7 @@ export default class FightScene extends Phaser.Scene {
       width,
       floorHeight,
       0x00ff00,
-      0.0 // Invisible floor (alpha 0) since we have a real background now
+      0.0, // Invisible floor (alpha 0) since we have a real background now
     );
     this.floor.add(floorRect);
 
@@ -135,12 +137,12 @@ export default class FightScene extends Phaser.Scene {
     this.player2.update();
 
     if (!this.isGameOver) {
-        // Hitbox Detection
-        this.checkAttack(this.player1, this.player2);
-        this.checkAttack(this.player2, this.player1);
+      // Hitbox Detection
+      this.checkAttack(this.player1, this.player2);
+      this.checkAttack(this.player2, this.player1);
 
-        // Win Condition
-        this.checkWinCondition();
+      // Win Condition
+      this.checkWinCondition();
     }
   }
 
@@ -156,7 +158,7 @@ export default class FightScene extends Phaser.Scene {
         attacker.x,
         attacker.y,
         defender.x,
-        defender.y
+        defender.y,
       );
 
       // Simple directional check
@@ -164,7 +166,12 @@ export default class FightScene extends Phaser.Scene {
         ? attacker.x > defender.x
         : attacker.x < defender.x;
 
-      if (distance < attackRange && facingTarget && !defender.isHit && defender.health > 0) {
+      if (
+        distance < attackRange &&
+        facingTarget &&
+        !defender.isHit &&
+        defender.health > 0
+      ) {
         // Hit Confirmed
         // eslint-disable-next-line no-console
         console.log(`${attacker.texture.key} hit ${defender.texture.key}!`);
@@ -176,24 +183,24 @@ export default class FightScene extends Phaser.Scene {
   }
 
   checkWinCondition() {
-      if (this.player1.health <= 0 || this.player2.health <= 0) {
-          this.isGameOver = true;
-          this.physics.pause();
-          
-          // Disable inputs
-          this.player1.setControls(null, null, null); 
-          // this.player2.setControls(null, null); // If p2 was controllable
+    if (this.player1.health <= 0 || this.player2.health <= 0) {
+      this.isGameOver = true;
+      this.physics.pause();
 
-          // Determine winner (Opposite of who died)
-          const winner = this.player1.health > 0 ? this.player1 : this.player2;
-          
-          // Play Victory Animation for winner? (Optional, if we had one)
-          // winner.setState(FighterState.VICTORY); 
-          
-          // Wait for Death Animation to finish roughly (2 seconds)
-          this.time.delayedCall(2000, () => {
-             this.slideshow.show(this.city);
-          });
-      }
+      // Disable inputs
+      this.player1.setControls(null, null, null);
+      // this.player2.setControls(null, null); // If p2 was controllable
+
+      // Determine winner (Opposite of who died)
+      const winner = this.player1.health > 0 ? this.player1 : this.player2;
+
+      // Play Victory Animation for winner? (Optional, if we had one)
+      // winner.setState(FighterState.VICTORY);
+
+      // Wait for Death Animation to finish roughly (2 seconds)
+      this.time.delayedCall(2000, () => {
+        this.slideshow.show(this.city);
+      });
+    }
   }
 }

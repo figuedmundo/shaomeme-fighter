@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import Fighter, { FighterState } from '../src/components/Fighter';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import Fighter, { FighterState } from "../src/components/Fighter";
 
 // Mock Phaser
 const mockScene = {
@@ -23,7 +23,7 @@ const mockScene = {
 };
 
 // Mock Sprite
-vi.mock('phaser', () => {
+vi.mock("phaser", () => {
   return {
     default: {
       Physics: {
@@ -44,9 +44,9 @@ vi.mock('phaser', () => {
               this.on = vi.fn();
               this.anims = {
                 isPlaying: false,
-                currentAnim: { key: '' },
+                currentAnim: { key: "" },
               };
-              this.texture = { key: 'ryu' };
+              this.texture = { key: "ryu" };
             }
           },
         },
@@ -55,18 +55,18 @@ vi.mock('phaser', () => {
   };
 });
 
-describe('Fighter', () => {
+describe("Fighter", () => {
   let fighter;
 
   beforeEach(() => {
-    fighter = new Fighter(mockScene, 0, 0, 'ryu');
+    fighter = new Fighter(mockScene, 0, 0, "ryu");
   });
 
-  it('should initialize with IDLE state', () => {
+  it("should initialize with IDLE state", () => {
     expect(fighter.currentState).toBe(FighterState.IDLE);
   });
 
-  it('should transition to WALK state when moving left/right', () => {
+  it("should transition to WALK state when moving left/right", () => {
     // Mock controls
     fighter.setControls(
       {
@@ -75,7 +75,7 @@ describe('Fighter', () => {
         up: { isDown: false },
         down: { isDown: false },
       },
-      { attack: { isDown: false } }
+      { attack: { isDown: false } },
     );
 
     fighter.update();
@@ -83,7 +83,7 @@ describe('Fighter', () => {
     expect(fighter.setVelocityX).toHaveBeenCalled();
   });
 
-  it('should transition to JUMP state when moving up', () => {
+  it("should transition to JUMP state when moving up", () => {
     fighter.setControls(
       {
         left: { isDown: false },
@@ -91,7 +91,7 @@ describe('Fighter', () => {
         up: { isDown: true },
         down: { isDown: false },
       },
-      { attack: { isDown: false } }
+      { attack: { isDown: false } },
     );
 
     fighter.update();

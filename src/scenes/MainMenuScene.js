@@ -6,14 +6,14 @@ export default class MainMenuScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('logo', 'resources/shaomeme_fighter.png');
+    this.load.image("logo", "resources/shaomeme_fighter.png");
   }
 
   create() {
     const { width, height } = this.scale;
 
     // Logo
-    const logo = this.add.image(width / 2, height * 0.3, 'logo');
+    const logo = this.add.image(width / 2, height * 0.3, "logo");
     // Scale logo to fit if needed (e.g. max width 80% of screen)
     const maxWidth = width * 0.8;
     if (logo.width > maxWidth) {
@@ -27,7 +27,7 @@ export default class MainMenuScene extends Phaser.Scene {
         fontSize: "32px",
         fill: "#ffd700", // Gold
         stroke: "#880000", // Red
-        strokeThickness: 4
+        strokeThickness: 4,
       })
       .setOrigin(0.5)
       .setInteractive();
@@ -45,10 +45,12 @@ export default class MainMenuScene extends Phaser.Scene {
     });
 
     // Footer
-    this.add.text(width / 2, height * 0.95, "Created by Edmundo for [Girlfriend]", {
-      fontFamily: '"Press Start 2P", sans-serif',
-      fontSize: "12px",
-      fill: "#666666"
-    }).setOrigin(0.5);
+    this.add
+      .text(width / 2, height * 0.95, "Created by Edmundo for [Girlfriend]", {
+        fontFamily: '"Press Start 2P", sans-serif',
+        fontSize: "12px",
+        fill: "#666666",
+      })
+      .setOrigin(0.5);
   }
 }
