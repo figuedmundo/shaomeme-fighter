@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import Fighter, { FighterState } from "../components/Fighter";
 import TouchInputController from "../systems/TouchInputController";
 import TouchVisuals from "../components/TouchVisuals";
+import VictorySlideshow from "../components/VictorySlideshow";
 
 export default class FightScene extends Phaser.Scene {
   constructor() {
@@ -10,6 +11,7 @@ export default class FightScene extends Phaser.Scene {
     this.backgroundKey = null;
     this.city = "Unknown";
     this.playerCharacter = null;
+    this.isGameOver = false;
   }
 
   init(data) {
@@ -51,6 +53,7 @@ export default class FightScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
+    this.isGameOver = false;
 
     // 0. Background
     // Use the determined key, or fallback to 'default_bg'
@@ -122,15 +125,23 @@ export default class FightScene extends Phaser.Scene {
 
     // Camera
     // this.cameras.main.startFollow(this.player1, true, 0.1, 0.1);
+
+    // 5. Victory System
+    this.slideshow = new VictorySlideshow(this);
   }
 
   update() {
     this.player1.update();
     this.player2.update();
 
-    // Hitbox Detection
-    this.checkAttack(this.player1, this.player2);
-    this.checkAttack(this.player2, this.player1);
+    if (!this.isGameOver) {
+        // Hitbox Detection
+        this.checkAttack(this.player1, this.player2);
+        this.checkAttack(this.player2, this.player1);
+
+        // Win Condition
+        this.checkWinCondition();
+    }
   }
 
   checkAttack(attacker, defender) {
@@ -153,16 +164,36 @@ export default class FightScene extends Phaser.Scene {
         ? attacker.x > defender.x
         : attacker.x < defender.x;
 
-      if (distance < attackRange && facingTarget) {
+      if (distance < attackRange && facingTarget && !defender.isHit && defender.health > 0) {
         // Hit Confirmed
         // eslint-disable-next-line no-console
         console.log(`${attacker.texture.key} hit ${defender.texture.key}!`);
 
         // Apply hit state to defender
-        // defender.setState(FighterState.HIT); // Disabled for now to prevent infinite stun loop in simple test
-        defender.setTint(0xff0000);
-        this.time.delayedCall(200, () => defender.clearTint());
+        defender.takeDamage(10);
       }
     }
+  }
+
+  checkWinCondition() {
+      if (this.player1.health <= 0 || this.player2.health <= 0) {
+          this.isGameOver = true;
+          this.physics.pause();
+          
+          // Disable inputs
+          this.player1.setControls(null, null, null); 
+          // this.player2.setControls(null, null); // If p2 was controllable
+
+          // Determine winner (Opposite of who died)
+          const winner = this.player1.health > 0 ? this.player1 : this.player2;
+          
+          // Play Victory Animation for winner? (Optional, if we had one)
+          // winner.setState(FighterState.VICTORY); 
+          
+          // Wait for Death Animation to finish roughly (2 seconds)
+          this.time.delayedCall(2000, () => {
+             this.slideshow.show(this.city);
+          });
+      }
   }
 }

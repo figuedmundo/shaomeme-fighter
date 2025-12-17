@@ -6,8 +6,8 @@
 4. [x] **Photo Asset Service** — Implement Node.js backend endpoint `/api/photos` to scan and serve images from the `photos/` directory structure. `S`
 5. [x] **Dynamic Arena Selector** — Create a scene to select arenas based on available folders in `photos/`, stylizing the selection UI. `M`
 6. [x] **Character Roster Integration** — Implement the character selection screen and load custom spritesheets (placeholder or generated) for the specific roster. `M`
-7. [ ] **Victory Slideshow Reward** — Implement the post-match sequence that fetches and displays a photo slideshow from the arena's location upon winning. `M`
-8. [ ] **Visual Polish & Branding** — Integrate the new "Shaomeme Fighter" logos, add UI sounds, and apply "game style" filters to background photos. `S`
+7. [x] **Victory Slideshow Reward** — Implement the post-match sequence that fetches and displays a photo slideshow from the arena's location upon winning. `M`
+8. [x] **Visual Polish & Branding** — Integrate the new "Shaomeme Fighter" logos, add UI sounds, and apply "game style" filters to background photos. `S`
 
 > Notes
 > - **Foundation**: Items 1 & 2 establish the game engine and core loop.

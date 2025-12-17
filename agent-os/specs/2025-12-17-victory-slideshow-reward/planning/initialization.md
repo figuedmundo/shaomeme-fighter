@@ -1,0 +1,1 @@
+Implement the post-match sequence that fetches and displays a photo slideshow from the arena's location upon winning.

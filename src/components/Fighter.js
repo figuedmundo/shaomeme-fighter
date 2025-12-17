@@ -91,10 +91,12 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     if (this.currentState === newState) return;
 
     // Logic to prevent breaking out of committed states
+    // Allow HIT and DIE to interrupt ATTACK
     if (
       this.currentState === FighterState.ATTACK &&
       this.anims.isPlaying &&
-      newState !== FighterState.HIT
+      newState !== FighterState.HIT &&
+      newState !== FighterState.DIE
     ) {
       return;
     }
@@ -103,13 +105,45 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     this.play(`${this.texture.key}-${newState}`, true);
 
     // Reset physics on certain state changes
-    if (newState === FighterState.CROUCH || newState === FighterState.IDLE) {
+    if (newState === FighterState.CROUCH || newState === FighterState.IDLE || newState === FighterState.DIE) {
       this.setVelocityX(0);
     }
   }
 
+  takeDamage(amount) {
+    if (this.health <= 0) return;
+
+    this.health -= amount;
+    if (this.health <= 0) {
+      this.health = 0;
+      this.setState(FighterState.DIE);
+      // Optional: Add a small bounce or knockback effect here if desired
+    } else {
+      this.setState(FighterState.HIT);
+      this.isHit = true;
+      this.setTint(0xff0000);
+      
+      // Simple Hitstun
+      this.scene.time.delayedCall(300, () => {
+        if (this.health > 0) { // Only recover if still alive
+          this.clearTint();
+          this.isHit = false;
+          this.setState(FighterState.IDLE);
+        }
+      });
+    }
+  }
+
   update() {
-    if (!this.cursors || this.health <= 0) return;
+    // If dead, ensure we stay dead and don't process inputs
+    if (this.health <= 0) {
+        if (this.currentState !== FighterState.DIE) {
+            this.setState(FighterState.DIE);
+        }
+        return;
+    }
+    
+    if (!this.cursors) return;
 
     // State Machine Logic
     if (this.isHit || this.currentState === FighterState.HIT) {

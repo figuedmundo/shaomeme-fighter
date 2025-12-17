@@ -30,6 +30,12 @@ export default class ArenaSelectScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDisplaySize(width, height);
     
+    // Apply Cinematic Filter (Sepia + Contrast)
+    if (this.heroBackground.preFX) {
+        this.heroBackground.preFX.addColorMatrix().sepia(0.3);
+        this.heroBackground.preFX.addColorMatrix().contrast(1.2);
+    }
+
     // Add a dark gradient/overlay at the bottom for the grid readability
     const gradient = this.add.graphics();
     gradient.fillGradientStyle(0x000000, 0x000000, 0x000000, 0x000000, 0, 0, 0.8, 0.8);
@@ -37,44 +43,52 @@ export default class ArenaSelectScene extends Phaser.Scene {
 
     // 2. Title Text
     this.titleText = this.add.text(width / 2, height * 0.1, 'LOADING...', {
-      fontFamily: 'Arial Black', // Modern, bold, sans-serif
-      fontSize: '64px',
-      color: '#ffffff',
-      stroke: '#000000',
-      strokeThickness: 8,
-      shadow: { blur: 10, color: '#000000', fill: true }
+      fontFamily: '"Press Start 2P"',
+      fontSize: '32px', // Reduced size for pixel font
+      color: '#ffd700',
+      stroke: '#880000',
+      strokeThickness: 6,
+      shadow: { blur: 0, color: '#000000', fill: true }
     }).setOrigin(0.5);
 
     // 3. Loading Indicator
     this.loadingText = this.add.text(width / 2, height / 2, 'Fetching Arenas...', {
-      fontSize: '32px',
+      fontFamily: '"Press Start 2P"',
+      fontSize: '16px',
       fill: '#ffffff'
     }).setOrigin(0.5);
 
     // 4. Back Button
     const backBtn = this.add.text(50, 50, '< BACK', {
-      fontSize: '24px',
+      fontFamily: '"Press Start 2P"',
+      fontSize: '16px',
       fill: '#ffffff',
       backgroundColor: '#333333',
-      padding: { x: 10, y: 5 }
+      padding: { x: 10, y: 10 }
     })
     .setInteractive({ useHandCursor: true })
-    .on('pointerdown', () => this.scene.start('MainMenuScene'));
+    .on('pointerdown', () => {
+        this.sound.play('ui-select');
+        this.scene.start('MainMenuScene');
+    });
 
     // 5. Fight Button (Confirm)
     this.fightBtn = this.add.text(width - 150, height - 100, 'FIGHT >', {
-      fontSize: '32px',
+      fontFamily: '"Press Start 2P"',
+      fontSize: '24px',
       fill: '#ffd700', // Gold
-      fontStyle: 'bold',
       backgroundColor: '#330000',
       padding: { x: 20, y: 10 },
       stroke: '#ffd700',
-      strokeThickness: 2
+      strokeThickness: 0 // Pixel fonts don't need heavy stroke usually
     })
     .setOrigin(0.5)
     .setInteractive({ useHandCursor: true })
     .setVisible(false) // Hide until loaded
-    .on('pointerdown', () => this.confirmSelection());
+    .on('pointerdown', () => {
+        this.sound.play('ui-select');
+        this.confirmSelection();
+    });
 
     // Start Fetching Data
     this.fetchArenas();

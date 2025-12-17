@@ -1,0 +1,1 @@
+Integrate the new "Shaomeme Fighter" logos, add UI sounds, and apply "game style" filters to background photos.
