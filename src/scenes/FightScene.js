@@ -73,7 +73,7 @@ export default class FightScene extends Phaser.Scene {
     logger.debug(`FightScene: Background set to ${bgKey}`);
 
     // 1. Setup Scene Geometry (Floor)
-    const floorHeight = 50;
+    const floorHeight = 100;
     this.floor = this.physics.add.staticGroup();
     const floorRect = this.add.rectangle(
       width / 2,
@@ -97,8 +97,8 @@ export default class FightScene extends Phaser.Scene {
     logger.debug(
       `FightScene: Creating fighters P1:${p1Texture}, P2:${p2Texture}`,
     );
-    this.player1 = new Fighter(this, 200, height - 100, p1Texture);
-    this.player2 = new Fighter(this, width - 200, height - 100, p2Texture);
+    this.player1 = new Fighter(this, 300, height - 150, p1Texture);
+    this.player2 = new Fighter(this, width - 300, height - 150, p2Texture);
     this.player2.setFlipX(true);
     logger.debug("FightScene: Fighters created");
 

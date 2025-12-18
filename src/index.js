@@ -13,8 +13,8 @@ console.log("index.js: Imports complete");
 
 const config = {
   type: Phaser.AUTO,
-  width: 1024,
-  height: 768,
+  width: 1280,
+  height: 720,
   parent: "game-container",
   backgroundColor: "#000000",
   physics: {
@@ -29,10 +29,10 @@ const config = {
   },
   disableContextMenu: true,
   scale: {
-    mode: Phaser.Scale.FIT,
+    mode: Phaser.Scale.ENVELOP,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: 1024,
-    height: 768,
+    width: 1280,
+    height: 720,
     expandParent: true,
     orientation: Phaser.Scale.LANDSCAPE,
   },

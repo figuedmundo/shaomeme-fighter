@@ -178,7 +178,6 @@ export default class ArenaSelectScene extends Phaser.Scene {
     this.loadingText.setText("Loading Images...");
 
     // Load images into Phaser Texture Manager
-    const loadedCount = 0;
     this.arenas.forEach((arena, index) => {
       const key = `arena_bg_${index}`;
       logger.debug(`Queuing texture: ${key} -> ${arena.url}`);
@@ -205,7 +204,7 @@ export default class ArenaSelectScene extends Phaser.Scene {
       width / 2 -
       (this.arenas.length * (thumbnailWidth + gap)) / 2 +
       thumbnailWidth / 2;
-    const yPos = height - 150;
+    const yPos = height - 200;
 
     this.arenas.forEach((arena, index) => {
       const key = `arena_bg_${index}`;
@@ -213,6 +212,7 @@ export default class ArenaSelectScene extends Phaser.Scene {
       // Thumbnail Image
       const thumb = this.add
         .image(startX + index * (thumbnailWidth + gap), yPos, key)
+        .setDisplaySize(thumbnailWidth, thumbnailHeight)
         .setInteractive({ useHandCursor: true })
         .on("pointerdown", () => {
           if (this.audioManager) this.audioManager.playUi("ui_move");

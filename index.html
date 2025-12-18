@@ -1,100 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
     <title>Shaomeme Fighter</title>
     <style>
-      body, html {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        height: 100dvh;
-        overflow: hidden;
-        background-color: black;
-        position: fixed; /* iOS Safari scroll fix */
-        inset: 0;
-      }
-      #game-container {
-        width: 100vw;
-        width: 100dvw;
-        height: 100vh;
-        height: 100dvh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      @media screen and (orientation: portrait) {
-        #orientation-warning {
-          display: flex !important;
+        :root {
+            --game-height: 100dvh;
+            --game-width: 100dvw;
         }
-      }
-      #orientation-warning {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: black;
-        color: white;
-        z-index: 9999;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        font-family: 'Press Start 2P', cursive;
-        padding: 20px;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="orientation-warning">
-      <div>PLEASE ROTATE TO LANDSCAPE</div>
-      <div style="font-size: 50px; margin-top: 20px;">🔄</div>
-    </div>
-    <script>
-      console.log("HTML Inline Script: Executing");
-      
-      // Request fullscreen on first tap for mobile
-      const requestFullscreen = () => {
-        const doc = window.document;
-        const docEl = doc.documentElement;
-        const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
-        
-        if (requestFullScreen) {
-          requestFullScreen.call(docEl).catch(err => {
-            console.warn("Fullscreen request failed:", err);
-          });
-        }
-        window.removeEventListener('touchstart', requestFullscreen);
-        window.removeEventListener('click', requestFullscreen);
-      };
-      window.addEventListener('touchstart', requestFullscreen);
-      window.addEventListener('click', requestFullscreen);
 
-      window.onerror = function(msg, url, lineNo, columnNo, error) {
-        console.error("GLOBAL ERROR:", msg, "at", url, ":", lineNo, ":", columnNo);
-        document.getElementById('game-container').innerHTML = '<div style="color: red; padding: 20px;">' + msg + '</div>';
-        return false;
-      };
-      window.addEventListener('unhandledrejection', function(event) {
-        console.error("UNHANDLED PROMISE REJECTION:", event.reason);
-      });
-    </script>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="game-container">
-      <div style="color: white; text-align: center; margin-top: 200px; font-family: 'Press Start 2P', cursive;">
-        INITIALIZING SHAOMEME FIGHTER...
-      </div>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            height: var(--game-height);
+            background-color: #000;
+            /* Allow vertical scroll ONLY for the address bar trick */
+            overflow-x: hidden;
+            overflow-y: auto;
+            position: relative;
+            touch-action: pan-y;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        #game-container {
+            width: 100%;
+            width: var(--game-width);
+            height: 100%;
+            height: var(--game-height);
+            /* Force height slightly larger than viewport to enable scroll trick */
+            min-height: calc(var(--game-height) + 1px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #000;
+            /* Notch protection */
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            box-sizing: border-box;
+        }
+
+        @media screen and (orientation: portrait) {
+            #orientation-warning {
+                display: flex !important;
+            }
+        }
+
+        #orientation-warning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: black;
+            color: white;
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-family: 'Press Start 2P', cursive;
+            padding: 20px;
+        }
+
+        /* Standalone PWA mode tweaks */
+        @media (display-mode: standalone) {
+            body, html {
+                overflow: hidden;
+                touch-action: none;
+            }
+            #game-container {
+                min-height: 100dvh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="orientation-warning">
+        <div>PLEASE ROTATE TO LANDSCAPE</div>
+        <div style="font-size: 50px; margin-top: 20px;">🔄</div>
     </div>
-    <script type="module">
-      console.log("Module script pre-import");
-      import "/src/index.js";
-      console.log("Module script post-import");
+
+    <div id="game-container">
+        <!-- Phaser Canvas will be injected here -->
+    </div>
+
+    <script>
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(reg => {
+                    console.log('SW registered:', reg);
+                }).catch(err => {
+                    console.warn('SW registration failed:', err);
+                });
+            });
+        }
+
+        const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+
+        // iOS Safari "Hide Address Bar" trick
+        const hideAddressBar = () => {
+            if (isStandalone) return;
+            window.scrollTo(0, 0);
+            if (window.innerHeight < window.innerWidth) {
+                setTimeout(() => {
+                    window.scrollTo(0, 1);
+                }, 500);
+            }
+        };
+
+        // Trigger on interaction
+        const handleFirstInteraction = () => {
+            hideAddressBar();
+            
+            // Fullscreen API attempt
+            const el = document.documentElement;
+            const request = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+            if (request) {
+                request.call(el).catch(() => {});
+            }
+
+            window.removeEventListener('touchstart', handleFirstInteraction);
+            window.removeEventListener('click', handleFirstInteraction);
+        };
+
+        window.addEventListener('touchstart', handleFirstInteraction);
+        window.addEventListener('click', handleFirstInteraction);
+        window.addEventListener("orientationchange", () => setTimeout(hideAddressBar, 800));
+
+        window.addEventListener('load', () => {
+            hideAddressBar();
+            if (!isStandalone && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                console.info("TIP: Use 'Add to Home Screen' for a real full-screen experience!");
+            }
+        });
+
+        window.onerror = function(msg, url, line) {
+            console.error("Global Error:", msg, url, line);
+            return false;
+        };
     </script>
-  </body>
+
+    <script type="module" src="/src/index.js"></script>
+</body>
 </html>
