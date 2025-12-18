@@ -53,6 +53,8 @@ vi.mock("phaser", () => {
               setTexture: vi.fn().mockReturnThis(),
               setVisible: vi.fn().mockReturnThis(),
               setDepth: vi.fn().mockReturnThis(),
+              setScrollFactor: vi.fn().mockReturnThis(),
+              setAlpha: vi.fn().mockReturnThis(),
             }),
             text: vi.fn().mockReturnValue({
               setOrigin: vi.fn().mockReturnThis(),
@@ -63,6 +65,8 @@ vi.mock("phaser", () => {
               setY: vi.fn().mockReturnThis(),
               setStyle: vi.fn().mockReturnThis(),
               setDepth: vi.fn().mockReturnThis(),
+              setAlpha: vi.fn().mockReturnThis(),
+              setScale: vi.fn().mockReturnThis(),
             }),
             rectangle: vi.fn().mockReturnValue({
               setOrigin: vi.fn().mockReturnThis(),
@@ -80,6 +84,47 @@ vi.mock("phaser", () => {
               fillGradientStyle: vi.fn().mockReturnThis(),
               fillRect: vi.fn().mockReturnThis(),
               setDepth: vi.fn().mockReturnThis(),
+              fillStyle: vi.fn().mockReturnThis(),
+              fillCircle: vi.fn().mockReturnThis(),
+              generateTexture: vi.fn().mockReturnThis(),
+              destroy: vi.fn(),
+            }),
+            container: vi.fn().mockReturnValue({
+              add: vi.fn().mockReturnThis(),
+              setDepth: vi.fn().mockReturnThis(),
+              setVisible: vi.fn().mockReturnThis(),
+              setPosition: vi.fn().mockReturnThis(),
+              setAlpha: vi.fn().mockReturnThis(),
+            }),
+            sprite: vi.fn().mockReturnValue({
+              setOrigin: vi.fn().mockReturnThis(),
+              setDepth: vi.fn().mockReturnThis(),
+              setAlpha: vi.fn().mockReturnThis(),
+              setScale: vi.fn().mockReturnThis(),
+              setPosition: vi.fn().mockReturnThis(),
+              setVisible: vi.fn().mockReturnThis(),
+              setFlipX: vi.fn().mockReturnThis(),
+              setTexture: vi.fn().mockReturnThis(),
+              setFrame: vi.fn().mockReturnThis(),
+              play: vi.fn().mockReturnThis(),
+              on: vi.fn().mockReturnThis(),
+              once: vi.fn().mockReturnThis(),
+              destroy: vi.fn(),
+            }),
+            group: vi.fn().mockReturnValue({
+              add: vi.fn(),
+              get: vi.fn(),
+              killAndHide: vi.fn(),
+              clear: vi.fn(),
+              getChildren: vi.fn().mockReturnValue([]),
+            }),
+            particles: vi.fn().mockReturnValue({
+              setDepth: vi.fn().mockReturnThis(),
+              stop: vi.fn().mockReturnThis(),
+              start: vi.fn().mockReturnThis(),
+              emitParticleAt: vi.fn().mockReturnThis(),
+              setTint: vi.fn().mockReturnThis(),
+              destroy: vi.fn(),
             }),
             existing: vi.fn(),
           };
@@ -90,9 +135,41 @@ vi.mock("phaser", () => {
           };
           this.scale = { width: 1024, height: 768 };
           this.textures = { exists: vi.fn().mockReturnValue(true) };
+          this.cache = {
+            audio: { exists: vi.fn().mockReturnValue(true) },
+          };
+          this.registry = {
+            get: vi.fn().mockReturnValue({
+              playMusic: vi.fn(),
+              playUi: vi.fn(),
+              playAnnouncer: vi.fn(),
+              playStageMusic: vi.fn(),
+              stopMusic: vi.fn(),
+              setMusicRate: vi.fn(),
+              init: vi.fn(),
+              playKO: vi.fn(),
+              playImpact: vi.fn(),
+              playHitReaction: vi.fn(),
+            }),
+            set: vi.fn(),
+          };
           this.time = {
             delayedCall: vi.fn((d, cb) => cb()),
             addEvent: vi.fn(),
+          };
+          this.tweens = {
+            add: vi.fn(),
+          };
+          this.cameras = {
+            main: {
+              shake: vi.fn(),
+              zoom: 1,
+              zoomTo: vi.fn(),
+              pan: vi.fn(),
+              setZoom: vi.fn(),
+              width: 1024,
+              height: 768,
+            },
           };
           this.sound = { play: vi.fn(), stopAll: vi.fn(), add: vi.fn() };
           this.events = { on: vi.fn(), emit: vi.fn() };

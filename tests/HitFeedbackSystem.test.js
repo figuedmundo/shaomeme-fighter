@@ -1,6 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import Phaser from "phaser";
 import HitFeedbackSystem from "../src/systems/HitFeedbackSystem";
+
+// Mock Phaser
+vi.mock("phaser", () => ({
+  default: {
+    Math: {
+      Between: vi.fn((min, max) => min),
+      Clamp: vi.fn((val, min, max) => Math.min(Math.max(val, min), max)),
+    },
+  },
+}));
 
 describe("HitFeedbackSystem", () => {
   let scene;
@@ -123,15 +132,15 @@ describe("HitFeedbackSystem", () => {
       expect(hitFeedback.isHitStopActive).toBe(true);
     });
 
-    it("should resume physics and animations after duration", (done) => {
+    it("should resume physics and animations after duration", async () => {
       hitFeedback.hitStop(60);
 
-      setTimeout(() => {
-        expect(scene.physics.resume).toHaveBeenCalled();
-        expect(scene.anims.resumeAll).toHaveBeenCalled();
-        expect(hitFeedback.isHitStopActive).toBe(false);
-        done();
-      }, 10);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 10);
+      });
+      expect(scene.physics.resume).toHaveBeenCalled();
+      expect(scene.anims.resumeAll).toHaveBeenCalled();
+      expect(hitFeedback.isHitStopActive).toBe(false);
     });
 
     it("should not trigger if already active", () => {
@@ -239,13 +248,13 @@ describe("HitFeedbackSystem", () => {
       expect(mockDefender.setTint).toHaveBeenCalledWith(0xffffff);
     });
 
-    it("should clear tint after 1 frame", (done) => {
+    it("should clear tint after 1 frame", async () => {
       hitFeedback.flashFighter(mockDefender);
 
-      setTimeout(() => {
-        expect(mockDefender.clearTint).toHaveBeenCalled();
-        done();
-      }, 20);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 20);
+      });
+      expect(mockDefender.clearTint).toHaveBeenCalled();
     });
   });
 

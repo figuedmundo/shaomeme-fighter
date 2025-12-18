@@ -79,9 +79,24 @@ describe("CharacterSelectScene", () => {
       setTexture: vi.fn().mockReturnThis(),
     });
 
-    scene.leftPortrait = { setTexture: vi.fn() };
+    scene.leftPortrait = {
+      setTexture: vi.fn(),
+      setDisplaySize: vi.fn().mockReturnThis(),
+    };
     scene.nameText = { setText: vi.fn() };
     scene.gridItems = []; // Will be populated by buildGrid
+
+    scene.registry = {
+      get: vi.fn().mockReturnValue({
+        playMusic: vi.fn(),
+        playUi: vi.fn(),
+        playAnnouncer: vi.fn(),
+      }),
+    };
+
+    scene.time = {
+      delayedCall: vi.fn().mockImplementation((d, cb) => cb()),
+    };
   });
 
   it("should be defined", () => {

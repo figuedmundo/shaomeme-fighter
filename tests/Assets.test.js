@@ -10,8 +10,8 @@ describe("Asset Availability", () => {
     expect(fs.existsSync(filePath)).toBe(true);
   });
 
-  it("should have the soundtrack.mp3", () => {
-    const filePath = path.join(resourcesDir, "soundtrack.mp3");
+  it("should have the soundtrack_walking_on_cars.mp3", () => {
+    const filePath = path.join(resourcesDir, "soundtrack_walking_on_cars.mp3");
     expect(fs.existsSync(filePath)).toBe(true);
   });
 });

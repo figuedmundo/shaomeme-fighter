@@ -42,6 +42,16 @@ vi.mock("phaser", () => {
       };
       this.scale = { width: 800, height: 600 };
       this.textures = { exists: vi.fn().mockReturnValue(false) };
+      this.registry = {
+        get: vi.fn().mockReturnValue({
+          playMusic: vi.fn(),
+          playUi: vi.fn(),
+          playAnnouncer: vi.fn(),
+          playStageMusic: vi.fn(),
+          stopMusic: vi.fn(),
+        }),
+      };
+      this.time = { delayedCall: vi.fn((d, cb) => cb()) };
       this.physics = {
         add: {
           staticGroup: vi.fn().mockReturnValue({ add: vi.fn() }),

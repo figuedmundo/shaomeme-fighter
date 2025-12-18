@@ -31,17 +31,17 @@ _Make every hit feel impactful_
 
 ### 1.2 Movement Feel
 
-- [ ] **Dust Particles** — Spawn dust clouds when landing, dashing, or turning `S`
-- [ ] **Character Shadows** — Dynamic oval shadows beneath fighters `XS`
-- [ ] **Squash & Stretch** — Slight deformation on jumps/lands for more life `S`
-- [ ] **Motion Blur Trails** — On fast movements/special attacks `S`
+- [x] **Dust Particles** — Spawn dust clouds when landing, dashing, or turning `S`
+- [x] **Character Shadows** — Dynamic oval shadows beneath fighters `XS`
+- [x] **Squash & Stretch** — Slight deformation on jumps/lands for more life `S`
+- [x] **Motion Blur Trails** — On fast movements/special attacks `S`
 
 ### 1.3 Critical Moments
 
-- [ ] **Slow Motion Final Hit** — Time slows to 30% when KO blow lands `S`
-- [ ] **Victory Freeze** — Dramatic pause before victory pose `XS`
-- [ ] **Round Start Zoom** — Camera zooms in on fighters before "Fight!" `M`
-- [ ] **Low Health Visual** — Screen edges pulse red when HP < 20% `S`
+- [x] **Slow Motion Final Hit** — Time slows to 30% when KO blow lands `S`
+- [x] **Victory Freeze** — Dramatic pause before victory pose `XS`
+- [x] **Round Start Zoom** — Camera zooms in on fighters before "Fight!" `M`
+- [x] **Low Health Visual** — Screen edges pulse red when HP < 20% `S`
 
 ---
 
@@ -49,26 +49,38 @@ _Make every hit feel impactful_
 
 _Professional sound brings it to life_
 
-### 2.1 Combat Sounds
+### 2.1 Combat Sounds ✅ IMPLEMENTED (Partial)
 
-- [ ] **Punch/Kick Variations** — 3-5 different impact sounds per attack type `S`
-- [ ] **Character Grunts** — Attack effort sounds + hit reaction sounds `M`
-- [ ] **Whoosh Sounds** — Air-cutting sounds on swings `S`
-- [ ] **Block Sounds** — Distinct sound for blocked attacks `XS`
+- [x] **Punch/Kick Variations** — 3-5 different impact sounds per attack type `S` ✅
+- [x] **Hit Reaction Sounds** — Sound when taking damage `S` ✅
+- [x] **KO Sound** — Plays on knockout `XS` ✅
+- [ ] **Character Grunts** — Attack effort sounds + hit reaction sounds `M` 🔨 (Ready for audio)
+- [ ] **Whoosh Sounds** — Air-cutting sounds on swings `S` 🔨 (Ready for audio)
+- [ ] **Block Sounds** — Distinct sound for blocked attacks `XS` 🔨 (Future)
 
-### 2.2 Announcer/System
+> **📝 Implementation Notes:**
+>
+> - Created `AudioManager` system with sound pooling and variation selection
+> - 5 impact sounds (attack1-5.mp3) randomly play on hits
+> - Anti-spam protection (100ms cooldown between sounds)
+> - Volume control per sound type (impact: 0.5, KO: 0.7)
+> - Registry-based system accessible from any scene
+> - Whoosh/grunt hooks ready in Fighter.js - just need audio files
+> - Full documentation in `AUDIO_IMPLEMENTATION.md`
 
-- [ ] **Fight Announcer** — "Round 1... Fight!", "KO!", "Perfect!", "You Win!" `M`
-- [ ] **Combo Callouts** — "3 Hit Combo!", "Ultra Combo!" `S`
-- [ ] **Character Select Voice** — Each character says their name when selected `M`
-- [ ] **Victory Quote** — Winner's voice line after match `M`
+### 2.2 Announcer/System ✅ IMPLEMENTED
 
-### 2.3 Music & Ambience
+- [x] **Fight Announcer** — "Round 1... Fight!", "KO!", "Perfect!", "You Win!" `M` ✅
+- [x] **Combo Callouts** — "3 Hit Combo!", "Ultra Combo!" `S` ✅
+- [x] **Character Select Voice** — Each character says their name when selected `M` ✅
+- [x] **Victory Quote** — Winner's voice line after match `M` ✅
 
-- [ ] **Stage-Specific Music** — Different track per arena (upbeat, looping) `M`
-- [ ] **Menu Music** — Title screen and character select themes `S`
-- [ ] **Dynamic Music** — Speeds up at low health or final round `M`
-- [ ] **UI Sounds** — Menu navigation, button presses, selection confirmations `S`
+### 2.3 Music & Ambience ✅ COMPLETE
+
+- [x] **Stage-Specific Music** — Different track per arena (upbeat, looping) `M`
+- [x] **Menu Music** — Title screen and character select themes `S`
+- [x] **Dynamic Music** — Speeds up at low health or final round `M`
+- [x] **UI Sounds** — Menu navigation, button presses, selection confirmations `S`
 
 ---
 

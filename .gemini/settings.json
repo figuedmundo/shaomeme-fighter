@@ -1,6 +1,6 @@
 {
   "context": {
-    "fileName": "GEMINI.md"
+    "fileName": "AGENTS.md"
   },
   "mcpServers": {
     "context7": {
@@ -12,22 +12,8 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "/Users/edmundo.figueroaherbas@medirect.com.mt/projects/personal/rewards-bolivia"
+        "/Users/edmundo.figueroaherbas@medirect.com.mt/projects/personal/shaomeme-fighter"
       ]
     }
-    // "sequential-thinking": {
-    //   "command": "npx",
-    //   "args": [
-    //     "-y",
-    //     "@modelcontextprotocol/server-sequential-thinking"
-    //   ]
-    // }
-    // "markitdown-stdio": {
-    //   "command": "npx",
-    //   "args": [
-    //     "-y",
-    //     "markitdown-mcp-npx"
-    //   ]
-    // }
   }
 }

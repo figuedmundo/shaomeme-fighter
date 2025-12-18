@@ -62,10 +62,17 @@ export default class HitFeedbackSystem {
    * @param {Fighter} defender - The fighter receiving damage
    * @param {number} damage - Amount of damage dealt
    * @param {boolean} isHeavyHit - Whether this is a heavy hit (optional)
+   * @param {boolean} isLethal - Whether this hit is a KO (optional)
    */
-  triggerHitFeedback(attacker, defender, damage, isHeavyHit = false) {
+  triggerHitFeedback(
+    attacker,
+    defender,
+    damage,
+    isHeavyHit = false,
+    isLethal = false,
+  ) {
     logger.info(
-      `Triggering hit feedback: ${damage} damage${isHeavyHit ? " (HEAVY)" : ""}`,
+      `Triggering hit feedback: ${damage} damage${isHeavyHit ? " (HEAVY)" : ""}${isLethal ? " (LETHAL)" : ""}`,
     );
 
     // Calculate impact point (between attacker and defender)
@@ -73,7 +80,14 @@ export default class HitFeedbackSystem {
     const impactY = defender.y - 90; // Roughly chest height
 
     // 1. Hit Stop (Freeze Frames)
-    this.hitStop(isHeavyHit ? 100 : 60);
+    // If lethal, use 500ms "Super Hit Stop"
+    let freezeDuration = 60;
+    if (isLethal) {
+      freezeDuration = 500;
+    } else if (isHeavyHit) {
+      freezeDuration = 100;
+    }
+    this.hitStop(freezeDuration);
 
     // 2. Screen Shake
     this.screenShake(isHeavyHit ? 8 : 4, isHeavyHit ? 200 : 150);

@@ -25,6 +25,12 @@ export default class CharacterSelectScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
 
+    // Get AudioManager
+    this.audioManager = this.registry.get("audioManager");
+    if (this.audioManager) {
+      this.audioManager.playMusic("select_music");
+    }
+
     // Background (Dark)
     this.add.rectangle(width / 2, height / 2, width, height, 0x111111);
 
@@ -120,7 +126,10 @@ export default class CharacterSelectScene extends Phaser.Scene {
         .image(x, y, `icon_${char.id}`)
         .setDisplaySize(iconSize, iconSize)
         .setInteractive({ useHandCursor: true })
-        .on("pointerdown", () => this.selectCharacter(index));
+        .on("pointerdown", () => {
+          if (this.audioManager) this.audioManager.playUi("ui_move");
+          this.selectCharacter(index);
+        });
 
       // Border
       const border = this.add
@@ -159,8 +168,18 @@ export default class CharacterSelectScene extends Phaser.Scene {
   confirmSelection() {
     const char = rosterConfig[this.selectedCharacterIndex];
     logger.info(`Confirmed character selection: ${char.id}`);
-    this.scene.start("ArenaSelectScene", {
-      playerCharacter: char.id,
+
+    // Play Sounds
+    if (this.audioManager) {
+      this.audioManager.playUi("ui_select");
+      this.audioManager.playAnnouncer(`announcer_${char.id}`);
+    }
+
+    // Small delay to let voice play before scene switch
+    this.time.delayedCall(1000, () => {
+      this.scene.start("ArenaSelectScene", {
+        playerCharacter: char.id,
+      });
     });
   }
 }

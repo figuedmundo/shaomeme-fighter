@@ -12,6 +12,12 @@ export default class MainMenuScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
 
+    // Get AudioManager
+    this.audioManager = this.registry.get("audioManager");
+    if (this.audioManager) {
+      this.audioManager.playMusic("menu_music");
+    }
+
     // Logo
     const logo = this.add.image(width / 2, height * 0.3, "logo");
     // Scale logo to fit if needed (e.g. max width 80% of screen)
@@ -33,6 +39,7 @@ export default class MainMenuScene extends Phaser.Scene {
       .setInteractive();
 
     startText.on("pointerdown", () => {
+      if (this.audioManager) this.audioManager.playUi("ui_select");
       this.scene.start("CharacterSelectScene");
     });
 

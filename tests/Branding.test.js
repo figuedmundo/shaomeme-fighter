@@ -26,6 +26,14 @@ vi.mock("phaser", () => {
 
         load = { image: vi.fn(), audio: vi.fn() };
 
+        registry = {
+          get: vi.fn().mockReturnValue({
+            playMusic: vi.fn(),
+            playUi: vi.fn(),
+            playAnnouncer: vi.fn(),
+          }),
+        };
+
         scale = { width: 800, height: 600 };
       },
     },

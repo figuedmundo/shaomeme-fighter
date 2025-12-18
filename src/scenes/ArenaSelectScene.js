@@ -27,6 +27,9 @@ export default class ArenaSelectScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
 
+    // Get AudioManager
+    this.audioManager = this.registry.get("audioManager");
+
     // 1. Hero Background (Full Screen)
     // Initialize with black or a default until data loads
     this.heroBackground = this.add
@@ -86,7 +89,7 @@ export default class ArenaSelectScene extends Phaser.Scene {
       })
       .setInteractive({ useHandCursor: true })
       .on("pointerdown", () => {
-        this.sound.play("ui-select");
+        if (this.audioManager) this.audioManager.playUi("ui_select");
         this.scene.start("MainMenuScene");
       });
 
@@ -105,7 +108,7 @@ export default class ArenaSelectScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
       .setVisible(false) // Hide until loaded
       .on("pointerdown", () => {
-        this.sound.play("ui-select");
+        if (this.audioManager) this.audioManager.playUi("ui_select");
         this.confirmSelection();
       });
 
@@ -158,7 +161,15 @@ export default class ArenaSelectScene extends Phaser.Scene {
       }
     } catch (err) {
       logger.error("Arena fetch flow failed:", err);
-      this.loadingText.setText("Error Loading Arenas");
+      // Fallback to default arena so the game is still playable
+      logger.warn("Falling back to default arena.");
+      this.arenas = [
+        {
+          name: "Training Ground",
+          url: "resources/combat-arena.png", // Use the local resource directly
+        },
+      ];
+      this.loadArenaImages();
     }
   }
 
@@ -202,9 +213,11 @@ export default class ArenaSelectScene extends Phaser.Scene {
       // Thumbnail Image
       const thumb = this.add
         .image(startX + index * (thumbnailWidth + gap), yPos, key)
-        .setDisplaySize(thumbnailWidth, thumbnailHeight)
         .setInteractive({ useHandCursor: true })
-        .on("pointerdown", () => this.selectArena(index));
+        .on("pointerdown", () => {
+          if (this.audioManager) this.audioManager.playUi("ui_move");
+          this.selectArena(index);
+        });
 
       // Border (initially invisible or grey)
       const border = this.add

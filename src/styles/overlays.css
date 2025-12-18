@@ -1,0 +1,16 @@
+@font-face {
+  font-family: "Mortal Kombat 4";
+  font-style: normal;
+  font-weight: normal;
+  src:
+    local("Mortal Kombat 4"),
+    url("/fonts/MK4.woff") format("woff");
+}
+
+/* Note: Most overlays are rendered via Phaser Text objects, 
+   so CSS here is mainly for font loading reference and potential DOM overlays */
+.mk-font-loader {
+  font-family: "Mortal Kombat 4";
+  visibility: hidden;
+  position: absolute;
+}

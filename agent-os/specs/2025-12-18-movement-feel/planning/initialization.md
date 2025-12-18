@@ -1,0 +1,1 @@
+# Raw Idea: Movement Feel\n\nTask 1.2 from roadmap:\n- Dust Particles: Spawn dust clouds when landing, dashing, or turning\n- Character Shadows: Dynamic oval shadows beneath fighters\n- Squash & Stretch: Slight deformation on jumps/lands for more life\n- Motion Blur Trails: On fast movements/special attacks

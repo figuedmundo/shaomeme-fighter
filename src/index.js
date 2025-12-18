@@ -1,5 +1,6 @@
 import "./styles/styles.css";
 import "./styles/touch.css";
+import "./styles/overlays.css";
 import Phaser from "phaser";
 import BootScene from "./scenes/BootScene";
 import PreloadScene from "./scenes/PreloadScene";

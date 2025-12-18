@@ -4,6 +4,10 @@ import TouchInputController from "../systems/TouchInputController";
 import TouchVisuals from "../components/TouchVisuals";
 import VictorySlideshow from "../components/VictorySlideshow";
 import HitFeedbackSystem from "../systems/HitFeedbackSystem";
+import MovementFXManager from "../systems/MovementFXManager";
+import CriticalMomentsManager from "../systems/CriticalMomentsManager";
+import AnnouncerOverlay from "../components/AnnouncerOverlay";
+import ComboOverlay from "../components/ComboOverlay";
 import UnifiedLogger from "../utils/Logger.js";
 
 const logger = new UnifiedLogger("Frontend:FightScene");
@@ -32,27 +36,16 @@ export default class FightScene extends Phaser.Scene {
 
   preload() {
     logger.debug("FightScene: Preload started");
-    // If a specific background was passed and it's not already in cache (or we want to ensure it's loaded)
-    // We can try to load it. If it was preloaded in ArenaSelectScene, we might just reuse the key.
-
-    // Check if the key exists in texture manager
     if (this.backgroundKey && this.textures.exists(this.backgroundKey)) {
-      // It's already loaded, no action needed
       logger.debug(`Using cached background: ${this.backgroundKey}`);
     } else if (this.backgroundUrl) {
-      // Dynamic load needed (e.g. direct deep link or reload)
       this.backgroundKey = `dynamic_bg_${Date.now()}`;
       logger.debug(`Dynamic load needed for background: ${this.backgroundUrl}`);
       this.load.image(this.backgroundKey, this.backgroundUrl);
     } else {
-      // Fallback
       this.backgroundKey = "default_bg";
       logger.debug("Using default background fallback");
-      // Ensure default is loaded if not already (assuming PreloadScene usually does this)
-      // Since PreloadScene isn't fully robust yet, let's just use the placeholder or check cache
       if (!this.textures.exists("default_bg")) {
-        // Assuming 'resources/main-bg.jpg' is available from public/resources or similar
-        // But let's check what PreloadScene does. For now, strict fallback logic:
         this.load.image("default_bg", "resources/main-bg.jpg");
       }
     }
@@ -62,6 +55,15 @@ export default class FightScene extends Phaser.Scene {
     logger.info("FightScene: Starting create...");
     const { width, height } = this.scale;
     this.isGameOver = false;
+
+    // Get AudioManager from registry
+    this.audioManager = this.registry.get("audioManager");
+    if (this.audioManager) {
+      this.audioManager.playStageMusic(this.city);
+      logger.debug(`FightScene: Started stage music for ${this.city}`);
+    } else {
+      logger.warn("AudioManager not found in registry");
+    }
 
     // 0. Background
     const bgKey = this.textures.exists(this.backgroundKey)
@@ -133,14 +135,88 @@ export default class FightScene extends Phaser.Scene {
     this.hitFeedback = new HitFeedbackSystem(this);
     logger.debug("FightScene: Hit feedback system initialized");
 
-    // 6. Victory System
+    // 6. Movement FX System
+    this.movementFX = new MovementFXManager(this);
+    this.player1.setFXManager(this.movementFX);
+    this.player2.setFXManager(this.movementFX);
+    logger.debug("FightScene: Movement FX system initialized");
+
+    // 6b. Connect AudioManager to fighters
+    if (this.audioManager) {
+      this.player1.setAudioManager(this.audioManager);
+      this.player2.setAudioManager(this.audioManager);
+      logger.debug("FightScene: AudioManager connected to fighters");
+    }
+
+    // 7. Critical Moments Manager
+    this.criticalMoments = new CriticalMomentsManager(this);
+    this.criticalMoments.playRoundStartZoom();
+    logger.debug("FightScene: Critical Moments system initialized");
+
+    // 8. Announcer System (Overlays)
+    this.announcerOverlay = new AnnouncerOverlay(this);
+    this.comboOverlay = new ComboOverlay(this);
+
+    // Audio Dynamic State
+    this.musicRateSet = false;
+
+    // Combo State
+    this.comboCounter = 0;
+    this.lastHitTime = 0;
+    this.inputEnabled = false; // Block input during round start
+
+    // 9. Victory System
     this.slideshow = new VictorySlideshow(this);
+
+    // Start Round Sequence
+    this.startRoundSequence();
+
     logger.info("FightScene: create() complete");
+  }
+
+  startRoundSequence() {
+    this.inputEnabled = false;
+
+    // Disable controls initially
+    if (this.player1) this.player1.setInputEnabled(false);
+    if (this.player2) this.player2.setInputEnabled(false);
+
+    // "ROUND 1"
+    this.time.delayedCall(500, () => {
+      this.announcerOverlay.showRound(1);
+      if (this.audioManager) this.audioManager.playAnnouncer("round_1");
+    });
+
+    // "FIGHT!"
+    this.time.delayedCall(2000, () => {
+      this.announcerOverlay.showFight();
+      if (this.audioManager) this.audioManager.playAnnouncer("fight");
+
+      this.inputEnabled = true;
+      if (this.player1) this.player1.setInputEnabled(true);
+      if (this.player2) this.player2.setInputEnabled(true);
+    });
   }
 
   update() {
     this.player1.update();
     this.player2.update();
+
+    // Update visual effects
+    if (this.movementFX) {
+      this.movementFX.update();
+    }
+
+    if (this.criticalMoments && !this.isGameOver) {
+      const lowestHP = Math.min(this.player1.health, this.player2.health);
+      this.criticalMoments.updateHealthPulse(lowestHP);
+
+      // Dynamic Music Rate
+      if (lowestHP <= 20 && !this.musicRateSet) {
+        if (this.audioManager) this.audioManager.setMusicRate(1.15); // 15% faster
+        this.musicRateSet = true;
+      }
+    }
 
     if (!this.isGameOver) {
       // Hitbox Detection
@@ -152,6 +228,30 @@ export default class FightScene extends Phaser.Scene {
     }
   }
 
+  processComboHit() {
+    const now = Date.now();
+    // Reset combo if too much time passed (2 seconds)
+    if (now - this.lastHitTime > 2000) {
+      this.comboCounter = 0;
+    }
+
+    this.comboCounter += 1;
+    this.lastHitTime = now;
+
+    if (this.comboOverlay) {
+      this.comboOverlay.updateCombo(this.comboCounter);
+    }
+
+    // Announcer Milestones
+    if (this.audioManager) {
+      if (this.comboCounter === 3) this.audioManager.playAnnouncer("combo_3");
+      else if (this.comboCounter === 5)
+        this.audioManager.playAnnouncer("combo_5");
+      else if (this.comboCounter >= 7 && this.comboCounter % 5 === 2)
+        this.audioManager.playAnnouncer("combo_ultra"); // 7, 12, etc roughly
+    }
+  }
+
   checkAttack(attacker, defender) {
     if (
       attacker.currentState === FighterState.ATTACK &&
@@ -159,8 +259,6 @@ export default class FightScene extends Phaser.Scene {
       attacker.anims.currentFrame &&
       attacker.anims.currentFrame.index === 2
     ) {
-      // Define Attack Box (Simple overlap check for now)
-      // In a real app, this would be a separate physics body spawned for 1 frame
       const attackRange = 80;
       const distance = Phaser.Math.Distance.Between(
         attacker.x,
@@ -169,7 +267,6 @@ export default class FightScene extends Phaser.Scene {
         defender.y,
       );
 
-      // Simple directional check
       const facingTarget = attacker.flipX
         ? attacker.x > defender.x
         : attacker.x < defender.x;
@@ -180,17 +277,44 @@ export default class FightScene extends Phaser.Scene {
         !defender.isHit &&
         defender.health > 0
       ) {
-        // Hit Confirmed
         logger.info(`${attacker.texture.key} hit ${defender.texture.key}!`);
 
-        // Determine if heavy hit (can add combo logic later)
+        const damage = 10;
+        const isLethal = defender.health - damage <= 0;
         const isHeavyHit = false; // TODO: Implement heavy hit detection
 
-        // Trigger all hit feedback effects
-        this.hitFeedback.triggerHitFeedback(attacker, defender, 10, isHeavyHit);
+        // Combo Update
+        this.processComboHit();
 
-        // Apply hit state to defender
-        defender.takeDamage(10);
+        // Trigger hit feedback
+        this.hitFeedback.triggerHitFeedback(
+          attacker,
+          defender,
+          damage,
+          isHeavyHit,
+          isLethal,
+        );
+
+        // Play impact sound
+        if (this.audioManager) {
+          this.audioManager.playImpact(isHeavyHit);
+        }
+
+        // Play hit reaction sound for defender
+        if (this.audioManager && !isLethal) {
+          this.audioManager.playHitReaction();
+        }
+
+        if (isLethal) {
+          // Trigger slow motion after the hit stop (500ms)
+          // HitFeedbackSystem handles the freeze. CriticalMoments handles slow mo.
+          // We queue the slow motion to start exactly when the freeze ends.
+          this.time.delayedCall(500, () => {
+            this.criticalMoments.triggerSlowMotion();
+          });
+        }
+
+        defender.takeDamage(damage);
       } else {
         logger.verbose(
           `Attack check: dist=${Math.round(distance)}, range=${attackRange}, facing=${facingTarget}`,
@@ -204,19 +328,47 @@ export default class FightScene extends Phaser.Scene {
       this.isGameOver = true;
       this.physics.pause();
 
-      // Disable inputs
       this.player1.setControls(null, null, null);
-      // this.player2.setControls(null, null); // If p2 was controllable
 
-      // Determine winner (Opposite of who died)
-      const winner = this.player1.health > 0 ? this.player1 : this.player2;
+      // Announcer KO
+      if (this.announcerOverlay) {
+        this.announcerOverlay.showKO();
+      }
 
-      // Play Victory Animation for winner? (Optional, if we had one)
-      // winner.setState(FighterState.VICTORY);
+      // Play KO sound
+      if (this.audioManager) {
+        this.audioManager.playKO();
+        this.audioManager.stopMusic(2000); // 2 second fade out
+      }
 
-      // Wait for Death Animation to finish roughly (2 seconds)
+      // Stop health pulse
+      if (this.criticalMoments && this.criticalMoments.vignette) {
+        this.criticalMoments.vignette.setVisible(false);
+      }
+
+      let winner = null;
+      if (this.player1.health > 0) {
+        winner = this.player1;
+      } else if (this.player2.health > 0) {
+        winner = this.player2;
+      }
+
+      let winnerName = "Draw";
+      if (winner) {
+        winnerName = winner.texture.key === "ryu" ? "Ryu" : "Ken"; // Simplification, should use config name
+      }
+
       this.time.delayedCall(2000, () => {
-        this.slideshow.show(this.city);
+        if (this.announcerOverlay) {
+          this.announcerOverlay.showWin(winnerName);
+        }
+        if (this.audioManager) {
+          this.audioManager.playAnnouncer("you_win"); // Or 'perfect' check
+        }
+
+        this.time.delayedCall(2000, () => {
+          this.slideshow.show(this.city);
+        });
       });
     }
   }
@@ -225,6 +377,12 @@ export default class FightScene extends Phaser.Scene {
     logger.info("FightScene: Shutting down...");
     if (this.hitFeedback) {
       this.hitFeedback.destroy();
+    }
+    if (this.movementFX) {
+      this.movementFX.destroy();
+    }
+    if (this.criticalMoments) {
+      this.criticalMoments.destroy();
     }
   }
 }

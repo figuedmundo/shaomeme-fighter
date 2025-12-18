@@ -42,9 +42,28 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     // Controls
     this.cursors = null;
     this.keys = null;
+    this.inputEnabled = true;
 
     this.createAnimations(texture);
     this.logger = logger.child(texture);
+
+    // FX Integration
+    this.fxManager = null;
+    this.wasOnGround = false;
+
+    // Audio Integration
+    this.audioManager = null;
+  }
+
+  setFXManager(manager) {
+    this.fxManager = manager;
+    if (this.fxManager) {
+      this.fxManager.addFighter(this);
+    }
+  }
+
+  setAudioManager(manager) {
+    this.audioManager = manager;
   }
 
   createAnimations(textureKey) {
@@ -95,6 +114,19 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     this.touchController = touchController;
   }
 
+  setInputEnabled(enabled) {
+    this.inputEnabled = enabled;
+    if (!enabled) {
+      this.setVelocityX(0); // Stop moving if input disabled
+      if (
+        this.currentState === FighterState.WALK ||
+        this.currentState === FighterState.CROUCH
+      ) {
+        this.setState(FighterState.IDLE);
+      }
+    }
+  }
+
   setState(newState) {
     if (this.currentState === newState) return;
 
@@ -113,8 +145,26 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     this.play(`${this.texture.key}-${newState}`, true);
     this.logger.debug(`State changed to: ${newState}`);
 
+    // FX Hooks
+    if (this.fxManager) {
+      if (newState === FighterState.JUMP) {
+        this.fxManager.onJump(this);
+      }
+      // Future: Add Dash hook here if Dash state is added
+    }
+
     // If attacking, set up completion listener once
     if (newState === FighterState.ATTACK) {
+      // Play whoosh sound on attack start
+      if (this.audioManager) {
+        this.audioManager.playWhoosh();
+      }
+
+      // Play grunt sound when attacking (TODO: add actual grunt sounds)
+      // if (this.audioManager) {
+      //   this.audioManager.playGrunt();
+      // }
+
       this.once("animationcomplete", () => {
         if (this.currentState === FighterState.ATTACK) {
           this.setState(FighterState.IDLE);
@@ -167,6 +217,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     }
 
     if (!this.cursors) return;
+    if (!this.inputEnabled) return;
 
     // State Machine Logic
     if (this.isHit || this.currentState === FighterState.HIT) {
@@ -185,6 +236,12 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     }
 
     const onGround = this.body.blocked.down;
+
+    // FX Hooks: Landing Detection
+    if (onGround && !this.wasOnGround && this.fxManager) {
+      this.fxManager.onLand(this);
+    }
+    this.wasOnGround = onGround;
 
     // Input Merging (Keyboard + Touch)
     const touchCursors = this.touchController
