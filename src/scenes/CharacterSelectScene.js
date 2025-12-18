@@ -1,5 +1,8 @@
 import Phaser from "phaser";
 import rosterConfig from "../config/rosterConfig";
+import UnifiedLogger from "../utils/Logger.js";
+
+const logger = new UnifiedLogger("Frontend:CharacterSelectScene");
 
 export default class CharacterSelectScene extends Phaser.Scene {
   constructor() {
@@ -133,9 +136,12 @@ export default class CharacterSelectScene extends Phaser.Scene {
 
     this.selectedCharacterIndex = index;
     const char = rosterConfig[index];
+    logger.debug(`Selected character index: ${index}, name: ${char.id}`);
 
     // Update Portrait
     this.leftPortrait.setTexture(`portrait_${char.id}`);
+    const { width, height } = this.scale;
+    this.leftPortrait.setDisplaySize(width * 0.4, height * 0.8);
 
     // Update Name
     this.nameText.setText(char.displayName.toUpperCase());
@@ -152,6 +158,7 @@ export default class CharacterSelectScene extends Phaser.Scene {
 
   confirmSelection() {
     const char = rosterConfig[this.selectedCharacterIndex];
+    logger.info(`Confirmed character selection: ${char.id}`);
     this.scene.start("ArenaSelectScene", {
       playerCharacter: char.id,
     });

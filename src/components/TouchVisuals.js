@@ -12,6 +12,22 @@ export default class TouchVisuals {
       .setVisible(false)
       .setDepth(101);
 
+    // Combat Zone Guide (Right Side)
+    const { width, height } = this.scene.scale;
+    this.combatGuide = this.scene.add
+      .rectangle(width * 0.75, height / 2, width * 0.4, height * 0.8)
+      .setStrokeStyle(2, 0xffffff, 0.1)
+      .setDepth(50);
+    this.combatText = this.scene.add
+      .text(width * 0.75, height * 0.85, "ACTION ZONE", {
+        fontFamily: '"Press Start 2P"',
+        fontSize: "14px",
+        fill: "#ffffff",
+      })
+      .setOrigin(0.5)
+      .setAlpha(0.2)
+      .setDepth(51);
+
     // Event Listeners from Controller
     this.scene.events.on("joystick-start", this.showJoystick, this);
     this.scene.events.on("joystick-move", this.updateJoystick, this);

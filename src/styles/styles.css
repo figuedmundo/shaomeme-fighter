@@ -1,20 +1,20 @@
-@import 'arena.css';
-@import 'fighters.css';
-@import 'fighterPreview.css';
-@import 'previewContainer.css';
-@import 'modal.css';
-@import 'victory.css';
+@import "arena.css";
+@import "fighters.css";
+@import "fighterPreview.css";
+@import "previewContainer.css";
+@import "modal.css";
+@import "victory.css";
 
 :root {
   --color-gold: #ffd700;
   --color-red: #880000;
   --color-black: #111111;
-  --font-main: 'Press Start 2P', cursive;
+  --font-main: "Press Start 2P", cursive;
 }
 
 @font-face {
-  font-family: 'Press Start 2P';
-  src: url('/resources/PressStart2P-Regular.ttf') format('truetype');
+  font-family: "Press Start 2P";
+  src: url("/resources/PressStart2P-Regular.ttf") format("truetype");
 }
 
 html,
@@ -28,25 +28,19 @@ body {
   font-family: var(--font-main);
 }
 
-#root {
+#game-container {
+  width: 100vw;
+  height: 100vh;
+  background-color: black;
+  margin: 0;
+  padding: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  user-select: none;
 }
 
-/* Cinematic Filter for Canvas */
-.cinematic-canvas {
-  filter: sepia(0.3) contrast(1.2) brightness(0.9);
-}
-
-img {
-  max-width: 100%;
-  max-height: 100%;
+canvas {
+  display: block;
 }
 
 #loading-overlay {

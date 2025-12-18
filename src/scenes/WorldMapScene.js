@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 
-const API_URL_CITIES = "http://localhost:3000/api/cities";
+const API_URL_CITIES = "/api/cities";
 
 export default class WorldMapScene extends Phaser.Scene {
   constructor() {

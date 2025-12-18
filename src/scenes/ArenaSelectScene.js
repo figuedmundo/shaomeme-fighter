@@ -1,4 +1,7 @@
 import Phaser from "phaser";
+import UnifiedLogger from "../utils/Logger.js";
+
+const logger = new UnifiedLogger("Frontend:ArenaSelectScene");
 
 export default class ArenaSelectScene extends Phaser.Scene {
   constructor() {
@@ -112,7 +115,7 @@ export default class ArenaSelectScene extends Phaser.Scene {
 
   async fetchArenas() {
     try {
-      const apiBase = "http://localhost:3000"; // Adjust for prod if needed
+      const apiBase = ""; // Use relative paths, Vite will proxy to :3000 in dev
 
       // Fetch Cities
       const citiesRes = await fetch(`${apiBase}/api/cities`);
@@ -122,9 +125,13 @@ export default class ArenaSelectScene extends Phaser.Scene {
       // Fetch one photo for each city to use as preview
       const arenaPromises = cities.map(async (city) => {
         try {
+          logger.debug(`Fetching photos for city: ${city}`);
           const photosRes = await fetch(`${apiBase}/api/photos?city=${city}`);
           const photos = await photosRes.json();
           if (photos && photos.length > 0) {
+            logger.debug(
+              `Found ${photos.length} photos for ${city}. Using first as preview.`,
+            );
             // Construct full URL. The API returns relative URL like '/cache/...'
             // We need to prepend base if not on same origin, but usually handled by proxy or same origin.
             // For now assuming localhost dev environment or same origin serving.
@@ -133,14 +140,16 @@ export default class ArenaSelectScene extends Phaser.Scene {
               url: `${apiBase}${photos[0].url}`,
             };
           }
+          logger.warn(`No photos found for city: ${city}`);
         } catch (e) {
-          console.warn(`Failed to fetch photos for ${city}`, e);
+          logger.error(`Failed to fetch photos for ${city}`, e);
         }
         return null;
       });
 
       const results = await Promise.all(arenaPromises);
       this.arenas = results.filter((a) => a !== null);
+      logger.info(`Loaded ${this.arenas.length} valid arenas`);
 
       if (this.arenas.length > 0) {
         this.loadArenaImages();
@@ -148,22 +157,25 @@ export default class ArenaSelectScene extends Phaser.Scene {
         this.loadingText.setText("No Arenas Found.");
       }
     } catch (err) {
-      console.error(err);
+      logger.error("Arena fetch flow failed:", err);
       this.loadingText.setText("Error Loading Arenas");
     }
   }
 
   loadArenaImages() {
+    logger.info("Loading arena textures into Phaser...");
     this.loadingText.setText("Loading Images...");
 
     // Load images into Phaser Texture Manager
     const loadedCount = 0;
     this.arenas.forEach((arena, index) => {
       const key = `arena_bg_${index}`;
+      logger.debug(`Queuing texture: ${key} -> ${arena.url}`);
       this.load.image(key, arena.url);
     });
 
     this.load.once("complete", () => {
+      logger.info("Arena textures load complete");
       this.loadingText.setVisible(false);
       this.buildGrid();
       this.selectArena(0); // Select first one

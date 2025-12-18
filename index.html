@@ -2,18 +2,94 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
-    <title>Street Fighter</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Shaomeme Fighter</title>
+    <style>
+      body, html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: black;
+      }
+      #game-container {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      @media screen and (orientation: portrait) {
+        #orientation-warning {
+          display: flex !important;
+        }
+      }
+      #orientation-warning {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: black;
+        color: white;
+        z-index: 9999;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-family: 'Press Start 2P', cursive;
+        padding: 20px;
+      }
+    </style>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="game-container"></div>
-    <div id="loading-overlay">
-      <img src="./src/index.js"/>
+    <div id="orientation-warning">
+      <div>PLEASE ROTATE TO LANDSCAPE</div>
+      <div style="font-size: 50px; margin-top: 20px;">🔄</div>
     </div>
-    <script type="module" src="./src/index.js"></script>
+    <script>
+      console.log("HTML Inline Script: Executing");
+      
+      // Request fullscreen on first tap for mobile
+      const requestFullscreen = () => {
+        const doc = window.document;
+        const docEl = doc.documentElement;
+        const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+        
+        if (requestFullScreen) {
+          requestFullScreen.call(docEl).catch(err => {
+            console.warn("Fullscreen request failed:", err);
+          });
+        }
+        window.removeEventListener('touchstart', requestFullscreen);
+        window.removeEventListener('click', requestFullscreen);
+      };
+      window.addEventListener('touchstart', requestFullscreen);
+      window.addEventListener('click', requestFullscreen);
+
+      window.onerror = function(msg, url, lineNo, columnNo, error) {
+        console.error("GLOBAL ERROR:", msg, "at", url, ":", lineNo, ":", columnNo);
+        document.getElementById('game-container').innerHTML = '<div style="color: red; padding: 20px;">' + msg + '</div>';
+        return false;
+      };
+      window.addEventListener('unhandledrejection', function(event) {
+        console.error("UNHANDLED PROMISE REJECTION:", event.reason);
+      });
+    </script>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="game-container">
+      <div style="color: white; text-align: center; margin-top: 200px; font-family: 'Press Start 2P', cursive;">
+        INITIALIZING SHAOMEME FIGHTER...
+      </div>
+    </div>
+    <script type="module">
+      console.log("Module script pre-import");
+      import "/src/index.js";
+      console.log("Module script post-import");
+    </script>
   </body>
 </html>

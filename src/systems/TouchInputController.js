@@ -1,3 +1,7 @@
+import UnifiedLogger from "../utils/Logger.js";
+
+const logger = new UnifiedLogger("Frontend:TouchInputController");
+
 export default class TouchInputController {
   constructor(scene) {
     this.scene = scene;
@@ -26,6 +30,8 @@ export default class TouchInputController {
       threshold: 20,
     };
 
+    this.combatPointerId = null;
+
     // Input Listeners
     this.scene.input.on("pointerdown", this.handlePointerDown, this);
     this.scene.input.on("pointermove", this.handlePointerMove, this);
@@ -33,11 +39,14 @@ export default class TouchInputController {
   }
 
   handlePointerDown(pointer) {
+    console.log(
+      `Pointer Down: x=${Math.round(pointer.x)}, y=${Math.round(pointer.y)}, id=${pointer.id}`,
+    );
     const { width } = this.scene.scale;
     const isLeftZone = pointer.x < width / 2;
 
     if (isLeftZone) {
-      // Joystick Start
+      // Joystick Start (only if joystick not already active by another pointer)
       if (!this.joystick.active) {
         this.joystick.active = true;
         this.joystick.pointerId = pointer.id;
@@ -46,21 +55,18 @@ export default class TouchInputController {
         this.joystick.currentX = pointer.x;
         this.joystick.currentY = pointer.y;
 
-        // Emit event for visuals (to be implemented later)
+        this.updateJoystickState();
+        logger.verbose(`Joystick started at: ${pointer.x}, ${pointer.y}`);
         this.scene.events.emit("joystick-start", this.joystick);
       }
     } else {
       // Right Zone - Combat
-      // Tap = Attack
+      this.combatPointerId = pointer.id;
       this.attackKey.isDown = true;
+      logger.verbose("Touch Attack triggered");
 
       // Emit event for visuals
       this.scene.events.emit("touch-combat", { x: pointer.x, y: pointer.y });
-
-      // Auto-reset attack after short delay (simulating a key press)
-      this.scene.time.delayedCall(100, () => {
-        this.attackKey.isDown = false;
-      });
     }
   }
 
@@ -84,6 +90,11 @@ export default class TouchInputController {
 
       // Emit event for visuals
       this.scene.events.emit("joystick-end");
+    }
+
+    if (pointer.id === this.combatPointerId) {
+      this.combatPointerId = null;
+      this.attackKey.isDown = false;
     }
   }
 

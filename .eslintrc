@@ -11,9 +11,14 @@
     "rules": {
         "prettier/prettier": "error",
         "arrow-body-style": 0,
-        "no-console": ["error", { "allow": ["warn", "error"] }],
+        "no-console": 0,
         "no-underscore-dangle": 0,
-        "no-useless-catch": 0
+        "no-useless-catch": 0,
+        "import/extensions": 0,
+        "import/prefer-default-export": 0,
+        "no-unused-vars": ["warn"],
+        "class-methods-use-this": 0,
+        "max-classes-per-file": 0
     },
     "ignorePatterns": ["node_modules", "dist", "temp_clone"],
     "overrides": [

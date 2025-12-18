@@ -4,14 +4,29 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { processImage } from "./ImageProcessor.js"; // Import ImageProcessor
+import UnifiedLogger from "../src/utils/Logger.js";
 
+const logger = new UnifiedLogger("Backend");
+if (process.env.LOG_LEVEL) {
+  logger.level = process.env.LOG_LEVEL;
+}
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
+
+// Logging Middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    logger.info(`${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
+  });
+  next();
+});
 
 // Configuration: Path to photos and cache
 const PHOTOS_DIR = process.env.PHOTOS_DIR || path.join(__dirname, "../photos");
@@ -87,7 +102,7 @@ app.get("/api/photos", async (req, res) => {
             type: "image/webp",
           };
         } catch (error) {
-          console.error(`Failed to process ${filename}:`, error); // eslint-disable-line no-console
+          logger.error(`Failed to process ${filename}:`, error);
           return null;
         }
       }),
@@ -95,10 +110,11 @@ app.get("/api/photos", async (req, res) => {
 
     // Filter out any failures
     const validImages = processedImages.filter((img) => img !== null);
+    logger.debug(`Found ${validImages.length} valid images for city: ${city}`);
 
     return res.json(validImages);
   } catch (err) {
-    console.error(err); // eslint-disable-line no-console
+    logger.error("Failed to scan photos directory:", err);
     return res.status(500).json({ error: "Failed to scan photos directory" });
   }
 });
@@ -121,9 +137,10 @@ app.get("/api/cities", async (req, res) => {
       })
       .map((dirent) => dirent.name);
 
+    logger.debug(`Listed ${cities.length} cities`);
     return res.json(cities);
   } catch (err) {
-    console.error(err); // eslint-disable-line no-console
+    logger.error("Failed to scan cities:", err);
     return res.status(500).json({ error: "Failed to scan cities" });
   }
 });
@@ -140,18 +157,17 @@ if (process.env.NODE_ENV === "production") {
 // Start server only if run directly
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   app.listen(PORT, () => {
-    // eslint-disable-next-line no-console
-    console.log(`Server running on http://localhost:${PORT}`);
+    logger.info(
+      `Server initialization - PORT: ${PORT}, LOG_LEVEL: ${logger.level}`,
+    );
+    logger.info(`Server running on http://localhost:${PORT}`);
     if (process.env.NODE_ENV === "production") {
-      // eslint-disable-next-line no-console
-      console.log("Serving production build from ../dist");
+      logger.info("Serving production build from ../dist");
     } else {
-      // eslint-disable-next-line no-console
-      console.log(
+      logger.info(
         "Development mode: Frontend not served by Express. Use 'npm run dev'.",
       );
     }
-    // eslint-disable-next-line no-console
-    console.log(`Serving photos from: ${PHOTOS_DIR}`);
+    logger.info(`Serving photos from: ${PHOTOS_DIR}`);
   });
 }

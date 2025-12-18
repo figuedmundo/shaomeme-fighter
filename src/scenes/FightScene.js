@@ -3,6 +3,10 @@ import Fighter, { FighterState } from "../components/Fighter";
 import TouchInputController from "../systems/TouchInputController";
 import TouchVisuals from "../components/TouchVisuals";
 import VictorySlideshow from "../components/VictorySlideshow";
+import HitFeedbackSystem from "../systems/HitFeedbackSystem";
+import UnifiedLogger from "../utils/Logger.js";
+
+const logger = new UnifiedLogger("Frontend:FightScene");
 
 export default class FightScene extends Phaser.Scene {
   constructor() {
@@ -20,27 +24,30 @@ export default class FightScene extends Phaser.Scene {
       this.backgroundUrl = data.backgroundUrl;
       this.backgroundKey = data.backgroundKey;
       this.playerCharacter = data.playerCharacter;
-      // eslint-disable-next-line no-console
-      console.log(`Fight initialized with character: ${this.playerCharacter}`);
+      logger.info(
+        `Fight initialized with character: ${this.playerCharacter} in city: ${this.city}`,
+      );
     }
   }
 
   preload() {
+    logger.debug("FightScene: Preload started");
     // If a specific background was passed and it's not already in cache (or we want to ensure it's loaded)
     // We can try to load it. If it was preloaded in ArenaSelectScene, we might just reuse the key.
 
     // Check if the key exists in texture manager
     if (this.backgroundKey && this.textures.exists(this.backgroundKey)) {
       // It's already loaded, no action needed
-      // eslint-disable-next-line no-console
-      console.log(`Using cached background: ${this.backgroundKey}`);
+      logger.debug(`Using cached background: ${this.backgroundKey}`);
     } else if (this.backgroundUrl) {
       // Dynamic load needed (e.g. direct deep link or reload)
       this.backgroundKey = `dynamic_bg_${Date.now()}`;
+      logger.debug(`Dynamic load needed for background: ${this.backgroundUrl}`);
       this.load.image(this.backgroundKey, this.backgroundUrl);
     } else {
       // Fallback
       this.backgroundKey = "default_bg";
+      logger.debug("Using default background fallback");
       // Ensure default is loaded if not already (assuming PreloadScene usually does this)
       // Since PreloadScene isn't fully robust yet, let's just use the placeholder or check cache
       if (!this.textures.exists("default_bg")) {
@@ -52,68 +59,64 @@ export default class FightScene extends Phaser.Scene {
   }
 
   create() {
+    logger.info("FightScene: Starting create...");
     const { width, height } = this.scale;
     this.isGameOver = false;
 
     // 0. Background
-    // Use the determined key, or fallback to 'default_bg'
     const bgKey = this.textures.exists(this.backgroundKey)
       ? this.backgroundKey
       : "default_bg";
     this.add.image(width / 2, height / 2, bgKey).setDisplaySize(width, height);
+    logger.debug(`FightScene: Background set to ${bgKey}`);
 
     // 1. Setup Scene Geometry (Floor)
     const floorHeight = 50;
-
-    // Static physics group for the floor
     this.floor = this.physics.add.staticGroup();
-    // Create an invisible floor rect
     const floorRect = this.add.rectangle(
       width / 2,
       height - floorHeight / 2,
       width,
       floorHeight,
-      0x00ff00,
-      0.0, // Invisible floor (alpha 0) since we have a real background now
+      0x000000,
+      0,
     );
+    this.physics.add.existing(floorRect, true);
     this.floor.add(floorRect);
+    logger.debug("FightScene: Floor created");
 
     // World Bounds
     this.physics.world.setBounds(0, 0, width, height);
 
     // 2. Instantiate Fighters
-    // Player 1 (Ryu)
-    this.player1 = new Fighter(this, 200, height - 100, "ryu");
-    // Player 2 (Ken)
-    this.player2 = new Fighter(this, width - 200, height - 100, "ken");
-    this.player2.setFlipX(true); // Face left
+    const p1Texture = this.playerCharacter || "ryu";
+    const p2Texture = p1Texture === "ken" ? "ryu" : "ken";
+
+    logger.debug(
+      `FightScene: Creating fighters P1:${p1Texture}, P2:${p2Texture}`,
+    );
+    this.player1 = new Fighter(this, 200, height - 100, p1Texture);
+    this.player2 = new Fighter(this, width - 200, height - 100, p2Texture);
+    this.player2.setFlipX(true);
+    logger.debug("FightScene: Fighters created");
 
     // 3. Collisions
     this.physics.add.collider(this.player1, this.floor);
     this.physics.add.collider(this.player2, this.floor);
     this.physics.add.collider(this.player1, this.player2);
+    logger.debug("FightScene: Colliders added");
 
     // 4. Controls
-
-    // Touch Controls (Mobile)
     this.touchController = new TouchInputController(this);
     this.touchVisuals = new TouchVisuals(this);
-
-    // Player 1 Controls (Hybrid: Touch OR Keyboard)
-    // We create a Proxy or Composite object to merge Keyboard + Touch inputs?
-    // For simplicity: We pass both to Fighter.setControls, and Fighter checks both.
+    logger.debug("FightScene: Touch controls initialized");
 
     const p1Cursors = this.input.keyboard.createCursorKeys();
     const p1Keys = {
       attack: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
     };
-
-    // Inject touch controller into Player 1
-    // Fighter.js needs a slight update to handle "composite" controls or we just pass the touch objects
-    // Let's pass the touch controller directly to P1 for now
     this.player1.setControls(p1Cursors, p1Keys, this.touchController);
 
-    // Player 2 Controls (WASD + F) - Basic implementation for testing
     const p2Cursors = this.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
       down: Phaser.Input.Keyboard.KeyCodes.S,
@@ -124,12 +127,15 @@ export default class FightScene extends Phaser.Scene {
       attack: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F),
     };
     this.player2.setControls(p2Cursors, p2Keys);
+    logger.debug("FightScene: All controls set");
 
-    // Camera
-    // this.cameras.main.startFollow(this.player1, true, 0.1, 0.1);
+    // 5. Hit Feedback System
+    this.hitFeedback = new HitFeedbackSystem(this);
+    logger.debug("FightScene: Hit feedback system initialized");
 
-    // 5. Victory System
+    // 6. Victory System
     this.slideshow = new VictorySlideshow(this);
+    logger.info("FightScene: create() complete");
   }
 
   update() {
@@ -149,7 +155,9 @@ export default class FightScene extends Phaser.Scene {
   checkAttack(attacker, defender) {
     if (
       attacker.currentState === FighterState.ATTACK &&
-      attacker.anims.currentFrame.index === 2 // Frame 2 is the "active" frame in our generator
+      attacker.anims.isPlaying &&
+      attacker.anims.currentFrame &&
+      attacker.anims.currentFrame.index === 2
     ) {
       // Define Attack Box (Simple overlap check for now)
       // In a real app, this would be a separate physics body spawned for 1 frame
@@ -173,11 +181,20 @@ export default class FightScene extends Phaser.Scene {
         defender.health > 0
       ) {
         // Hit Confirmed
-        // eslint-disable-next-line no-console
-        console.log(`${attacker.texture.key} hit ${defender.texture.key}!`);
+        logger.info(`${attacker.texture.key} hit ${defender.texture.key}!`);
+
+        // Determine if heavy hit (can add combo logic later)
+        const isHeavyHit = false; // TODO: Implement heavy hit detection
+
+        // Trigger all hit feedback effects
+        this.hitFeedback.triggerHitFeedback(attacker, defender, 10, isHeavyHit);
 
         // Apply hit state to defender
         defender.takeDamage(10);
+      } else {
+        logger.verbose(
+          `Attack check: dist=${Math.round(distance)}, range=${attackRange}, facing=${facingTarget}`,
+        );
       }
     }
   }
@@ -201,6 +218,13 @@ export default class FightScene extends Phaser.Scene {
       this.time.delayedCall(2000, () => {
         this.slideshow.show(this.city);
       });
+    }
+  }
+
+  shutdown() {
+    logger.info("FightScene: Shutting down...");
+    if (this.hitFeedback) {
+      this.hitFeedback.destroy();
     }
   }
 }

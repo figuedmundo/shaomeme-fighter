@@ -14,6 +14,7 @@ const mockScene = {
   anims: {
     create: vi.fn(),
     generateFrameNumbers: vi.fn(),
+    exists: vi.fn().mockReturnValue(false),
   },
   input: {
     keyboard: {
@@ -42,6 +43,7 @@ vi.mock("phaser", () => {
               this.setFlipX = vi.fn();
               this.play = vi.fn();
               this.on = vi.fn();
+              this.once = vi.fn();
               this.anims = {
                 isPlaying: false,
                 currentAnim: { key: "" },

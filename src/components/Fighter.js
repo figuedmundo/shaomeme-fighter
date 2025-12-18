@@ -1,4 +1,7 @@
 import Phaser from "phaser";
+import UnifiedLogger from "../utils/Logger.js";
+
+const logger = new UnifiedLogger("Frontend:Fighter");
 
 export const FighterState = {
   IDLE: "idle",
@@ -41,16 +44,21 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     this.keys = null;
 
     this.createAnimations(texture);
+    this.logger = logger.child(texture);
   }
 
   createAnimations(textureKey) {
+    logger.debug(`Creating animations for ${textureKey}...`);
     // Frame indices based on generate_placeholders.py
     // Idle (4), Walk (6), Jump (1), Crouch (1), Attack (3), Hit (1), Block (1), Die (1)
     // Total frames: 18 (0-17)
 
     const createAnim = (key, start, end, frameRate = 10, repeat = -1) => {
+      const animKey = `${textureKey}-${key}`;
+      if (this.scene.anims.exists(animKey)) return;
+
       this.scene.anims.create({
-        key: `${textureKey}-${key}`,
+        key: animKey,
         frames: this.scene.anims.generateFrameNumbers(textureKey, {
           start,
           end,
@@ -103,6 +111,16 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
 
     this.currentState = newState;
     this.play(`${this.texture.key}-${newState}`, true);
+    this.logger.debug(`State changed to: ${newState}`);
+
+    // If attacking, set up completion listener once
+    if (newState === FighterState.ATTACK) {
+      this.once("animationcomplete", () => {
+        if (this.currentState === FighterState.ATTACK) {
+          this.setState(FighterState.IDLE);
+        }
+      });
+    }
 
     // Reset physics on certain state changes
     if (
@@ -118,6 +136,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     if (this.health <= 0) return;
 
     this.health -= amount;
+    this.logger.info(`Took ${amount} damage. Health: ${this.health}`);
     if (this.health <= 0) {
       this.health = 0;
       this.setState(FighterState.DIE);
@@ -125,13 +144,12 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     } else {
       this.setState(FighterState.HIT);
       this.isHit = true;
-      this.setTint(0xff0000);
+      // Note: Flash effect is now handled by HitFeedbackSystem
 
       // Simple Hitstun
       this.scene.time.delayedCall(300, () => {
         if (this.health > 0) {
           // Only recover if still alive
-          this.clearTint();
           this.isHit = false;
           this.setState(FighterState.IDLE);
         }
@@ -163,14 +181,6 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     ) {
       // Lock movement during attack
       this.setVelocityX(0);
-      // Check for animation completion
-      this.on(
-        "animationcomplete",
-        () => {
-          this.setState(FighterState.IDLE);
-        },
-        this,
-      );
       return;
     }
 

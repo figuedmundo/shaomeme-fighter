@@ -123,27 +123,21 @@ describe("ArenaSelectScene", () => {
 
     await scene.fetchArenas();
 
-    expect(global.fetch).toHaveBeenCalledWith(
-      "http://localhost:3000/api/cities",
-    );
-    expect(global.fetch).toHaveBeenCalledWith(
-      "http://localhost:3000/api/photos?city=paris",
-    );
-    expect(global.fetch).toHaveBeenCalledWith(
-      "http://localhost:3000/api/photos?city=tokyo",
-    );
+    expect(global.fetch).toHaveBeenCalledWith("/api/cities");
+    expect(global.fetch).toHaveBeenCalledWith("/api/photos?city=paris");
+    expect(global.fetch).toHaveBeenCalledWith("/api/photos?city=tokyo");
 
     expect(scene.arenas).toHaveLength(2);
     expect(scene.arenas[0]).toEqual({
       name: "paris",
-      url: "http://localhost:3000/cache/paris/1.webp",
+      url: "/cache/paris/1.webp",
     });
   });
 
   it("should update selected arena state", () => {
     scene.arenas = [
-      { name: "paris", url: "http://localhost:3000/cache/paris/1.webp" },
-      { name: "tokyo", url: "http://localhost:3000/cache/tokyo/2.webp" },
+      { name: "paris", url: "/cache/paris/1.webp" },
+      { name: "tokyo", url: "/cache/tokyo/2.webp" },
     ];
 
     // Mock UI elements that would exist after create()

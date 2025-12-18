@@ -46,7 +46,22 @@ def create_placeholder_spritesheet(name, color, output_path):
             current_x += frame_width
             
     sheet.save(output_path)
-    print(f"Created {output_path}")
+    # print(f"Created {output_path}")
 
-create_placeholder_spritesheet('Ryu', 'white', 'assets/fighters/ryu/ryu.png')
-create_placeholder_spritesheet('Ken', 'red', 'assets/fighters/ken/ken.png')
+roster = [
+    ('ann', 'pink'),
+    ('mom', 'purple'),
+    ('dad', 'blue'),
+    ('brother', 'green'),
+    ('old_witch', 'gray'),
+    ('fat', 'orange'),
+    ('fresway_worker', 'yellow'),
+    ('ryu', 'white'),
+    ('ken', 'red')
+]
+
+for name, color in roster:
+    path = f'assets/fighters/{name}/{name}.png'
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    create_placeholder_spritesheet(name.capitalize(), color, path)
+
