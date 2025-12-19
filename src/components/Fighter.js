@@ -187,6 +187,13 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
 
     this.health -= amount;
     this.logger.info(`Took ${amount} damage. Health: ${this.health}`);
+    
+    // PHASE 3.2: Update UI Manager health display
+    if (this.scene.uiManager) {
+      const playerNum = this === this.scene.player1 ? 1 : 2;
+      this.scene.uiManager.updateHealth(playerNum, this.health);
+    }
+    
     if (this.health <= 0) {
       this.health = 0;
       this.setState(FighterState.DIE);

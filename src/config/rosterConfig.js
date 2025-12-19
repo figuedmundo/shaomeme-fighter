@@ -41,6 +41,25 @@ const rosterConfig = [
     portraitPath: "assets/fighters/fresway_worker/portrait.png",
     iconPath: "assets/fighters/fresway_worker/icon.png",
   },
+  {
+    id: "ryu",
+    displayName: "Ryu",
+    portraitPath: "assets/fighters/ryu/portrait.png",
+    iconPath: "assets/fighters/ryu/icon.png",
+    hidden: true // Mark as hidden if they shouldn't appear in select screen
+  },
+  {
+    id: "ken",
+    displayName: "Ken",
+    portraitPath: "assets/fighters/ken/portrait.png",
+    iconPath: "assets/fighters/ken/icon.png",
+    hidden: true
+  }
 ];
+
+export const getCharacterDisplayName = (id) => {
+  const char = rosterConfig.find(c => c.id === id);
+  return char ? char.displayName : id.toUpperCase();
+};
 
 export default rosterConfig;

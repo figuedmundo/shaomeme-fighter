@@ -154,8 +154,8 @@ export default class HitFeedbackSystem {
     const sparkCount = isHeavy ? 12 : 8;
     const sparkColor = isHeavy ? 0xffaa00 : 0xffffff;
 
-    // Set particle tint
-    this.hitSparkEmitter.setTint(sparkColor);
+    // Set particle tint (Phaser 3.60+ renamed this to setParticleTint)
+    this.hitSparkEmitter.setParticleTint(sparkColor);
 
     // Emit particles at impact point
     this.hitSparkEmitter.emitParticleAt(x, y, sparkCount);

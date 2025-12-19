@@ -132,15 +132,15 @@ export default class ArenaSelectScene extends Phaser.Scene {
           const photosRes = await fetch(`${apiBase}/api/photos?city=${city}`);
           const photos = await photosRes.json();
           if (photos && photos.length > 0) {
+            // Find the background image if it exists, otherwise use the first one
+            const bgPhoto = photos.find(p => p.isBackground) || photos[0];
+            
             logger.debug(
-              `Found ${photos.length} photos for ${city}. Using first as preview.`,
+              `Found ${photos.length} photos for ${city}. Using ${bgPhoto.filename} as preview.`
             );
-            // Construct full URL. The API returns relative URL like '/cache/...'
-            // We need to prepend base if not on same origin, but usually handled by proxy or same origin.
-            // For now assuming localhost dev environment or same origin serving.
             return {
               name: city,
-              url: `${apiBase}${photos[0].url}`,
+              url: `${apiBase}${bgPhoto.url}`,
             };
           }
           logger.warn(`No photos found for city: ${city}`);

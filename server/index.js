@@ -96,10 +96,15 @@ app.get("/api/photos", async (req, res) => {
 
         try {
           await processImage(sourcePath, cachePath);
+          const isBackground =
+            path.parse(filename).name.toLowerCase() === "background" ||
+            path.parse(filename).name.toLowerCase() === "arena";
+
           return {
             url: `/cache/${sanitizedCity}/${cacheFilename}`,
             filename,
             type: "image/webp",
+            isBackground,
           };
         } catch (error) {
           logger.error(`Failed to process ${filename}:`, error);

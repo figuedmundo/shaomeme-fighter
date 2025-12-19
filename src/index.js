@@ -8,6 +8,7 @@ import MainMenuScene from "./scenes/MainMenuScene";
 import CharacterSelectScene from "./scenes/CharacterSelectScene";
 import ArenaSelectScene from "./scenes/ArenaSelectScene";
 import FightScene from "./scenes/FightScene";
+import StageEffectsTestScene from "./scenes/StageEffectsTestScene";
 
 console.log("index.js: Imports complete");
 
@@ -29,7 +30,7 @@ const config = {
   },
   disableContextMenu: true,
   scale: {
-    mode: Phaser.Scale.ENVELOP,
+    mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: 1280,
     height: 720,
@@ -39,6 +40,7 @@ const config = {
   scene: [
     BootScene,
     PreloadScene,
+    StageEffectsTestScene, // Add this for testing Phase 3.1 effects
     MainMenuScene,
     CharacterSelectScene,
     ArenaSelectScene,

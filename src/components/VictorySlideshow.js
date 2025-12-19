@@ -13,7 +13,10 @@ export default class VictorySlideshow {
     try {
       const res = await fetch(`/api/photos?city=${city}`);
       if (res.ok) {
-        this.photos = await res.json();
+        const allPhotos = await res.json();
+        // EXCLUDE the arena background from the reward slideshow
+        this.photos = allPhotos.filter(p => !p.isBackground);
+        console.log(`VictorySlideshow: Found ${allPhotos.length} total photos, using ${this.photos.length} as rewards (excluded background).`);
       } else {
         console.warn("Failed to fetch photos");
       }
