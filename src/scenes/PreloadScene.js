@@ -103,8 +103,8 @@ export default class PreloadScene extends Phaser.Scene {
         char.id,
         `/assets/fighters/${char.id}/${char.id}.png`, // Added leading slash
         {
-          frameWidth: 100,
-          frameHeight: 200,
+          frameWidth: 200,
+          frameHeight: 400,
         },
       );
     });

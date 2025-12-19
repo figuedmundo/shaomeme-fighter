@@ -22,19 +22,23 @@ export default class AnimationEnhancer {
   squashAndStretch(fighter, scaleX, scaleY, duration = 100) {
     if (!fighter || !fighter.active) return;
 
-    // Apply immediate deformation
-    fighter.setScale(scaleX, scaleY);
+    const base = fighter.baseScale || 1.0;
 
-    // Tween back to normal (1.0)
+    // Apply immediate deformation relative to base scale
+    fighter.setScale(scaleX * base, scaleY * base);
+
+    // Tween back to base scale
     this.scene.tweens.add({
       targets: fighter,
-      scaleX: 1,
-      scaleY: 1,
+      scaleX: base,
+      scaleY: base,
       duration,
       ease: "Quad.easeOut",
     });
 
-    logger.debug(`Squash/Stretch applied: ${scaleX}, ${scaleY}`);
+    logger.debug(
+      `Squash/Stretch applied: ${scaleX}, ${scaleY} (base: ${base})`,
+    );
   }
 
   destroy() {

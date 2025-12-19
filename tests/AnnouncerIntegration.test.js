@@ -56,17 +56,21 @@ describe("Announcer Integration", () => {
 
   it("should run round start sequence", () => {
     // Trigger the delayed calls for Round 1 and Fight
-    // Expect 2 delayed calls (Round 1 at 500ms, Fight at 2000ms)
+    // Now they are nested: Intro (2000ms) -> Round 1 -> Fight (1500ms)
 
-    // We need to find the callbacks. create() was called in beforeEach.
-    // scene.time.delayedCall should have been called twice.
+    // Trigger repeatedly to handle nesting
+    const triggerCalls = () => {
+      const results = [...scene.time.delayedCall.mock.results];
+      scene.time.delayedCall.mockClear(); // Clear to detect new calls
+      results.forEach((result) => {
+        if (result.value && result.value.callback) {
+          result.value.callback();
+        }
+      });
+    };
 
-    // Trigger them
-    scene.time.delayedCall.mock.results.forEach((result) => {
-      if (result.value && result.value.callback) {
-        result.value.callback();
-      }
-    });
+    triggerCalls(); // Triggers Intro (2000ms)
+    triggerCalls(); // Triggers Round 1/Fight nesting
 
     expect(mockAudioManager.playAnnouncer).toHaveBeenCalledWith("round_1");
     expect(mockAudioManager.playAnnouncer).toHaveBeenCalledWith("fight");

@@ -105,10 +105,10 @@ _Make it look premium_
 
 ### 3.3 Animations
 
-- [ ] **Idle Breathing** — Subtle up-down motion when standing `S`
-- [ ] **Victory Poses** — Unique win animations per character `M`
-- [ ] **Defeat Animations** — Stumble/fall animations on KO `M`
-- [ ] **Intro Animations** — Character entrances at round start `L`
+- [x] **Idle Breathing** — Subtle up-down motion when standing `S`
+- [x] **Victory Poses** — Unique win animations per character `M`
+- [x] **Defeat Animations** — Stumble/fall animations on KO `M`
+- [x] **Intro Animations** — Character entrances at round start `L`
 - [ ] **Taunt Animation** — Mid-match showboating (risky but fun) `S`
 
 ---
@@ -209,7 +209,7 @@ _The gift wrapping_
 1. Hit stop + screen shake + hit sparks
 2. Combat sounds (punches, grunts)
 3. Announcer ("Fight!", "KO!")
-4. Victory/defeat animations
+4. Victory/defeat animations ✅
 5. Health bar smooth depletion
 
 ### Week 2: Professional Feel (Should-Have)

@@ -1,7 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+import FightScene from "../src/scenes/FightScene";
 
 // Mock Phaser
-vi.mock('phaser', () => {
+vi.mock("phaser", () => {
   const mockGameObject = () => ({
     setScrollFactor: vi.fn().mockReturnThis(),
     setDepth: vi.fn().mockReturnThis(),
@@ -16,6 +18,7 @@ vi.mock('phaser', () => {
     clearTint: vi.fn().mockReturnThis(),
     play: vi.fn().mockReturnThis(),
     setVisible: vi.fn().mockReturnThis(),
+    setPosition: vi.fn().mockReturnThis(),
     setStrokeStyle: vi.fn().mockReturnThis(),
     setVelocityX: vi.fn().mockReturnThis(),
     setVelocityY: vi.fn().mockReturnThis(),
@@ -37,7 +40,7 @@ vi.mock('phaser', () => {
     x: 0,
     y: 0,
     tilePositionX: 0,
-    texture: { key: 'test' },
+    texture: { key: "test" },
     anims: { isPlaying: false, currentFrame: { index: 0 }, stop: vi.fn() },
     setCollideWorldBounds: vi.fn().mockReturnThis(),
     body: { setSize: vi.fn(), setOffset: vi.fn(), blocked: { down: true } },
@@ -47,9 +50,11 @@ vi.mock('phaser', () => {
   });
 
   const mockClass = class {
-    constructor() { Object.assign(this, mockGameObject()); }
+    constructor() {
+      Object.assign(this, mockGameObject());
+    }
   };
-  
+
   return {
     default: {
       Scene: class {
@@ -142,11 +147,11 @@ vi.mock('phaser', () => {
             on: vi.fn().mockReturnThis(),
             keyboard: {
               createCursorKeys: vi.fn(() => ({
-                left: { isDown: false }, 
-                right: { isDown: false }, 
-                up: { isDown: false }, 
-                down: { isDown: false }, 
-                space: { isDown: false }
+                left: { isDown: false },
+                right: { isDown: false },
+                up: { isDown: false },
+                down: { isDown: false },
+                space: { isDown: false },
               })),
               addKey: vi.fn(() => ({ isDown: false })),
               addKeys: vi.fn(() => ({})),
@@ -171,39 +176,38 @@ vi.mock('phaser', () => {
       Input: {
         Keyboard: {
           KeyCodes: { SPACE: 32, W: 87, S: 83, A: 65, D: 68, F: 70 },
-        }
+        },
       },
       Math: {
         Clamp: (v, min, max) => Math.min(Math.max(v, min), max),
-        Between: (min, max) => Math.floor(Math.random() * (max - min + 1) + min),
+        Between: (min, max) =>
+          Math.floor(Math.random() * (max - min + 1) + min),
         FloatBetween: (min, max) => Math.random() * (max - min) + min,
         Linear: (a, b, f) => a + (b - a) * f,
         Distance: {
           Between: () => 100,
-        }
+        },
       },
       BlendModes: {
-        ADD: 'ADD',
-        MULTIPLY: 'MULTIPLY',
+        ADD: "ADD",
+        MULTIPLY: "MULTIPLY",
       },
     },
   };
 });
 
-import FightScene from '../src/scenes/FightScene';
-
-describe('Visual Fidelity Integration', () => {
+describe("Visual Fidelity Integration", () => {
   let scene;
 
   beforeEach(() => {
     vi.clearAllMocks();
     scene = new FightScene();
-    scene.getCharacterName = vi.fn().mockReturnValue('Test');
+    scene.getCharacterName = vi.fn().mockReturnValue("Test");
   });
 
-  it('should initialize UIManager and Environmental systems in create', () => {
+  it("should initialize UIManager and Environmental systems in create", () => {
     scene.scale = { width: 1280, height: 720 };
-    
+
     scene.audioManager = {
       playStageMusic: vi.fn(),
       playAnnouncer: vi.fn(),
@@ -223,7 +227,7 @@ describe('Visual Fidelity Integration', () => {
     expect(scene.parallaxBg).toBeDefined();
   });
 
-  it('should update systems in update loop', () => {
+  it("should update systems in update loop", () => {
     scene.uiManager = { update: vi.fn() };
     scene.lighting = { update: vi.fn() };
     scene.weather = { update: vi.fn() };

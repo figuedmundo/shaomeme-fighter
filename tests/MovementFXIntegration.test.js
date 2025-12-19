@@ -224,6 +224,8 @@ vi.mock("phaser", () => {
 
             setVelocityY() {}
 
+            setPosition() {}
+
             setInputEnabled() {}
           },
         },

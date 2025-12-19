@@ -12,6 +12,9 @@ export const FighterState = {
   BLOCK: "block",
   HIT: "hit",
   DIE: "die",
+  INTRO: "intro",
+  VICTORY: "victory",
+  CRUMPLE: "crumple",
 };
 
 export default class Fighter extends Phaser.Physics.Arcade.Sprite {
@@ -27,9 +30,11 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
 
     this.setCollideWorldBounds(true);
     this.setOrigin(0.5, 1); // Anchor at bottom center (feet)
-    // Reduce hitbox width slightly
-    this.body.setSize(60, 180);
-    this.body.setOffset(20, 20);
+    this.setScale(0.5); // High resolution (200x400) scaled to standard size (100x200)
+    this.baseScale = 0.5;
+    // Reduce hitbox width slightly (Scaled for 200x400 unscaled, will be 60x180 at 0.5 scale)
+    this.body.setSize(120, 360);
+    this.body.setOffset(40, 40);
 
     // Properties
     this.velocity = 160;
@@ -68,9 +73,8 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
 
   createAnimations(textureKey) {
     logger.debug(`Creating animations for ${textureKey}...`);
-    // Frame indices based on generate_placeholders.py
-    // Idle (4), Walk (6), Jump (1), Crouch (1), Attack (3), Hit (1), Block (1), Die (1)
-    // Total frames: 18 (0-17)
+    // Frame indices based on generate_placeholders.py (32 frames total)
+    // Idle (6), Walk (6), Jump (1), Crouch (1), Attack (3), Hit (1), Block (1), Intro (4), Victory (4), Crumple (2), Die (3)
 
     const createAnim = (key, start, end, frameRate = 10, repeat = -1) => {
       const animKey = `${textureKey}-${key}`;
@@ -95,22 +99,28 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     };
 
     // Indices based on the generator loop order
-    // 0-3: Idle
-    createAnim(FighterState.IDLE, 0, 3, 6);
-    // 4-9: Walk
-    createAnim(FighterState.WALK, 4, 9, 10);
-    // 10: Jump
-    createAnim(FighterState.JUMP, 10, 10, 1, 0);
-    // 11: Crouch
-    createAnim(FighterState.CROUCH, 11, 11, 1, 0);
-    // 12-14: Attack
-    createAnim(FighterState.ATTACK, 12, 14, 12, 0); // Fast attack
-    // 15: Hit
-    createAnim(FighterState.HIT, 15, 15, 1, 0);
-    // 16: Block
-    createAnim(FighterState.BLOCK, 16, 16, 1, 0);
-    // 17: Die
-    createAnim(FighterState.DIE, 17, 17, 1, 0);
+    // 0-5: Idle (6 frames)
+    createAnim(FighterState.IDLE, 0, 5, 8);
+    // 6-11: Walk (6 frames)
+    createAnim(FighterState.WALK, 6, 11, 10);
+    // 12: Jump
+    createAnim(FighterState.JUMP, 12, 12, 1, 0);
+    // 13: Crouch
+    createAnim(FighterState.CROUCH, 13, 13, 1, 0);
+    // 14-16: Attack (3 frames)
+    createAnim(FighterState.ATTACK, 14, 16, 12, 0);
+    // 17: Hit
+    createAnim(FighterState.HIT, 17, 17, 1, 0);
+    // 18: Block
+    createAnim(FighterState.BLOCK, 18, 18, 1, 0);
+    // 19-22: Intro (4 frames)
+    createAnim(FighterState.INTRO, 19, 22, 10, 0);
+    // 23-26: Victory (4 frames)
+    createAnim(FighterState.VICTORY, 23, 26, 10, -1); // Looping victory
+    // 27-28: Crumple (2 frames)
+    createAnim(FighterState.CRUMPLE, 27, 28, 8, 0);
+    // 29-31: Die (3 frames)
+    createAnim(FighterState.DIE, 29, 31, 8, 0);
 
     this.play(`${textureKey}-${FighterState.IDLE}`);
   }
@@ -138,9 +148,16 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     if (this.currentState === newState) return;
 
     // Logic to prevent breaking out of committed states
-    // Allow HIT and DIE to interrupt ATTACK
+    // Allow HIT and DIE to interrupt ATTACK, INTRO, etc.
+    const committedStates = [
+      FighterState.ATTACK,
+      FighterState.INTRO,
+      FighterState.VICTORY,
+      FighterState.CRUMPLE,
+    ];
+
     if (
-      this.currentState === FighterState.ATTACK &&
+      committedStates.includes(this.currentState) &&
       this.anims.isPlaying &&
       newState !== FighterState.HIT &&
       newState !== FighterState.DIE
@@ -151,6 +168,23 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     this.currentState = newState;
     this.play(`${this.texture.key}-${newState}`, true);
     this.logger.debug(`State changed to: ${newState}`);
+
+    // State completion listeners
+    if (newState === FighterState.INTRO) {
+      this.once("animationcomplete", () => {
+        if (this.currentState === FighterState.INTRO) {
+          this.setState(FighterState.IDLE);
+        }
+      });
+    }
+
+    if (newState === FighterState.CRUMPLE) {
+      this.once("animationcomplete", () => {
+        if (this.currentState === FighterState.CRUMPLE) {
+          this.setState(FighterState.DIE);
+        }
+      });
+    }
 
     // FX Hooks
     if (this.fxManager) {
@@ -203,8 +237,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
 
     if (this.health <= 0) {
       this.health = 0;
-      this.setState(FighterState.DIE);
-      // Optional: Add a small bounce or knockback effect here if desired
+      this.setState(FighterState.CRUMPLE);
     } else {
       this.setState(FighterState.HIT);
       this.isHit = true;
@@ -234,8 +267,17 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     if (!this.inputEnabled) return;
 
     // State Machine Logic
-    if (this.isHit || this.currentState === FighterState.HIT) {
-      // Hitstun logic would go here
+    if (
+      this.isHit ||
+      this.currentState === FighterState.HIT ||
+      this.currentState === FighterState.INTRO ||
+      this.currentState === FighterState.VICTORY ||
+      this.currentState === FighterState.CRUMPLE
+    ) {
+      // Input-locked states
+      if (this.currentState !== FighterState.INTRO) {
+        this.setVelocityX(0);
+      }
       return;
     }
 

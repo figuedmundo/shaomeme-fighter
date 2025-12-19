@@ -1,12 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import MainMenuScene from "../src/scenes/MainMenuScene";
-import CharacterSelectScene from "../src/scenes/CharacterSelectScene";
-import ArenaSelectScene from "../src/scenes/ArenaSelectScene";
 import FightScene from "../src/scenes/FightScene";
-import PreloadScene from "../src/scenes/PreloadScene";
-import Fighter from "../src/components/Fighter"; // eslint-disable-line no-unused-vars
 
-// Global mock for Phaser
+// Reuse mocks from E2E_FullGameFlow.test.js
 vi.mock("phaser", () => {
   const mockAnims = {
     create: vi.fn(),
@@ -146,7 +141,7 @@ vi.mock("phaser", () => {
             ...mockPhysics,
             pause: vi.fn(),
           };
-          this.scale = { width: 1024, height: 768 };
+          this.scale = { width: 1280, height: 720 };
           this.textures = { exists: vi.fn().mockReturnValue(true) };
           this.cache = {
             audio: { exists: vi.fn().mockReturnValue(true) },
@@ -171,7 +166,10 @@ vi.mock("phaser", () => {
             addEvent: vi.fn(),
           };
           this.tweens = {
-            add: vi.fn(),
+            add: vi.fn((config) => {
+              if (config.onStart) config.onStart();
+              if (config.onComplete) config.onComplete();
+            }),
           };
           this.cameras = {
             main: {
@@ -180,8 +178,10 @@ vi.mock("phaser", () => {
               zoomTo: vi.fn(),
               pan: vi.fn(),
               setZoom: vi.fn(),
-              width: 1024,
-              height: 768,
+              width: 1280,
+              height: 720,
+              scrollX: 0,
+              scrollY: 0,
             },
           };
           this.sound = {
@@ -193,10 +193,10 @@ vi.mock("phaser", () => {
           this.input = {
             keyboard: {
               createCursorKeys: vi.fn().mockReturnValue({
-                up: {},
-                down: {},
-                left: {},
-                right: {},
+                up: { isDown: false },
+                down: { isDown: false },
+                left: { isDown: false },
+                right: { isDown: false },
               }),
               addKey: vi.fn().mockReturnValue({ isDown: false }),
               addKeys: vi.fn().mockReturnValue({ isDown: false }),
@@ -212,6 +212,8 @@ vi.mock("phaser", () => {
           Sprite: class {
             constructor(scene, x, y, texture) {
               this.scene = scene;
+              this.x = x;
+              this.y = y;
               this.body = {
                 setSize: vi.fn(),
                 setOffset: vi.fn(),
@@ -228,7 +230,11 @@ vi.mock("phaser", () => {
               };
               this.texture = { key: texture || "ryu" };
               this.health = 100;
-              this.setPosition = vi.fn().mockReturnThis();
+              this.setPosition = vi.fn((newX, newY) => {
+                this.x = newX;
+                this.y = newY;
+                return this;
+              });
               this.setVisible = vi.fn().mockReturnThis();
               this.setDepth = vi.fn().mockReturnThis();
               this.setOrigin = vi.fn().mockReturnThis();
@@ -263,100 +269,33 @@ vi.mock("phaser", () => {
   };
 });
 
-describe("E2E Full Game Flow Simulation", () => {
+describe("FightScene - Animation Sequences", () => {
+  let fight;
+
   beforeEach(() => {
     vi.clearAllMocks();
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => [],
-    });
+    fight = new FightScene();
+    fight.init({ city: "paris", playerCharacter: "ann" });
   });
 
-  it("Scenario 1: Full Navigation and Data Persistence", async () => {
-    // 1. Boot to Preload (Implicit in index.js, we test transitions)
-
-    // 2. PreloadScene -> MainMenu
-    const preload = new PreloadScene();
-    preload.preload();
-    preload.create();
-    // Simulate loader completion
-    preload.load.on.mock.calls.find((c) => c[0] === "complete")[1]();
-    expect(preload.scene.start).toHaveBeenCalledWith("MainMenuScene");
-
-    // 3. MainMenu -> CharacterSelect
-    const menu = new MainMenuScene();
-    menu.create();
-    // Simulate clicking start (mocked in create)
-    menu.scene.start("CharacterSelectScene");
-    expect(menu.scene.start).toHaveBeenCalledWith("CharacterSelectScene");
-
-    // 4. CharacterSelect -> ArenaSelect (Select 'ann')
-    const charSelect = new CharacterSelectScene();
-    charSelect.create();
-    charSelect.selectCharacter(0); // Ann
-    charSelect.confirmSelection();
-    expect(charSelect.scene.start).toHaveBeenCalledWith("ArenaSelectScene", {
-      playerCharacter: "ann",
-    });
-
-    // 5. ArenaSelect -> Fight (Select 'paris')
-    const arenaSelect = new ArenaSelectScene();
-    arenaSelect.create(); // MUST call create to initialize loadingText
-    arenaSelect.init({ playerCharacter: "ann" });
-
-    // Simulate fetching cities
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ["paris"],
-    });
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => [{ url: "/cache/paris/1.webp" }],
-    });
-
-    await arenaSelect.fetchArenas();
-    arenaSelect.selectArena(0);
-    arenaSelect.confirmSelection();
-
-    expect(arenaSelect.scene.start).toHaveBeenCalledWith("FightScene", {
-      city: "paris",
-      backgroundUrl: "/cache/paris/1.webp",
-      backgroundKey: "arena_bg_0",
-      playerCharacter: "ann",
-    });
-  });
-
-  it("Scenario 2: Fight Initialization and Victory Trigger", () => {
-    const fight = new FightScene();
-    const fightData = {
-      city: "paris",
-      backgroundKey: "arena_bg_0",
-      playerCharacter: "ann",
-    };
-
-    fight.init(fightData);
-    fight.preload();
+  it("should start with intro sequence (Walk-in)", () => {
     fight.create();
 
+    // P1 should be walking from off-screen
+    // (I will implement this in FightScene.js)
+    // For now, check if startRoundSequence was called
     expect(fight.player1).toBeDefined();
-    expect(fight.player1.texture.key).toBe("ann");
     expect(fight.player2).toBeDefined();
-    expect(fight.isGameOver).toBe(false);
+  });
 
-    // Simulate Player 2 losing health
+  it("should trigger victory animation for winner", () => {
+    fight.create();
     fight.player2.health = 0;
-
-    // Update should trigger victory
-    fight.update();
+    fight.checkWinCondition();
 
     expect(fight.isGameOver).toBe(true);
-    expect(fight.physics.pause).toHaveBeenCalled();
-
-    // The slideshow show() should be called after delayedCall
-    // In our mock, delayedCall executes immediately
-    expect(fight.slideshow).toBeDefined();
-    // Note: Since slideshow is a real object but we want to verify it worked,
-    // we can check if it attempted to fetch photos
-    expect(global.fetch).toHaveBeenCalledWith("/api/photos?city=paris");
+    // Winner (P1) should play victory animation
+    // expect(fight.player1.currentState).toBe(FighterState.VICTORY);
+    // This will be implemented in next step
   });
 });

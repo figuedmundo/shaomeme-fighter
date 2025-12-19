@@ -288,25 +288,54 @@ export default class FightScene extends Phaser.Scene {
     if (this.player1) this.player1.setInputEnabled(false);
     if (this.player2) this.player2.setInputEnabled(false);
 
-    // "ROUND 1"
-    this.time.delayedCall(500, () => {
-      this.announcerOverlay.showRound(1);
-      if (this.audioManager) this.audioManager.playAnnouncer("round_1");
+    // Initial positions (Off-screen)
+    const { width, height } = this.scale;
+    this.player1.setPosition(-100, height - 150);
+    this.player2.setPosition(width + 100, height - 150);
+
+    // Walk-in animation
+    this.tweens.add({
+      targets: this.player1,
+      x: 300,
+      duration: 1500,
+      ease: "Power1",
+      onStart: () => this.player1.setState(FighterState.WALK),
+      onComplete: () => {
+        this.player1.setState(FighterState.INTRO);
+      },
     });
 
-    // "FIGHT!"
+    this.tweens.add({
+      targets: this.player2,
+      x: width - 300,
+      duration: 1500,
+      ease: "Power1",
+      onStart: () => this.player2.setState(FighterState.WALK),
+      onComplete: () => {
+        this.player2.setState(FighterState.INTRO);
+      },
+    });
+
+    // Timing for "ROUND 1" and "FIGHT!" after intro
     this.time.delayedCall(2000, () => {
-      this.announcerOverlay.showFight();
-      if (this.audioManager) this.audioManager.playAnnouncer("fight");
+      // "ROUND 1"
+      this.announcerOverlay.showRound(1);
+      if (this.audioManager) this.audioManager.playAnnouncer("round_1");
 
-      this.inputEnabled = true;
-      if (this.player1) this.player1.setInputEnabled(true);
-      if (this.player2) this.player2.setInputEnabled(true);
+      this.time.delayedCall(1500, () => {
+        // "FIGHT!"
+        this.announcerOverlay.showFight();
+        if (this.audioManager) this.audioManager.playAnnouncer("fight");
 
-      // PHASE 3.2: Start match timer
-      if (this.uiManager) {
-        this.uiManager.startTimer();
-      }
+        this.inputEnabled = true;
+        if (this.player1) this.player1.setInputEnabled(true);
+        if (this.player2) this.player2.setInputEnabled(true);
+
+        // PHASE 3.2: Start match timer
+        if (this.uiManager) {
+          this.uiManager.startTimer();
+        }
+      });
     });
   }
 
@@ -457,6 +486,13 @@ export default class FightScene extends Phaser.Scene {
           isLethal,
         );
 
+        // Knockdown Physics for lethal hits
+        if (isLethal) {
+          const knockbackX = attacker.flipX ? -200 : 200;
+          defender.setVelocityX(knockbackX);
+          defender.setVelocityY(-300); // Slight pop-up
+        }
+
         // PHASE 3.1: Flash effect on hit
         if (this.lighting) {
           const flashColor = isHeavyHit ? 0xff0000 : 0xffffff;
@@ -541,6 +577,11 @@ export default class FightScene extends Phaser.Scene {
         }
         if (this.audioManager) {
           this.audioManager.playAnnouncer("you_win"); // Or 'perfect' check
+        }
+
+        // Trigger victory animation
+        if (winner) {
+          winner.setState(FighterState.VICTORY);
         }
 
         // PHASE 3.1: Dramatic victory lighting

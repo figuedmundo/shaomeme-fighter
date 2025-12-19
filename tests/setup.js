@@ -29,6 +29,7 @@ const mockPhaser = {
           this.setFlipX = vi.fn().mockReturnThis();
           this.setVelocityX = vi.fn().mockReturnThis();
           this.setVelocityY = vi.fn().mockReturnThis();
+          this.setPosition = vi.fn().mockReturnThis();
           this.on = vi.fn().mockReturnThis();
           this.setTint = vi.fn().mockReturnThis();
           this.clearTint = vi.fn().mockReturnThis();
@@ -71,6 +72,7 @@ const createGameObjectMock = () => ({
   setScale: vi.fn().mockReturnThis(),
   setFlipX: vi.fn().mockReturnThis(),
   setVisible: vi.fn().mockReturnThis(),
+  setPosition: vi.fn().mockReturnThis(),
   setStrokeStyle: vi.fn().mockReturnThis(),
   setText: vi.fn().mockReturnThis(),
   clear: vi.fn().mockReturnThis(),
