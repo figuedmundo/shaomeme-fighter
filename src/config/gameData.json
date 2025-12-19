@@ -1,0 +1,211 @@
+{
+  "arenas": {
+    "paris": {
+      "type": "city",
+      "displayName": "Paris",
+      "presets": {
+        "parallax": "city",
+        "lighting": "outdoor_day",
+        "weather": null,
+        "animation": "city"
+      }
+    },
+    "dublin": {
+      "type": "city",
+      "displayName": "Dublin",
+      "presets": {
+        "parallax": "city",
+        "lighting": "outdoor_night",
+        "weather": "london_fog",
+        "animation": "city"
+      }
+    },
+    "galway": {
+      "type": "mountain",
+      "displayName": "Galway",
+      "presets": {
+        "parallax": "mountain",
+        "lighting": "outdoor_day",
+        "weather": "tokyo_rain",
+        "animation": "mountain"
+      }
+    },
+    "istambul": {
+      "type": "city",
+      "displayName": "Istanbul",
+      "presets": {
+        "parallax": "city",
+        "lighting": "outdoor_night",
+        "weather": "desert_wind",
+        "animation": "city"
+      }
+    },
+    "london": {
+      "type": "city",
+      "displayName": "London",
+      "presets": {
+        "parallax": "city",
+        "lighting": "outdoor_night",
+        "weather": "london_fog",
+        "animation": "city"
+      }
+    },
+    "tokyo": {
+      "type": "city",
+      "displayName": "Tokyo",
+      "presets": {
+        "parallax": "city",
+        "lighting": "outdoor_night",
+        "weather": "tokyo_rain",
+        "animation": "city"
+      }
+    },
+    "new york": {
+      "type": "city",
+      "displayName": "New York",
+      "presets": {
+        "parallax": "city",
+        "lighting": "outdoor_day",
+        "weather": null,
+        "animation": "city"
+      }
+    },
+    "alps": {
+      "type": "mountain",
+      "displayName": "Alps",
+      "presets": {
+        "parallax": "mountain",
+        "lighting": "outdoor_day",
+        "weather": "mountain_snow",
+        "animation": "mountain"
+      }
+    },
+    "mountains": {
+      "type": "mountain",
+      "displayName": "Mountains",
+      "presets": {
+        "parallax": "mountain",
+        "lighting": "outdoor_day",
+        "weather": "mountain_snow",
+        "animation": "mountain"
+      }
+    },
+    "dojo": {
+      "type": "dojo",
+      "displayName": "Dojo",
+      "presets": {
+        "parallax": "dojo",
+        "lighting": "indoor_dojo",
+        "weather": null,
+        "animation": "dojo"
+      }
+    },
+    "beach": {
+      "type": "beach",
+      "displayName": "Beach",
+      "presets": {
+        "parallax": null,
+        "lighting": "outdoor_day",
+        "weather": null,
+        "animation": "beach"
+      }
+    },
+    "desert": {
+      "type": "desert",
+      "displayName": "Desert",
+      "presets": {
+        "parallax": null,
+        "lighting": "outdoor_day",
+        "weather": "desert_wind",
+        "animation": null
+      }
+    },
+    "arena": {
+      "type": "arena",
+      "displayName": "Arena",
+      "presets": {
+        "parallax": null,
+        "lighting": "arena_spotlight",
+        "weather": null,
+        "animation": null
+      }
+    },
+    "underground": {
+      "type": "underground",
+      "displayName": "Underground",
+      "presets": {
+        "parallax": null,
+        "lighting": "underground",
+        "weather": null,
+        "animation": null
+      }
+    }
+  },
+  "combat": {
+    "damage": {
+      "LIGHT_ATTACK": 10,
+      "HEAVY_ATTACK": 20
+    },
+    "match": {
+      "ROUNDS": 3,
+      "TIME": 99,
+      "LOW_TIME_THRESHOLD": 10
+    },
+    "combo": {
+      "thresholds": {
+        "SMALL": 3,
+        "MEDIUM": 5,
+        "LARGE": 7
+      },
+      "voiceLines": {
+        "3": "combo_3",
+        "5": "combo_5"
+      }
+    },
+    "attackRange": 80
+  },
+  "roster": [
+    {
+      "id": "ann",
+      "displayName": "Ann",
+      "portraitPath": "/assets/fighters/ann/portrait.png",
+      "iconPath": "/assets/fighters/ann/icon.png"
+    },
+    {
+      "id": "mom",
+      "displayName": "Mom",
+      "portraitPath": "/assets/fighters/mom/portrait.png",
+      "iconPath": "/assets/fighters/mom/icon.png"
+    },
+    {
+      "id": "dad",
+      "displayName": "Dad",
+      "portraitPath": "/assets/fighters/dad/portrait.png",
+      "iconPath": "/assets/fighters/dad/icon.png"
+    },
+    {
+      "id": "brother",
+      "displayName": "Brother",
+      "portraitPath": "/assets/fighters/brother/portrait.png",
+      "iconPath": "/assets/fighters/brother/icon.png"
+    },
+    {
+      "id": "witch",
+      "displayName": "The Witch",
+      "portraitPath": "/assets/fighters/witch/portrait.png",
+      "iconPath": "/assets/fighters/witch/icon.png"
+    },
+    {
+      "id": "fat",
+      "displayName": "Fat",
+      "portraitPath": "/assets/fighters/fat/portrait.png",
+      "iconPath": "/assets/fighters/fat/icon.png"
+    },
+    {
+      "id": "fresway_worker",
+      "displayName": "Fresway Worker",
+      "portraitPath": "/assets/fighters/fresway_worker/portrait.png",
+      "iconPath": "/assets/fighters/fresway_worker/icon.png"
+    }
+  ]
+}

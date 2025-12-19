@@ -5,14 +5,14 @@ const logger = new UnifiedLogger("Frontend:DynamicLightingSystem");
 
 /**
  * DynamicLightingSystem - Advanced lighting and visual effects
- * 
+ *
  * Provides:
  * - Spotlight effects on fighters
  * - Ambient lighting changes
  * - Flash effects on impacts
  * - Time-of-day transitions
  * - Dramatic lighting during special moves
- * 
+ *
  * Usage:
  * const lighting = new DynamicLightingSystem(scene);
  * lighting.setAmbientLight(0.7);
@@ -24,11 +24,12 @@ export default class DynamicLightingSystem {
     this.config = {
       enableSpotlights: config.enableSpotlights !== false,
       enableAmbient: config.enableAmbient !== false,
-      enableDynamic: config.enableDynamic !== false
+      enableDynamic: config.enableDynamic !== false,
     };
 
     this.spotlights = [];
     this.ambientLevel = 1.0;
+    this.currentTint = 0x000000;
     this.overlay = null;
     this.lightGraphics = null;
 
@@ -39,36 +40,53 @@ export default class DynamicLightingSystem {
   init() {
     const { width, height } = this.scene.scale;
 
-    // Create overlay for ambient lighting control
+    // Generate white texture for overlay if it doesn't exist
+    if (!this.scene.textures.exists("white_pixel")) {
+      const graphics = this.scene.make.graphics({ x: 0, y: 0, add: false });
+      graphics.fillStyle(0xffffff, 1);
+      graphics.fillRect(0, 0, 1, 1);
+      graphics.generateTexture("white_pixel", 1, 1);
+    }
+
+    // Create overlay for ambient lighting control using an Image (supports setTint)
     if (this.config.enableAmbient) {
-      this.overlay = this.scene.add.rectangle(
-        width / 2,
-        height / 2,
-        width,
-        height,
-        0x000000,
-        0
-      ).setDepth(100); // High depth to overlay everything
+      this.overlay = this.scene.add
+        .image(width / 2, height / 2, "white_pixel")
+        .setDisplaySize(width, height)
+        .setDepth(100)
+        .setScrollFactor(0)
+        .setTint(0x000000)
+        .setAlpha(0); // High depth to overlay everything
     }
 
     // Generate shared spotlight texture if it doesn't exist
-    if (this.config.enableSpotlights && !this.scene.textures.exists('soft_light')) {
+    if (
+      this.config.enableSpotlights &&
+      !this.scene.textures.exists("soft_light")
+    ) {
       const size = 256;
       // Create a standard HTML5 canvas element
-      const canvas = document.createElement('canvas');
+      const canvas = document.createElement("canvas");
       canvas.width = size;
       canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      
-      const grd = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
-      grd.addColorStop(0, 'rgba(255, 255, 255, 1)');
-      grd.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      
+      const ctx = canvas.getContext("2d");
+
+      const grd = ctx.createRadialGradient(
+        size / 2,
+        size / 2,
+        0,
+        size / 2,
+        size / 2,
+        size / 2,
+      );
+      grd.addColorStop(0, "rgba(255, 255, 255, 1)");
+      grd.addColorStop(1, "rgba(255, 255, 255, 0)");
+
       ctx.fillStyle = grd;
       ctx.fillRect(0, 0, size, size);
-      
+
       // Add to Phaser Texture Manager
-      this.scene.textures.addCanvas('soft_light', canvas);
+      this.scene.textures.addCanvas("soft_light", canvas);
     }
   }
 
@@ -83,8 +101,8 @@ export default class DynamicLightingSystem {
       this.scene.tweens.add({
         targets: this.overlay,
         alpha: targetAlpha,
-        duration: duration,
-        ease: 'Sine.easeInOut'
+        duration,
+        ease: "Sine.easeInOut",
       });
     } else if (this.overlay) {
       this.overlay.setAlpha(targetAlpha);
@@ -101,7 +119,7 @@ export default class DynamicLightingSystem {
       radius = 150,
       intensity = 1.2,
       color = 0xffffff,
-      depth = 101
+      depth = 101,
     } = config;
 
     // Use the generated soft_light texture
@@ -109,7 +127,7 @@ export default class DynamicLightingSystem {
     const baseSize = 256;
     const scale = (radius * 2) / baseSize;
 
-    const light = this.scene.add.image(0, 0, 'soft_light');
+    const light = this.scene.add.image(0, 0, "soft_light");
     light.setDepth(depth);
     light.setBlendMode(Phaser.BlendModes.ADD);
     light.setTint(color);
@@ -118,11 +136,11 @@ export default class DynamicLightingSystem {
 
     // Create spotlight container
     const spotlight = {
-      target: target,
-      radius: radius,
-      intensity: intensity,
-      color: color,
-      graphic: light
+      target,
+      radius,
+      intensity,
+      color,
+      graphic: light,
     };
 
     this.spotlights.push(spotlight);
@@ -157,11 +175,13 @@ export default class DynamicLightingSystem {
     this.scene.tweens.add({
       targets: this.overlay,
       alpha: 1 - this.ambientLevel,
-      duration: duration,
-      ease: 'Cubic.easeOut',
+      duration,
+      ease: "Cubic.easeOut",
       onComplete: () => {
-        this.overlay.clearTint();
-      }
+        if (this.overlay) {
+          this.overlay.setTint(this.currentTint);
+        }
+      },
     });
 
     logger.debug(`Flash effect: color=${color}, duration=${duration}ms`);
@@ -171,24 +191,19 @@ export default class DynamicLightingSystem {
    * Pulse lighting effect
    */
   pulse(config = {}) {
-    const {
-      minLevel = 0.7,
-      maxLevel = 1.0,
-      duration = 1000,
-      repeat = 2
-    } = config;
+    const { minLevel = 0.7, duration = 1000, repeat = 2 } = config;
 
     this.scene.tweens.add({
       targets: { level: this.ambientLevel },
       level: minLevel,
       duration: duration / 2,
       yoyo: true,
-      repeat: repeat,
-      ease: 'Sine.easeInOut',
+      repeat,
+      ease: "Sine.easeInOut",
       onUpdate: (tween) => {
         const current = tween.getValue();
         this.setAmbientLight(current, 0);
-      }
+      },
     });
 
     logger.debug("Pulse lighting effect started");
@@ -197,24 +212,25 @@ export default class DynamicLightingSystem {
   /**
    * Simulate time of day transition
    */
-  setTimeOfDay(time = 'day', duration = 2000) {
+  setTimeOfDay(time = "day", duration = 2000) {
     const presets = {
       dawn: { level: 0.6, tint: 0xffaa77 },
       day: { level: 1.0, tint: 0xffffff },
       dusk: { level: 0.7, tint: 0xff8844 },
-      night: { level: 0.3, tint: 0x4444aa }
+      night: { level: 0.3, tint: 0x4444aa },
     };
 
     const preset = presets[time] || presets.day;
+    this.currentTint = preset.tint;
 
     this.setAmbientLight(preset.level, duration);
-    
+
     if (this.overlay) {
       this.scene.tweens.add({
         targets: this.overlay,
         tint: preset.tint,
-        duration: duration,
-        ease: 'Sine.easeInOut'
+        duration,
+        ease: "Sine.easeInOut",
       });
     }
 
@@ -224,23 +240,25 @@ export default class DynamicLightingSystem {
   /**
    * Create dramatic lighting for special moments
    */
-  setDramaticLighting(type = 'victory') {
+  setDramaticLighting(type = "victory") {
     switch (type) {
-      case 'victory':
+      case "victory":
         this.setAmbientLight(0.4, 500);
         // Add spotlight on winner
         break;
-      
-      case 'critical':
+
+      case "critical":
         this.pulse({ minLevel: 0.5, maxLevel: 1.0, duration: 600, repeat: 3 });
         break;
-      
-      case 'ultimateMove':
+
+      case "ultimateMove":
         this.setAmbientLight(0.2, 200);
         this.flash(0xff00ff, 150, 0.9);
         setTimeout(() => {
           this.setAmbientLight(0.8, 300);
         }, 500);
+        break;
+      default:
         break;
     }
 
@@ -251,11 +269,11 @@ export default class DynamicLightingSystem {
    * Update spotlight positions (call in scene update)
    */
   update() {
-    this.spotlights.forEach(spotlight => {
+    this.spotlights.forEach((spotlight) => {
       if (spotlight.target && spotlight.graphic) {
         spotlight.graphic.setPosition(
           spotlight.target.x - spotlight.radius,
-          spotlight.target.y - spotlight.radius
+          spotlight.target.y - spotlight.radius,
         );
       }
     });
@@ -273,7 +291,7 @@ export default class DynamicLightingSystem {
       this.lightGraphics.destroy();
     }
 
-    this.spotlights.forEach(spotlight => {
+    this.spotlights.forEach((spotlight) => {
       if (spotlight.graphic) {
         spotlight.graphic.destroy();
       }
@@ -287,38 +305,3 @@ export default class DynamicLightingSystem {
 /**
  * Preset lighting configurations for different arena types
  */
-export const LIGHTING_PRESETS = {
-  outdoor_day: {
-    ambientLevel: 1.0,
-    spotlights: false
-  },
-
-  outdoor_night: {
-    ambientLevel: 0.4,
-    spotlights: true,
-    spotlightConfig: { radius: 200, intensity: 1.5, color: 0xffffdd }
-  },
-
-  indoor_dojo: {
-    ambientLevel: 0.8,
-    spotlights: false
-  },
-
-  arena_spotlight: {
-    ambientLevel: 0.3,
-    spotlights: true,
-    spotlightConfig: { radius: 180, intensity: 1.8, color: 0xffffff }
-  },
-
-  underground: {
-    ambientLevel: 0.5,
-    spotlights: true,
-    spotlightConfig: { radius: 120, intensity: 1.3, color: 0xff8844 }
-  },
-
-  dramatic_finale: {
-    ambientLevel: 0.2,
-    spotlights: true,
-    spotlightConfig: { radius: 250, intensity: 2.0, color: 0xffffff }
-  }
-};

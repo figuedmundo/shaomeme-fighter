@@ -21,7 +21,7 @@ export default class ArenaSelectScene extends Phaser.Scene {
   preload() {
     // Preload a default placeholder or UI assets if needed
     // The dynamic arena images will be loaded on the fly or in 'create'
-    this.load.image("placeholder", "resources/combat-arena.png"); // Fallback
+    this.load.image("placeholder", "/assets/images/backgrounds/main-bg.jpg"); // Fallback to existing file
   }
 
   create() {
@@ -79,7 +79,7 @@ export default class ArenaSelectScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     // 4. Back Button
-    const backBtn = this.add
+    this.add
       .text(50, 50, "< BACK", {
         fontFamily: '"Press Start 2P"',
         fontSize: "16px",
@@ -133,10 +133,10 @@ export default class ArenaSelectScene extends Phaser.Scene {
           const photos = await photosRes.json();
           if (photos && photos.length > 0) {
             // Find the background image if it exists, otherwise use the first one
-            const bgPhoto = photos.find(p => p.isBackground) || photos[0];
-            
+            const bgPhoto = photos.find((p) => p.isBackground) || photos[0];
+
             logger.debug(
-              `Found ${photos.length} photos for ${city}. Using ${bgPhoto.filename} as preview.`
+              `Found ${photos.length} photos for ${city}. Using ${bgPhoto.filename} as preview.`,
             );
             return {
               name: city,

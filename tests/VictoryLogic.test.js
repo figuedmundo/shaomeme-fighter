@@ -43,8 +43,21 @@ vi.mock("phaser", () => {
         time = { delayedCall: vi.fn((delay, cb) => cb()) }; // Execute immediately for test
 
         cache = { audio: { exists: vi.fn() } };
+
+        cameras = {
+          main: {
+            scrollX: 0,
+            scrollY: 0,
+            shake: vi.fn(),
+            zoomTo: vi.fn(),
+          },
+        };
       },
-      Math: { Distance: { Between: vi.fn() } },
+      Math: {
+        Distance: { Between: vi.fn() },
+        Clamp: vi.fn((v, min, max) => Math.min(Math.max(v, min), max)),
+        Linear: vi.fn((a, b, t) => a + (b - a) * t),
+      },
       Input: {
         Keyboard: {
           KeyCodes: { SPACE: 32, W: 87, S: 83, A: 65, D: 68, F: 70 },
@@ -67,7 +80,7 @@ vi.mock("phaser", () => {
 
 // Mock Fighter to avoid complex logic
 vi.mock("../src/components/Fighter", () => {
-  const FighterState = {
+  const LocalFighterState = {
     IDLE: "IDLE",
     ATTACK: "ATTACK",
     HIT: "HIT",
@@ -81,7 +94,9 @@ vi.mock("../src/components/Fighter", () => {
         this.setControls = vi.fn();
         this.setFlipX = vi.fn();
         this.update = vi.fn();
-        this.setState = vi.fn((s) => (this.currentState = s));
+        this.setState = vi.fn((s) => {
+          this.currentState = s;
+        });
         this.setTint = vi.fn();
         this.clearTint = vi.fn();
         this.anims = { currentFrame: { index: 0 }, play: vi.fn() };
@@ -92,7 +107,7 @@ vi.mock("../src/components/Fighter", () => {
         });
       }
     },
-    FighterState,
+    FighterState: LocalFighterState,
   };
 });
 

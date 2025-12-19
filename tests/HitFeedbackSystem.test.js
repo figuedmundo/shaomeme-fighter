@@ -1,15 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import HitFeedbackSystem from "../src/systems/HitFeedbackSystem";
-
-// Mock Phaser
-vi.mock("phaser", () => ({
-  default: {
-    Math: {
-      Between: vi.fn((min, max) => min),
-      Clamp: vi.fn((val, min, max) => Math.min(Math.max(val, min), max)),
-    },
-  },
-}));
+import { createMockScene } from "./setup";
 
 describe("HitFeedbackSystem", () => {
   let scene;
@@ -19,49 +10,7 @@ describe("HitFeedbackSystem", () => {
 
   beforeEach(() => {
     // Mock Phaser Scene
-    scene = {
-      add: {
-        graphics: vi.fn(() => ({
-          fillStyle: vi.fn(),
-          fillCircle: vi.fn(),
-          generateTexture: vi.fn(),
-          destroy: vi.fn(),
-        })),
-        particles: vi.fn(() => ({
-          stop: vi.fn(),
-          setTint: vi.fn(),
-          emitParticleAt: vi.fn(),
-          destroy: vi.fn(),
-        })),
-        text: vi.fn((x, y, text, style) => ({
-          setOrigin: vi.fn().mockReturnThis(),
-          setDepth: vi.fn().mockReturnThis(),
-          destroy: vi.fn(),
-        })),
-      },
-      physics: {
-        pause: vi.fn(),
-        resume: vi.fn(),
-      },
-      anims: {
-        pauseAll: vi.fn(),
-        resumeAll: vi.fn(),
-      },
-      cameras: {
-        main: {
-          shake: vi.fn(),
-        },
-      },
-      time: {
-        delayedCall: vi.fn((duration, callback) => {
-          // Immediately execute callback for testing
-          setTimeout(callback, 0);
-        }),
-      },
-      tweens: {
-        add: vi.fn(),
-      },
-    };
+    scene = createMockScene();
 
     // Mock fighters
     mockAttacker = {
@@ -135,9 +84,10 @@ describe("HitFeedbackSystem", () => {
     it("should resume physics and animations after duration", async () => {
       hitFeedback.hitStop(60);
 
-      await new Promise((resolve) => {
-        setTimeout(resolve, 10);
-      });
+      // Manually trigger delayed call callback
+      const call = scene.time.delayedCall.mock.results[0].value;
+      call.callback();
+
       expect(scene.physics.resume).toHaveBeenCalled();
       expect(scene.anims.resumeAll).toHaveBeenCalled();
       expect(hitFeedback.isHitStopActive).toBe(false);
@@ -174,7 +124,7 @@ describe("HitFeedbackSystem", () => {
 
       hitFeedback.spawnHitSparks(x, y, false);
 
-      expect(hitFeedback.hitSparkEmitter.setTint).toHaveBeenCalledWith(
+      expect(hitFeedback.hitSparkEmitter.setParticleTint).toHaveBeenCalledWith(
         0xffffff,
       );
       expect(hitFeedback.hitSparkEmitter.emitParticleAt).toHaveBeenCalledWith(
@@ -190,7 +140,7 @@ describe("HitFeedbackSystem", () => {
 
       hitFeedback.spawnHitSparks(x, y, true);
 
-      expect(hitFeedback.hitSparkEmitter.setTint).toHaveBeenCalledWith(
+      expect(hitFeedback.hitSparkEmitter.setParticleTint).toHaveBeenCalledWith(
         0xffaa00,
       );
       expect(hitFeedback.hitSparkEmitter.emitParticleAt).toHaveBeenCalledWith(
@@ -248,12 +198,13 @@ describe("HitFeedbackSystem", () => {
       expect(mockDefender.setTint).toHaveBeenCalledWith(0xffffff);
     });
 
-    it("should clear tint after 1 frame", async () => {
+    it("should clear tint after 1 frame", () => {
       hitFeedback.flashFighter(mockDefender);
 
-      await new Promise((resolve) => {
-        setTimeout(resolve, 20);
-      });
+      // Manually trigger delayed call callback
+      const call = scene.time.delayedCall.mock.results[0].value;
+      call.callback();
+
       expect(mockDefender.clearTint).toHaveBeenCalled();
     });
   });

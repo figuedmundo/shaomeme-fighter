@@ -1,24 +1,9 @@
-export const DAMAGE_VALUES = {
-  LIGHT_ATTACK: 10,
-  HEAVY_ATTACK: 20, // Placeholder
-};
+import ConfigManager from "./ConfigManager";
 
-export const ATTACK_RANGE = 80;
+const combatConfig = ConfigManager.getCombatConfig();
 
-export const MATCH_SETTINGS = {
-  ROUNDS: 3,
-  TIME: 99,
-  LOW_TIME_THRESHOLD: 10,
-};
-
-export const COMBO_THRESHOLDS = {
-  SMALL: 3,
-  MEDIUM: 5,
-  LARGE: 7,
-};
-
-export const COMBO_VOICE_LINES = {
-  3: "combo_3",
-  5: "combo_5",
-  // Logic for ultra is dynamic (>=7)
-};
+export const DAMAGE_VALUES = combatConfig.damage;
+export const ATTACK_RANGE = combatConfig.attackRange;
+export const MATCH_SETTINGS = combatConfig.match;
+export const COMBO_THRESHOLDS = combatConfig.combo.thresholds;
+export const COMBO_VOICE_LINES = combatConfig.combo.voiceLines;

@@ -5,14 +5,14 @@ const logger = new UnifiedLogger("Frontend:AnimatedBackgroundManager");
 
 /**
  * AnimatedBackgroundManager - Manages animated background elements
- * 
+ *
  * Creates life in the background with:
  * - Moving clouds
  * - Swaying trees/flags
  * - Ambient crowd/characters
  * - Floating particles
  * - Animated decorations
- * 
+ *
  * Usage:
  * const bgAnimations = new AnimatedBackgroundManager(scene);
  * bgAnimations.addClouds({ count: 5, speed: 10 });
@@ -27,6 +27,39 @@ export default class AnimatedBackgroundManager {
   }
 
   /**
+   * Apply a data-driven preset configuration
+   * @param {Array} presetData - Array of config objects e.g. [{ type: 'clouds', config: {...} }]
+   */
+  applyPreset(presetData) {
+    if (!Array.isArray(presetData)) {
+      logger.warn("Invalid preset data passed to applyPreset");
+      return;
+    }
+
+    presetData.forEach((item) => {
+      switch (item.type) {
+        case "clouds":
+          this.addClouds(item.config);
+          break;
+        case "swayingObject":
+          this.addSwayingObject(item.key, item.config);
+          break;
+        case "floatingParticles":
+          this.addFloatingParticles(item.config);
+          break;
+        case "animatedFlags":
+          this.addAnimatedFlags(item.positions); // Note: special case for positions arg
+          break;
+        case "crowd":
+          this.addAmbientCrowd(item.config);
+          break;
+        default:
+          logger.warn(`Unknown animation type: ${item.type}`);
+      }
+    });
+  }
+
+  /**
    * Add moving clouds that float across the background
    */
   addClouds(config = {}) {
@@ -37,19 +70,19 @@ export default class AnimatedBackgroundManager {
       maxY = 200,
       depth = -10,
       alpha = 0.6,
-      scale = { min: 0.5, max: 1.5 }
+      scale = { min: 0.5, max: 1.5 },
     } = config;
 
-    const { width, height } = this.scene.scale;
+    const { width } = this.scene.scale;
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < count; i += 1) {
       // Create cloud (use actual cloud texture if available, or circle shape)
       let cloud;
-      if (this.scene.textures.exists('cloud')) {
+      if (this.scene.textures.exists("cloud")) {
         cloud = this.scene.add.image(
           Phaser.Math.Between(-100, width + 100),
           Phaser.Math.Between(minY, maxY),
-          'cloud'
+          "cloud",
         );
       } else {
         // Fallback: create simple cloud shape
@@ -58,38 +91,39 @@ export default class AnimatedBackgroundManager {
         graphics.fillCircle(0, 0, 30);
         graphics.fillCircle(20, -5, 25);
         graphics.fillCircle(40, 0, 30);
-        graphics.generateTexture('cloud_generated', 80, 60);
+        graphics.generateTexture("cloud_generated", 80, 60);
         graphics.destroy();
-        
+
         cloud = this.scene.add.image(
           Phaser.Math.Between(-100, width + 100),
           Phaser.Math.Between(minY, maxY),
-          'cloud_generated'
+          "cloud_generated",
         );
       }
 
       const cloudScale = Phaser.Math.FloatBetween(scale.min, scale.max);
-      cloud.setScale(cloudScale)
+      cloud
+        .setScale(cloudScale)
         .setAlpha(alpha)
         .setDepth(depth)
         .setScrollFactor(0.1); // Slow parallax
 
       // Animate movement
-      const duration = (width + 200) / speed * 1000 / cloudScale;
+      const duration = (((width + 200) / speed) * 1000) / cloudScale;
       this.scene.tweens.add({
         targets: cloud,
         x: width + 100,
-        duration: duration,
+        duration,
         repeat: -1,
         onRepeat: () => {
           cloud.x = -100;
           cloud.y = Phaser.Math.Between(minY, maxY);
-        }
+        },
       });
 
-      this.animatedObjects.push({ 
-        sprite: cloud, 
-        type: 'cloud' 
+      this.animatedObjects.push({
+        sprite: cloud,
+        type: "cloud",
       });
     }
 
@@ -106,7 +140,7 @@ export default class AnimatedBackgroundManager {
       amplitude = 5,
       period = 2000,
       depth = 5,
-      scrollFactor = 0.5
+      scrollFactor = 0.5,
     } = config;
 
     if (!this.scene.textures.exists(textureKey)) {
@@ -114,7 +148,8 @@ export default class AnimatedBackgroundManager {
       return;
     }
 
-    const object = this.scene.add.image(x, y, textureKey)
+    const object = this.scene.add
+      .image(x, y, textureKey)
       .setOrigin(0.5, 1) // Pivot at bottom
       .setDepth(depth)
       .setScrollFactor(scrollFactor);
@@ -124,14 +159,14 @@ export default class AnimatedBackgroundManager {
       targets: object,
       angle: { from: -amplitude, to: amplitude },
       duration: period,
-      ease: 'Sine.easeInOut',
+      ease: "Sine.easeInOut",
       yoyo: true,
-      repeat: -1
+      repeat: -1,
     });
 
-    this.animatedObjects.push({ 
-      sprite: object, 
-      type: 'swaying' 
+    this.animatedObjects.push({
+      sprite: object,
+      type: "swaying",
     });
 
     logger.debug(`Added swaying object: ${textureKey}`);
@@ -142,10 +177,14 @@ export default class AnimatedBackgroundManager {
    */
   addAmbientCrowd(config = {}) {
     const {
-      positions = [[100, 300], [200, 300], [300, 300]],
-      spriteKey = 'spectator',
+      positions = [
+        [100, 300],
+        [200, 300],
+        [300, 300],
+      ],
+      spriteKey = "spectator",
       depth = -5,
-      animationSpeed = 1000
+      animationSpeed = 1000,
     } = config;
 
     positions.forEach((pos, index) => {
@@ -153,20 +192,21 @@ export default class AnimatedBackgroundManager {
         // Create simple placeholder
         const circle = this.scene.add.circle(pos[0], pos[1], 15, 0x666666, 0.5);
         circle.setDepth(depth).setScrollFactor(0.3);
-        
+
         // Subtle bobbing animation
         this.scene.tweens.add({
           targets: circle,
           y: circle.y - 5,
           duration: animationSpeed + index * 200,
-          ease: 'Sine.easeInOut',
+          ease: "Sine.easeInOut",
           yoyo: true,
-          repeat: -1
+          repeat: -1,
         });
 
-        this.animatedObjects.push({ sprite: circle, type: 'crowd' });
+        this.animatedObjects.push({ sprite: circle, type: "crowd" });
       } else {
-        const spectator = this.scene.add.sprite(pos[0], pos[1], spriteKey)
+        const spectator = this.scene.add
+          .sprite(pos[0], pos[1], spriteKey)
           .setDepth(depth)
           .setScrollFactor(0.3);
 
@@ -175,7 +215,7 @@ export default class AnimatedBackgroundManager {
           spectator.play(`${spriteKey}_idle`);
         }
 
-        this.animatedObjects.push({ sprite: spectator, type: 'crowd' });
+        this.animatedObjects.push({ sprite: spectator, type: "crowd" });
       }
     });
 
@@ -187,10 +227,10 @@ export default class AnimatedBackgroundManager {
    */
   addFloatingParticles(config = {}) {
     const {
-      type = 'dust', // 'dust', 'leaves', 'petals', 'snow'
+      type = "dust", // 'dust', 'leaves', 'petals', 'snow'
       count = 20,
       depth = 10,
-      bounds = null
+      bounds = null,
     } = config;
 
     const { width, height } = this.scene.scale;
@@ -199,43 +239,50 @@ export default class AnimatedBackgroundManager {
     // Create particle graphics if needed
     if (!this.scene.textures.exists(`particle_${type}`)) {
       const graphics = this.scene.add.graphics();
-      
+
       switch (type) {
-        case 'dust':
+        case "dust":
           graphics.fillStyle(0xcccccc, 0.3);
           graphics.fillCircle(2, 2, 2);
           break;
-        case 'leaves':
+        case "leaves":
           graphics.fillStyle(0x88cc55, 0.5);
           graphics.fillEllipse(4, 4, 6, 3);
           break;
-        case 'petals':
+        case "petals":
           graphics.fillStyle(0xff99cc, 0.5);
           graphics.fillEllipse(3, 3, 5, 5);
           break;
-        case 'snow':
+        case "snow":
           graphics.fillStyle(0xffffff, 0.8);
           graphics.fillCircle(2, 2, 2);
           break;
+        default:
+          graphics.fillStyle(0xffffff, 0.5);
+          graphics.fillCircle(2, 2, 2);
+          break;
       }
-      
+
       graphics.generateTexture(`particle_${type}`, 8, 8);
       graphics.destroy();
     }
 
     // Create particle emitter
     const particles = this.scene.add.particles(0, 0, `particle_${type}`, {
-      x: { min: particleBounds.x, max: particleBounds.x + particleBounds.width },
+      x: {
+        min: particleBounds.x,
+        max: particleBounds.x + particleBounds.width,
+      },
       y: particleBounds.y,
       speedX: { min: -20, max: 20 },
       speedY: { min: 10, max: 50 },
-      gravityY: type === 'dust' ? 5 : 20,
+      gravityY: type === "dust" ? 5 : 20,
       scale: { start: 0.3, end: 0.1 },
       alpha: { start: 0.6, end: 0 },
-      lifespan: type === 'snow' ? 5000 : 3000,
+      lifespan: type === "snow" ? 5000 : 3000,
       frequency: 200,
       maxParticles: count,
-      blendMode: 'ADD'
+      blendMode: "ADD",
     });
 
     particles.setDepth(depth);
@@ -248,33 +295,34 @@ export default class AnimatedBackgroundManager {
    * Add animated flags or banners
    */
   addAnimatedFlags(positions = []) {
-    positions.forEach(pos => {
+    positions.forEach((pos) => {
       // Create flag sprite sheet animation if available
-      if (this.scene.anims.exists('flag_wave')) {
-        const flag = this.scene.add.sprite(pos.x, pos.y, 'flag')
+      if (this.scene.anims.exists("flag_wave")) {
+        const flag = this.scene.add
+          .sprite(pos.x, pos.y, "flag")
           .setDepth(pos.depth || 0)
           .setScrollFactor(pos.scrollFactor || 0.4);
-        
-        flag.play('flag_wave');
-        this.animatedObjects.push({ sprite: flag, type: 'flag' });
+
+        flag.play("flag_wave");
+        this.animatedObjects.push({ sprite: flag, type: "flag" });
       } else {
         // Create simple waving rectangle
         const flagGraphics = this.scene.add.graphics();
         flagGraphics.fillStyle(0xff0000, 0.8);
         flagGraphics.fillRect(pos.x, pos.y, 40, 30);
         flagGraphics.setDepth(pos.depth || 0);
-        
+
         // Wave animation via scale
         this.scene.tweens.add({
           targets: flagGraphics,
           scaleX: { from: 1, to: 0.9 },
           duration: 300,
-          ease: 'Sine.easeInOut',
+          ease: "Sine.easeInOut",
           yoyo: true,
-          repeat: -1
+          repeat: -1,
         });
 
-        this.animatedObjects.push({ sprite: flagGraphics, type: 'flag' });
+        this.animatedObjects.push({ sprite: flagGraphics, type: "flag" });
       }
     });
 
@@ -285,14 +333,14 @@ export default class AnimatedBackgroundManager {
    * Stop all animations and clean up
    */
   destroy() {
-    this.animatedObjects.forEach(obj => {
+    this.animatedObjects.forEach((obj) => {
       if (obj.sprite && obj.sprite.destroy) {
         this.scene.tweens.killTweensOf(obj.sprite);
         obj.sprite.destroy();
       }
     });
 
-    this.particles.forEach(p => {
+    this.particles.forEach((p) => {
       if (p && p.destroy) {
         p.destroy();
       }
@@ -307,36 +355,3 @@ export default class AnimatedBackgroundManager {
 /**
  * Preset configurations for different arena types
  */
-export const ANIMATION_PRESETS = {
-  city: (scene) => {
-    const manager = new AnimatedBackgroundManager(scene);
-    manager.addClouds({ count: 4, speed: 12 });
-    manager.addFloatingParticles({ type: 'dust', count: 15 });
-    return manager;
-  },
-
-  mountain: (scene) => {
-    const manager = new AnimatedBackgroundManager(scene);
-    manager.addClouds({ count: 6, speed: 8, minY: 30, maxY: 150 });
-    manager.addSwayingObject('tree', { x: 100, y: 400, amplitude: 3 });
-    manager.addFloatingParticles({ type: 'leaves', count: 25 });
-    return manager;
-  },
-
-  dojo: (scene) => {
-    const manager = new AnimatedBackgroundManager(scene);
-    manager.addSwayingObject('banner', { x: 150, y: 100, amplitude: 5 });
-    manager.addFloatingParticles({ type: 'dust', count: 10 });
-    return manager;
-  },
-
-  beach: (scene) => {
-    const manager = new AnimatedBackgroundManager(scene);
-    manager.addClouds({ count: 3, speed: 10 });
-    manager.addAnimatedFlags([
-      { x: 100, y: 200, depth: -2 },
-      { x: 300, y: 200, depth: -2 }
-    ]);
-    return manager;
-  }
-};

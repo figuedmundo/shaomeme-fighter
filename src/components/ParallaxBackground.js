@@ -1,14 +1,14 @@
-import Phaser from "phaser";
+/* eslint-disable no-param-reassign */
 import UnifiedLogger from "../utils/Logger.js";
 
 const logger = new UnifiedLogger("Frontend:ParallaxBackground");
 
 /**
  * ParallaxBackground - Multi-layer scrolling background system
- * 
+ *
  * Creates depth through multiple layers moving at different speeds.
  * Follows the camera for authentic parallax effect.
- * 
+ *
  * Usage:
  * const parallax = new ParallaxBackground(scene, {
  *   layers: [
@@ -59,24 +59,23 @@ export default class ParallaxBackground {
           height / 2,
           width,
           height,
-          layerConfig.key
+          layerConfig.key,
         );
       } else {
         // Create standard image
-        layer = this.scene.add.image(
-          width / 2,
-          height / 2,
-          layerConfig.key
-        ).setDisplaySize(width, height);
+        layer = this.scene.add
+          .image(width / 2, height / 2, layerConfig.key)
+          .setDisplaySize(width, height);
       }
 
       // Apply scroll factor for parallax effect
       layer.setScrollFactor(layerConfig.scrollFactor || 0);
 
       // Set depth (further = lower depth)
-      const depth = layerConfig.depth !== undefined 
-        ? layerConfig.depth 
-        : this.baseDepth + index;
+      const depth =
+        layerConfig.depth !== undefined
+          ? layerConfig.depth
+          : this.baseDepth + index;
       layer.setDepth(depth);
 
       // Optional alpha
@@ -93,12 +92,12 @@ export default class ParallaxBackground {
       this.layers.push({
         sprite: layer,
         config: layerConfig,
-        isTiled: layerConfig.repeat
+        isTiled: layerConfig.repeat,
       });
 
       logger.debug(
         `Layer ${index} created: ${layerConfig.key}, ` +
-        `scrollFactor=${layerConfig.scrollFactor}, depth=${depth}`
+          `scrollFactor=${layerConfig.scrollFactor}, depth=${depth}`,
       );
     });
   }
@@ -109,18 +108,18 @@ export default class ParallaxBackground {
    */
   update(time, delta) {
     const camera = this.scene.cameras.main;
-    
-    this.layers.forEach(layer => {
-      if (layer.isTiled) {
+
+    this.layers.forEach(({ sprite, config, isTiled }) => {
+      if (isTiled) {
         // Auto-scroll tiled backgrounds based on scroll factor
-        const scrollSpeed = layer.config.scrollSpeed || 0;
+        const scrollSpeed = config.scrollSpeed || 0;
         if (scrollSpeed !== 0) {
-          layer.sprite.tilePositionX += scrollSpeed * delta * 0.001;
+          sprite.tilePositionX += scrollSpeed * delta * 0.001;
         }
 
         // Sync with camera for parallax
-        const parallaxOffset = camera.scrollX * (1 - layer.config.scrollFactor);
-        layer.sprite.tilePositionX = parallaxOffset;
+        const parallaxOffset = camera.scrollX * (1 - config.scrollFactor);
+        sprite.tilePositionX = parallaxOffset;
       }
     });
   }
@@ -129,17 +128,17 @@ export default class ParallaxBackground {
    * Get a specific layer by index or key
    */
   getLayer(indexOrKey) {
-    if (typeof indexOrKey === 'number') {
+    if (typeof indexOrKey === "number") {
       return this.layers[indexOrKey]?.sprite;
     }
-    return this.layers.find(l => l.config.key === indexOrKey)?.sprite;
+    return this.layers.find((l) => l.config.key === indexOrKey)?.sprite;
   }
 
   /**
    * Clean up all layers
    */
   destroy() {
-    this.layers.forEach(layer => {
+    this.layers.forEach((layer) => {
       if (layer.sprite && layer.sprite.destroy) {
         layer.sprite.destroy();
       }
@@ -152,40 +151,3 @@ export default class ParallaxBackground {
 /**
  * Example layer configurations for different arena types:
  */
-export const ARENA_CONFIGS = {
-  city: {
-    layers: [
-      { key: 'city_sky', scrollFactor: 0, alpha: 1 },
-      { key: 'city_buildings_far', scrollFactor: 0.1, alpha: 0.8 },
-      { key: 'city_buildings_mid', scrollFactor: 0.3 },
-      { key: 'city_buildings_near', scrollFactor: 0.6 },
-      { key: 'city_ground', scrollFactor: 1 }
-    ]
-  },
-  
-  mountain: {
-    layers: [
-      { key: 'mountain_sky', scrollFactor: 0 },
-      { key: 'mountain_peaks', scrollFactor: 0.15, alpha: 0.9 },
-      { key: 'mountain_hills', scrollFactor: 0.4 },
-      { key: 'mountain_trees', scrollFactor: 0.7 },
-      { key: 'mountain_ground', scrollFactor: 1 }
-    ]
-  },
-
-  dojo: {
-    layers: [
-      { key: 'dojo_wall', scrollFactor: 0 },
-      { key: 'dojo_decorations', scrollFactor: 0.2 },
-      { key: 'dojo_floor', scrollFactor: 1 }
-    ]
-  },
-
-  // Dynamic photo backgrounds with depth
-  photoArena: (photoKey) => ({
-    layers: [
-      { key: photoKey, scrollFactor: 0, alpha: 0.6, tint: 0x888888 },
-      { key: 'arena_overlay', scrollFactor: 0, alpha: 0.3, blendMode: 'MULTIPLY' }
-    ]
-  })
-};

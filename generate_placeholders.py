@@ -53,11 +53,9 @@ roster = [
     ('mom', 'purple'),
     ('dad', 'blue'),
     ('brother', 'green'),
-    ('old_witch', 'gray'),
+    ('witch', 'gray'),
     ('fat', 'orange'),
-    ('fresway_worker', 'yellow'),
-    ('ryu', 'white'),
-    ('ken', 'red')
+    ('fresway_worker', 'yellow')
 ]
 
 for name, color in roster:

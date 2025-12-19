@@ -5,14 +5,14 @@ const logger = new UnifiedLogger("Frontend:WeatherSystem");
 
 /**
  * WeatherSystem - Dynamic weather effects for arenas
- * 
+ *
  * Supports:
  * - Rain (light, heavy, storm)
  * - Snow (light, heavy, blizzard)
  * - Fog (light, dense)
  * - Wind effects
  * - Lightning strikes
- * 
+ *
  * Usage:
  * const weather = new WeatherSystem(scene);
  * weather.setWeather('rain', { intensity: 'heavy' });
@@ -25,34 +25,34 @@ export default class WeatherSystem {
     this.fogOverlay = null;
     this.windEffect = null;
     this.lightningGraphics = null;
-    
+
     logger.info("WeatherSystem initialized");
   }
 
   /**
    * Set weather type and intensity
    */
-  setWeather(type = 'none', config = {}) {
+  setWeather(type = "none", config = {}) {
     // Clear existing weather
     this.clearWeather();
 
     switch (type) {
-      case 'rain':
+      case "rain":
         this.createRain(config);
         break;
-      case 'snow':
+      case "snow":
         this.createSnow(config);
         break;
-      case 'fog':
+      case "fog":
         this.createFog(config);
         break;
-      case 'storm':
+      case "storm":
         this.createStorm(config);
         break;
-      case 'wind':
+      case "wind":
         this.createWind(config);
         break;
-      case 'none':
+      case "none":
       default:
         break;
     }
@@ -66,31 +66,31 @@ export default class WeatherSystem {
    */
   createRain(config = {}) {
     const {
-      intensity = 'medium', // 'light', 'medium', 'heavy'
+      intensity = "medium", // 'light', 'medium', 'heavy'
       angle = -90,
       windStrength = 0,
-      depth = 1000
+      depth = 1000,
     } = config;
 
     const intensityMap = {
       light: { frequency: 100, speed: 300, quantity: 200 },
       medium: { frequency: 50, speed: 500, quantity: 400 },
-      heavy: { frequency: 20, speed: 700, quantity: 600 }
+      heavy: { frequency: 20, speed: 700, quantity: 600 },
     };
 
     const settings = intensityMap[intensity] || intensityMap.medium;
-    const { width, height } = this.scene.scale;
+    const { width } = this.scene.scale;
 
     // Create rain particle texture if it doesn't exist
-    if (!this.scene.textures.exists('rain_drop')) {
+    if (!this.scene.textures.exists("rain_drop")) {
       const graphics = this.scene.add.graphics();
       graphics.fillStyle(0x88ccff, 0.6);
       graphics.fillRect(0, 0, 2, 8);
-      graphics.generateTexture('rain_drop', 2, 8);
+      graphics.generateTexture("rain_drop", 2, 8);
       graphics.destroy();
     }
 
-    this.particles = this.scene.add.particles(0, 0, 'rain_drop', {
+    this.particles = this.scene.add.particles(0, 0, "rain_drop", {
       x: { min: -100, max: width + 100 },
       y: -10,
       speedX: windStrength,
@@ -101,8 +101,8 @@ export default class WeatherSystem {
       lifespan: 3000,
       frequency: settings.frequency,
       maxParticles: settings.quantity,
-      blendMode: 'ADD',
-      angle: angle
+      blendMode: "ADD",
+      angle,
     });
 
     this.rainEmitter = this.particles;
@@ -122,15 +122,15 @@ export default class WeatherSystem {
     const { width, height } = this.scene.scale;
     const groundY = height - 100;
 
-    if (!this.scene.textures.exists('rain_splash')) {
+    if (!this.scene.textures.exists("rain_splash")) {
       const graphics = this.scene.add.graphics();
       graphics.fillStyle(0xaaddff, 0.4);
       graphics.fillCircle(2, 2, 2);
-      graphics.generateTexture('rain_splash', 4, 4);
+      graphics.generateTexture("rain_splash", 4, 4);
       graphics.destroy();
     }
 
-    const splashParticles = this.scene.add.particles(0, 0, 'rain_splash', {
+    const splashParticles = this.scene.add.particles(0, 0, "rain_splash", {
       x: { min: 0, max: width },
       y: groundY,
       speedX: { min: -30, max: 30 },
@@ -140,7 +140,7 @@ export default class WeatherSystem {
       lifespan: 300,
       frequency: 30,
       maxParticles: 100,
-      gravityY: 300
+      gravityY: 300,
     });
 
     splashParticles.setDepth(999);
@@ -151,32 +151,32 @@ export default class WeatherSystem {
    */
   createSnow(config = {}) {
     const {
-      intensity = 'medium', // 'light', 'medium', 'blizzard'
+      intensity = "medium", // 'light', 'medium', 'blizzard'
       windStrength = 20,
-      depth = 1000
+      depth = 1000,
     } = config;
 
     const intensityMap = {
       light: { frequency: 150, quantity: 150 },
       medium: { frequency: 80, quantity: 300 },
-      blizzard: { frequency: 30, quantity: 500 }
+      blizzard: { frequency: 30, quantity: 500 },
     };
 
     const settings = intensityMap[intensity] || intensityMap.medium;
     const { width } = this.scene.scale;
 
     // Create snowflake texture
-    if (!this.scene.textures.exists('snowflake')) {
+    if (!this.scene.textures.exists("snowflake")) {
       const graphics = this.scene.add.graphics();
       graphics.fillStyle(0xffffff, 0.9);
       graphics.fillCircle(3, 3, 3);
       graphics.fillRect(1, 3, 5, 1);
       graphics.fillRect(3, 1, 1, 5);
-      graphics.generateTexture('snowflake', 7, 7);
+      graphics.generateTexture("snowflake", 7, 7);
       graphics.destroy();
     }
 
-    this.particles = this.scene.add.particles(0, 0, 'snowflake', {
+    this.particles = this.scene.add.particles(0, 0, "snowflake", {
       x: { min: -100, max: width + 100 },
       y: -10,
       speedX: { min: -windStrength, max: windStrength },
@@ -188,7 +188,7 @@ export default class WeatherSystem {
       frequency: settings.frequency,
       maxParticles: settings.quantity,
       rotate: { min: 0, max: 360 },
-      angle: { min: -30, max: 30 }
+      angle: { min: -30, max: 30 },
     });
 
     this.particles.setDepth(depth);
@@ -204,43 +204,72 @@ export default class WeatherSystem {
       density = 0.5, // 0 to 1
       color = 0xaaaaaa,
       depth = 500,
-      animated = true
+      animated = true,
     } = config;
 
     const { width, height } = this.scene.scale;
 
-    // Create fog overlay
-    this.fogOverlay = this.scene.add.rectangle(
-      width / 2,
-      height / 2,
-      width,
-      height,
-      color,
-      density * 0.6
-    ).setDepth(depth);
+    // Create a vertical gradient for more natural fog (thicker at bottom)
+    if (!this.scene.textures.exists("fog_gradient")) {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1;
+      canvas.height = 256;
+      const ctx = canvas.getContext("2d");
+      const gradient = ctx.createLinearGradient(0, 0, 0, 256);
+
+      // Top is transparent, bottom is solid white (we will tint it)
+      gradient.addColorStop(0, "rgba(255, 255, 255, 0)");
+      gradient.addColorStop(0.7, "rgba(255, 255, 255, 0.5)");
+      gradient.addColorStop(1, "rgba(255, 255, 255, 1)");
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 1, 256);
+      this.scene.textures.addCanvas("fog_gradient", canvas);
+    }
+
+    // Create fog overlay using the gradient
+    this.fogOverlay = this.scene.add
+      .image(width / 2, height / 2, "fog_gradient")
+      .setDisplaySize(width, height)
+      .setDepth(depth)
+      .setAlpha(0)
+      .setTint(color)
+      .setScrollFactor(0);
+
+    const targetAlpha = density * 0.7;
 
     if (animated) {
       // Pulse fog density
       this.scene.tweens.add({
         targets: this.fogOverlay,
-        alpha: density * 0.4,
-        duration: 3000,
-        ease: 'Sine.easeInOut',
-        yoyo: true,
-        repeat: -1
+        alpha: targetAlpha,
+        duration: 2000,
+        ease: "Sine.easeIn",
       });
+
+      this.scene.tweens.add({
+        targets: this.fogOverlay,
+        alpha: { from: targetAlpha, to: targetAlpha * 0.6 },
+        duration: 4000,
+        ease: "Sine.easeInOut",
+        yoyo: true,
+        repeat: -1,
+        delay: 2000,
+      });
+    } else {
+      this.fogOverlay.setAlpha(targetAlpha);
     }
 
     // Add fog particles for more realism
-    if (!this.scene.textures.exists('fog_particle')) {
+    if (!this.scene.textures.exists("fog_particle")) {
       const graphics = this.scene.add.graphics();
       graphics.fillStyle(0xffffff, 0.1);
       graphics.fillCircle(20, 20, 20);
-      graphics.generateTexture('fog_particle', 40, 40);
+      graphics.generateTexture("fog_particle", 40, 40);
       graphics.destroy();
     }
 
-    this.particles = this.scene.add.particles(0, 0, 'fog_particle', {
+    this.particles = this.scene.add.particles(0, 0, "fog_particle", {
       x: { min: -50, max: width + 50 },
       y: { min: height * 0.6, max: height },
       speedX: { min: -10, max: 10 },
@@ -250,7 +279,7 @@ export default class WeatherSystem {
       lifespan: 5000,
       frequency: 200,
       maxParticles: 50,
-      blendMode: 'ADD'
+      blendMode: "ADD",
     });
 
     this.particles.setDepth(depth + 1);
@@ -264,14 +293,12 @@ export default class WeatherSystem {
   createStorm(config = {}) {
     // Create heavy rain
     this.createRain({
-      intensity: 'heavy',
+      intensity: "heavy",
       windStrength: 50,
-      ...config
+      ...config,
     });
 
     // Add lightning
-    const { width, height } = this.scene.scale;
-    
     this.lightningGraphics = this.scene.add.graphics();
     this.lightningGraphics.setDepth(1001);
 
@@ -279,7 +306,7 @@ export default class WeatherSystem {
     this.lightningTimer = this.scene.time.addEvent({
       delay: Phaser.Math.Between(3000, 7000),
       callback: () => this.triggerLightning(),
-      loop: true
+      loop: true,
     });
 
     logger.debug("Storm created with lightning");
@@ -289,24 +316,27 @@ export default class WeatherSystem {
    * Trigger lightning strike effect
    */
   triggerLightning() {
-    const { width, height } = this.scene.scale;
-    
     // Flash the screen white
-    const flash = this.scene.add.rectangle(
-      width / 2,
-      height / 2,
-      width,
-      height,
-      0xffffff,
-      0.8
-    ).setDepth(1002);
+    const flash = this.scene.add
+      .rectangle(
+        this.scene.scale.width / 2,
+        this.scene.scale.height / 2,
+        this.scene.scale.width,
+        this.scene.scale.height,
+        0xffffff,
+        0.8,
+      )
+      .setDepth(1002);
 
     // Draw lightning bolt
     if (this.lightningGraphics) {
       this.lightningGraphics.clear();
       this.lightningGraphics.lineStyle(3, 0xffffaa, 0.9);
-      
-      const startX = Phaser.Math.Between(width * 0.2, width * 0.8);
+
+      const startX = Phaser.Math.Between(
+        this.scene.scale.width * 0.2,
+        this.scene.scale.width * 0.8,
+      );
       let currentX = startX;
       let currentY = 0;
 
@@ -314,9 +344,9 @@ export default class WeatherSystem {
       this.lightningGraphics.moveTo(currentX, currentY);
 
       // Create jagged lightning path
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 10; i += 1) {
         currentX += Phaser.Math.Between(-30, 30);
-        currentY += height / 10;
+        currentY += this.scene.scale.height / 10;
         this.lightningGraphics.lineTo(currentX, currentY);
       }
 
@@ -328,7 +358,7 @@ export default class WeatherSystem {
       targets: flash,
       alpha: 0,
       duration: 100,
-      onComplete: () => flash.destroy()
+      onComplete: () => flash.destroy(),
     });
 
     // Clear lightning after brief moment
@@ -339,8 +369,8 @@ export default class WeatherSystem {
     });
 
     // Optional: play thunder sound
-    if (this.scene.sound && this.scene.sound.get('thunder')) {
-      this.scene.sound.play('thunder', { volume: 0.3 });
+    if (this.scene.sound && this.scene.sound.get("thunder")) {
+      this.scene.sound.play("thunder", { volume: 0.3 });
     }
 
     // Schedule next lightning
@@ -348,7 +378,7 @@ export default class WeatherSystem {
       this.lightningTimer.reset({
         delay: Phaser.Math.Between(3000, 7000),
         callback: () => this.triggerLightning(),
-        loop: false
+        loop: false,
       });
     }
 
@@ -359,15 +389,12 @@ export default class WeatherSystem {
    * Create wind effect (affects other particles)
    */
   createWind(config = {}) {
-    const {
-      strength = 50,
-      gustInterval = 3000
-    } = config;
+    const { strength = 50, gustInterval = 3000 } = config;
 
     // Wind affects existing particle systems
     this.windEffect = {
       baseStrength: strength,
-      currentStrength: 0
+      currentStrength: 0,
     };
 
     // Create wind gusts
@@ -375,16 +402,16 @@ export default class WeatherSystem {
       delay: gustInterval,
       callback: () => {
         const gustStrength = strength + Phaser.Math.Between(-20, 40);
-        
+
         this.scene.tweens.add({
           targets: this.windEffect,
           currentStrength: gustStrength,
           duration: 1000,
-          ease: 'Sine.easeInOut',
-          yoyo: true
+          ease: "Sine.easeInOut",
+          yoyo: true,
         });
       },
-      loop: true
+      loop: true,
     });
 
     logger.debug(`Wind created with ${strength} strength`);
@@ -445,33 +472,3 @@ export default class WeatherSystem {
 /**
  * Preset weather configurations for different arenas
  */
-export const WEATHER_PRESETS = {
-  tokyo_rain: {
-    type: 'rain',
-    config: { intensity: 'medium', windStrength: 20 }
-  },
-
-  mountain_snow: {
-    type: 'snow',
-    config: { intensity: 'light', windStrength: 30 }
-  },
-
-  london_fog: {
-    type: 'fog',
-    config: { density: 0.6, animated: true }
-  },
-
-  desert_wind: {
-    type: 'wind',
-    config: { strength: 60, gustInterval: 2000 }
-  },
-
-  storm: {
-    type: 'storm',
-    config: { intensity: 'heavy', windStrength: 70 }
-  },
-
-  clear: {
-    type: 'none'
-  }
-};

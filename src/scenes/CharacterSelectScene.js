@@ -14,12 +14,17 @@ export default class CharacterSelectScene extends Phaser.Scene {
   preload() {
     // Load Roster Assets
     rosterConfig.forEach((character) => {
-      this.load.image(`portrait_${character.id}`, character.portraitPath);
-      this.load.image(`icon_${character.id}`, character.iconPath);
-    });
+      // Use absolute root paths for assets in public/
+      const portraitPath = character.portraitPath.startsWith("/")
+        ? character.portraitPath
+        : `/${character.portraitPath}`;
+      const iconPath = character.iconPath.startsWith("/")
+        ? character.iconPath
+        : `/${character.iconPath}`;
 
-    // Load default if needed (though we copy placeholders in config setup)
-    // this.load.image('placeholder_silhouette', 'assets/silhouette.png'); // If we had one
+      this.load.image(`portrait_${character.id}`, portraitPath);
+      this.load.image(`icon_${character.id}`, iconPath);
+    });
   }
 
   create() {

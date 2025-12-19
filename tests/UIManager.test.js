@@ -1,7 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+import UIManager from "../src/systems/UIManager";
 
 // Mock Phaser
-vi.mock('phaser', () => {
+vi.mock("phaser", () => {
   return {
     default: {
       GameObjects: {
@@ -45,19 +47,18 @@ vi.mock('phaser', () => {
       },
       Math: {
         Clamp: (v, min, max) => Math.min(Math.max(v, min), max),
-        Between: (min, max) => Math.floor(Math.random() * (max - min + 1) + min),
+        Between: (min, max) =>
+          Math.floor(Math.random() * (max - min + 1) + min),
         Linear: (a, b, f) => a + (b - a) * f,
       },
       Display: {
         Color: {
           HexStringToColor: vi.fn(() => ({ color: 0xffffff })),
-        }
-      }
+        },
+      },
     },
   };
 });
-
-import UIManager from '../src/systems/UIManager';
 
 const mockScene = {
   add: {
@@ -65,6 +66,8 @@ const mockScene = {
       clear: vi.fn().mockReturnThis(),
       fillStyle: vi.fn().mockReturnThis(),
       fillRect: vi.fn().mockReturnThis(),
+      fillPoints: vi.fn().mockReturnThis(),
+      strokePoints: vi.fn().mockReturnThis(),
       strokeRect: vi.fn().mockReturnThis(),
       lineStyle: vi.fn().mockReturnThis(),
       setScrollFactor: vi.fn().mockReturnThis(),
@@ -100,40 +103,52 @@ const mockScene = {
   },
   textures: {
     exists: vi.fn(() => true),
-  }
+  },
+  cameras: {
+    main: {
+      ignore: vi.fn(),
+    },
+    add: vi.fn(() => ({
+      setScroll: vi.fn().mockReturnThis(),
+      setZoom: vi.fn().mockReturnThis(),
+      setName: vi.fn().mockReturnThis(),
+      ignore: vi.fn().mockReturnThis(),
+    })),
+    remove: vi.fn(),
+  },
 };
 
-describe('UIManager', () => {
+describe("UIManager", () => {
   let uiManager;
 
   beforeEach(() => {
     vi.clearAllMocks();
     uiManager = new UIManager(mockScene, {
-      p1Name: 'Player 1',
-      p2Name: 'Player 2',
-      matchTime: 99
+      p1Name: "Player 1",
+      p2Name: "Player 2",
+      matchTime: 99,
     });
   });
 
-  it('should initialize with HUD elements', () => {
+  it("should initialize with HUD elements", () => {
     expect(mockScene.add.graphics).toHaveBeenCalled();
     expect(mockScene.add.text).toHaveBeenCalled();
   });
 
-  it('should update health display and track ghost bar', () => {
+  it("should update health display and track ghost bar", () => {
     uiManager.updateHealth(1, 80);
     expect(uiManager.p1Health).toBe(80);
     expect(uiManager.p1GhostHealth).toBe(100);
   });
 
-  it('should update combo display', () => {
+  it("should update combo display", () => {
     uiManager.updateCombo(3, true);
     expect(uiManager.p1Combo).toBe(3);
     // On first combo, text is created
     expect(mockScene.add.text).toHaveBeenCalled();
   });
 
-  it('should start and stop timer', () => {
+  it("should start and stop timer", () => {
     uiManager.startTimer();
     expect(uiManager.isTimerRunning).toBe(true);
     uiManager.stopTimer();

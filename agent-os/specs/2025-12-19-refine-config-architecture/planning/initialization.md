@@ -1,0 +1,3 @@
+refactor the configs, we have many configs, and we need to extract the configs to a single json file, so the code doesn't need to be edited If I add another place or another fighter.
+...
+we were refactoring the project and now is not working, in the @src/config/gameData.json there are configuration that not needs to be there, the presets configurations doesn't need to be here, that config should be in the class, because is not something we are going to change , that needs to be in the class, in the @src/config/gameData.json I want configure the cities/arenas and their configurations

@@ -25,32 +25,36 @@ export default class PreloadScene extends Phaser.Scene {
 
     // UI Assets
     console.log("PreloadScene: Loading UI assets...");
-    this.load.image("logo", "resources/shaomeme_fighter.png");
+    this.load.image("logo", "/assets/images/ui/shaomeme_fighter.png");
 
     // Audio
     console.log("PreloadScene: Loading Audio...");
     // UI Sounds
-    this.load.audio("ui_select", "resources/attack1.mp3"); // Using attack1 as placeholder for select
-    this.load.audio("ui_move", "resources/attack2.mp3"); // Using attack2 as placeholder for move
-    this.load.audio("ui_back", "resources/attack3.mp3"); // Using attack3 as placeholder for back
+    this.load.audio("ui_select", "/assets/audio/sfx/attack1.mp3"); // Using attack1 as placeholder for select
+    this.load.audio("ui_move", "/assets/audio/sfx/attack2.mp3"); // Using attack2 as placeholder for move
+    this.load.audio("ui_back", "/assets/audio/sfx/attack3.mp3"); // Using attack3 as placeholder for back
 
     // Music
-    this.load.audio("menu_music", "resources/soundtrack_walking_on_cars.mp3");
-    this.load.audio("select_music", "resources/vs.mp3");
-    this.load.audio("arena", "resources/arena.mp3");
+    this.load.audio(
+      "menu_music",
+      "/assets/audio/music/soundtrack_walking_on_cars.mp3",
+    );
+    this.load.audio("select_music", "/assets/audio/music/vs.mp3");
+    this.load.audio("arena", "/assets/audio/music/arena.mp3");
 
-    this.load.audio("KO", "resources/KO.mp3");
+    // Announcer/KO
+    this.load.audio("KO", "/assets/audio/announcer/KO.mp3");
 
     // Combat Sounds - Impact variations (punch/kick)
-    this.load.audio("attack1", "resources/attack1.mp3");
-    this.load.audio("attack2", "resources/attack2.mp3");
-    this.load.audio("attack3", "resources/attack3.mp3");
-    this.load.audio("attack4", "resources/attack4.mp3");
-    this.load.audio("attack5", "resources/attack5.mp3");
+    this.load.audio("attack1", "/assets/audio/sfx/attack1.mp3");
+    this.load.audio("attack2", "/assets/audio/sfx/attack2.mp3");
+    this.load.audio("attack3", "/assets/audio/sfx/attack3.mp3");
+    this.load.audio("attack4", "/assets/audio/sfx/attack4.mp3");
+    this.load.audio("attack5", "/assets/audio/sfx/attack5.mp3");
 
     // Announcer Sounds
     console.log("PreloadScene: Loading Announcer Audio...");
-    const announcerPath = "resources/audio/announcer/";
+    const announcerPath = "/assets/audio/announcer/";
 
     // Rounds
     this.load.audio("round_1", `${announcerPath}round_1.mp3`);
@@ -61,31 +65,29 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.audio("final_round", `${announcerPath}final_round.mp3`);
 
     // Fight
-    this.load.audio("fight", `${announcerPath}the-batle-has-begun-fight.mp3`); // Or round-1-fight_1.mp3
+    this.load.audio("fight", `${announcerPath}the_batle_has_begun_fight.mp3`); // Fixed filename: the_batle...
 
     // Results
     this.load.audio("you_win", `${announcerPath}flawless_victory.mp3`); // Placeholder logic: Flawless is good enough for win
-    this.load.audio("you_lose", `${announcerPath}you-loose.mp3`);
+    this.load.audio("you_lose", `${announcerPath}you_loose.mp3`); // Fixed filename: you_loose
     this.load.audio("perfect", `${announcerPath}perfect.mp3`);
 
     // Combo
     this.load.audio("combo_3", `${announcerPath}combo_3.mp3`);
     this.load.audio("combo_5", `${announcerPath}dominating.mp3`);
-    this.load.audio("combo_ultra", `${announcerPath}ultra-kill.mp3`);
+    this.load.audio("combo_ultra", `${announcerPath}ultra_kill.mp3`); // Fixed filename: ultra_kill
 
     // Characters
     // Using specific mappings where available, placeholders for others
     this.load.audio("announcer_dad", `${announcerPath}dad.mp3`);
     this.load.audio("announcer_mom", `${announcerPath}mom.mp3`);
-    this.load.audio("announcer_old_witch", `${announcerPath}the-witch.mp3`);
+    this.load.audio("announcer_witch", `${announcerPath}the_witch.mp3`); // Fixed filename: the_witch
     this.load.audio("announcer_fresway_worker", `${announcerPath}worker.mp3`);
 
     // Placeholders for missing characters
     this.load.audio("announcer_ann", `${announcerPath}laugh.mp3`);
     this.load.audio("announcer_brother", `${announcerPath}laugh.mp3`);
     this.load.audio("announcer_fat", `${announcerPath}laugh.mp3`);
-    this.load.audio("announcer_ken", `${announcerPath}laugh.mp3`);
-    this.load.audio("announcer_ryu", `${announcerPath}laugh.mp3`);
 
     // TODO: Add whoosh sounds (air-cutting)
     // TODO: Add grunt sounds (effort)
@@ -95,25 +97,16 @@ export default class PreloadScene extends Phaser.Scene {
     // Load All Fighter Spritesheets from Roster
     console.log("PreloadScene: Loading Fighter spritesheets...");
     rosterConfig.forEach((char) => {
+      // Skip hidden characters in loop if desired, but we need to load them if they might appear
       console.log(`PreloadScene: Loading spritesheet for ${char.id}`);
       this.load.spritesheet(
         char.id,
-        `assets/fighters/${char.id}/${char.id}.png`,
+        `/assets/fighters/${char.id}/${char.id}.png`, // Added leading slash
         {
           frameWidth: 100,
           frameHeight: 200,
         },
       );
-    });
-
-    // Also load Ryu and Ken as defaults/fallback
-    this.load.spritesheet("ryu", "assets/fighters/ryu/ryu.png", {
-      frameWidth: 100,
-      frameHeight: 200,
-    });
-    this.load.spritesheet("ken", "assets/fighters/ken/ken.png", {
-      frameWidth: 100,
-      frameHeight: 200,
     });
 
     // Handle loading events

@@ -4,7 +4,7 @@ import CharacterSelectScene from "../src/scenes/CharacterSelectScene";
 import ArenaSelectScene from "../src/scenes/ArenaSelectScene";
 import FightScene from "../src/scenes/FightScene";
 import PreloadScene from "../src/scenes/PreloadScene";
-import Fighter from "../src/components/Fighter";
+import Fighter from "../src/components/Fighter"; // eslint-disable-line no-unused-vars
 
 // Global mock for Phaser
 vi.mock("phaser", () => {
@@ -55,6 +55,10 @@ vi.mock("phaser", () => {
               setDepth: vi.fn().mockReturnThis(),
               setScrollFactor: vi.fn().mockReturnThis(),
               setAlpha: vi.fn().mockReturnThis(),
+              setTint: vi.fn().mockReturnThis(),
+              setBlendMode: vi.fn().mockReturnThis(),
+              setScale: vi.fn().mockReturnThis(),
+              setFlipX: vi.fn().mockReturnThis(),
             }),
             text: vi.fn().mockReturnValue({
               setOrigin: vi.fn().mockReturnThis(),
@@ -67,6 +71,7 @@ vi.mock("phaser", () => {
               setDepth: vi.fn().mockReturnThis(),
               setAlpha: vi.fn().mockReturnThis(),
               setScale: vi.fn().mockReturnThis(),
+              setScrollFactor: vi.fn().mockReturnThis(),
             }),
             rectangle: vi.fn().mockReturnValue({
               setOrigin: vi.fn().mockReturnThis(),
@@ -88,6 +93,14 @@ vi.mock("phaser", () => {
               fillCircle: vi.fn().mockReturnThis(),
               generateTexture: vi.fn().mockReturnThis(),
               destroy: vi.fn(),
+              setScrollFactor: vi.fn().mockReturnThis(),
+              clear: vi.fn().mockReturnThis(),
+              lineStyle: vi.fn().mockReturnThis(),
+              beginPath: vi.fn().mockReturnThis(),
+              moveTo: vi.fn().mockReturnThis(),
+              lineTo: vi.fn().mockReturnThis(),
+              strokePath: vi.fn().mockReturnThis(),
+              strokeRect: vi.fn().mockReturnThis(),
             }),
             container: vi.fn().mockReturnValue({
               add: vi.fn().mockReturnThis(),
@@ -232,7 +245,14 @@ vi.mock("phaser", () => {
           KeyCodes: { SPACE: 32, W: 87, A: 65, S: 83, D: 68, F: 70 },
         },
       },
-      Math: { Distance: { Between: vi.fn().mockReturnValue(100) } },
+      Math: {
+        Distance: { Between: vi.fn().mockReturnValue(100) },
+        Clamp: vi.fn((val, min, max) => Math.min(Math.max(val, min), max)),
+        FloatBetween: vi.fn(() => 0.5),
+        Between: vi.fn(() => 10),
+        Linear: vi.fn((p0, p1, t) => p0 + t * (p1 - p0)),
+      },
+      BlendModes: { ADD: 1, MULTIPLY: 2 },
     },
   };
 });

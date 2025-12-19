@@ -53,7 +53,7 @@ export default class MainMenuScene extends Phaser.Scene {
 
     // Footer
     this.add
-      .text(width / 2, height * 0.95, "Created by Edmundo for [Girlfriend]", {
+      .text(width / 2, height * 0.95, "Created by FeiFei for Shaomeme QQ", {
         fontFamily: '"Press Start 2P", sans-serif',
         fontSize: "12px",
         fill: "#666666",

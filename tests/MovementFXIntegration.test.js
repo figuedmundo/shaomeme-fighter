@@ -19,12 +19,20 @@ vi.mock("phaser", () => {
             setAlpha: vi.fn().mockReturnThis(),
             setVisible: vi.fn().mockReturnThis(),
             setTexture: vi.fn().mockReturnThis(),
+            setFlipX: vi.fn().mockReturnThis(),
+            setTint: vi.fn().mockReturnThis(),
+            clearTint: vi.fn().mockReturnThis(),
+            destroy: vi.fn(),
           })),
           rectangle: vi.fn(() => {
             const r = {};
             r.setStrokeStyle = vi.fn().mockReturnValue(r);
             r.setDepth = vi.fn().mockReturnValue(r);
             r.setVisible = vi.fn().mockReturnValue(r);
+            r.setAlpha = vi.fn().mockReturnValue(r);
+            r.setTint = vi.fn().mockReturnValue(r);
+            r.clearTint = vi.fn().mockReturnValue(r);
+            r.destroy = vi.fn();
             return r;
           }),
           circle: vi.fn(() => {
@@ -42,8 +50,14 @@ vi.mock("phaser", () => {
           graphics: vi.fn(() => ({
             fillStyle: vi.fn(),
             fillCircle: vi.fn(),
+            fillRect: vi.fn(),
+            lineStyle: vi.fn(),
+            strokeRect: vi.fn(),
+            clear: vi.fn(),
             generateTexture: vi.fn(),
             destroy: vi.fn(),
+            setScrollFactor: vi.fn().mockReturnThis(),
+            setDepth: vi.fn().mockReturnThis(),
           })),
           // FIX: Added destroy() to the particles mock
           particles: vi.fn(() => ({
@@ -82,6 +96,8 @@ vi.mock("phaser", () => {
             t.setVisible = vi.fn().mockReturnValue(t);
             t.setText = vi.fn().mockReturnValue(t);
             t.setScale = vi.fn().mockReturnValue(t);
+            t.setScrollFactor = vi.fn().mockReturnValue(t);
+            t.destroy = vi.fn();
             return t;
           }),
           container: vi.fn(() => ({
@@ -90,6 +106,7 @@ vi.mock("phaser", () => {
             setVisible: vi.fn().mockReturnThis(),
             setPosition: vi.fn().mockReturnThis(),
             setAlpha: vi.fn().mockReturnThis(),
+            destroy: vi.fn(),
           })),
           existing: vi.fn(),
         };
@@ -136,7 +153,7 @@ vi.mock("phaser", () => {
         };
 
         textures = {
-          exists: vi.fn(() => false),
+          exists: vi.fn(() => true),
           addCanvas: vi.fn(),
         };
 
@@ -150,6 +167,7 @@ vi.mock("phaser", () => {
 
         time = {
           delayedCall: vi.fn((d, cb) => cb && cb()),
+          addEvent: vi.fn(() => ({ remove: vi.fn() })),
         };
 
         tweens = {
@@ -217,6 +235,8 @@ vi.mock("phaser", () => {
       },
       Math: {
         Distance: { Between: vi.fn() },
+        Clamp: vi.fn((v, min, max) => Math.min(Math.max(v, min), max)),
+        Linear: vi.fn((a, b, t) => a + (b - a) * t),
       },
     },
   };
