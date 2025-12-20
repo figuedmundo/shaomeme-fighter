@@ -196,6 +196,11 @@ class ConfigManager {
     return presetKey ? ANIMATION_PRESETS[presetKey] : null;
   }
 
+  getVictoryMusicForCity(city) {
+    const arena = this.getArenaConfig(city);
+    return arena?.victoryMusic || "victory_reward_music";
+  }
+
   // --- Combat ---
   getCombatConfig() {
     return this.data.combat;

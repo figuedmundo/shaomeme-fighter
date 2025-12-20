@@ -8,7 +8,8 @@
         "lighting": "outdoor_day",
         "weather": null,
         "animation": "city"
-      }
+      },
+      "victoryMusic": "soundtrack_walking_on_cars"
     },
     "dublin": {
       "type": "city",
@@ -18,7 +19,8 @@
         "lighting": "outdoor_night",
         "weather": "london_fog",
         "animation": "city"
-      }
+      },
+      "victoryMusic": "victory_reward_music"
     },
     "galway": {
       "type": "mountain",
@@ -28,7 +30,8 @@
         "lighting": "outdoor_day",
         "weather": "tokyo_rain",
         "animation": "mountain"
-      }
+      },
+      "victoryMusic": "victory_reward_music"
     },
     "istambul": {
       "type": "city",
@@ -38,7 +41,8 @@
         "lighting": "outdoor_night",
         "weather": "desert_wind",
         "animation": "city"
-      }
+      },
+      "victoryMusic": "victory_reward_music"
     },
     "london": {
       "type": "city",
@@ -48,7 +52,8 @@
         "lighting": "outdoor_night",
         "weather": "london_fog",
         "animation": "city"
-      }
+      },
+      "victoryMusic": "victory_reward_music"
     },
     "tokyo": {
       "type": "city",
@@ -58,7 +63,8 @@
         "lighting": "outdoor_night",
         "weather": "tokyo_rain",
         "animation": "city"
-      }
+      },
+      "victoryMusic": "victory_reward_music"
     },
     "new york": {
       "type": "city",
@@ -68,7 +74,8 @@
         "lighting": "outdoor_day",
         "weather": null,
         "animation": "city"
-      }
+      },
+      "victoryMusic": "victory_reward_music"
     },
     "alps": {
       "type": "mountain",
@@ -78,7 +85,8 @@
         "lighting": "outdoor_day",
         "weather": "mountain_snow",
         "animation": "mountain"
-      }
+      },
+      "victoryMusic": "victory_reward_music"
     },
     "mountains": {
       "type": "mountain",
@@ -88,7 +96,8 @@
         "lighting": "outdoor_day",
         "weather": "mountain_snow",
         "animation": "mountain"
-      }
+      },
+      "victoryMusic": "victory_reward_music"
     },
     "dojo": {
       "type": "dojo",
@@ -98,7 +107,8 @@
         "lighting": "indoor_dojo",
         "weather": null,
         "animation": "dojo"
-      }
+      },
+      "victoryMusic": "victory_reward_music"
     },
     "beach": {
       "type": "beach",
@@ -108,7 +118,8 @@
         "lighting": "outdoor_day",
         "weather": null,
         "animation": "beach"
-      }
+      },
+      "victoryMusic": "victory_reward_music"
     },
     "desert": {
       "type": "desert",
@@ -118,7 +129,8 @@
         "lighting": "outdoor_day",
         "weather": "desert_wind",
         "animation": null
-      }
+      },
+      "victoryMusic": "victory_reward_music"
     },
     "arena": {
       "type": "arena",
@@ -128,7 +140,8 @@
         "lighting": "arena_spotlight",
         "weather": null,
         "animation": null
-      }
+      },
+      "victoryMusic": "victory_reward_music"
     },
     "underground": {
       "type": "underground",
@@ -138,7 +151,8 @@
         "lighting": "underground",
         "weather": null,
         "animation": null
-      }
+      },
+      "victoryMusic": "victory_reward_music"
     }
   },
   "combat": {

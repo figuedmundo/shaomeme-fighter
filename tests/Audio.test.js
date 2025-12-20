@@ -1,11 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import VictorySlideshow from "../src/components/VictorySlideshow";
+import ConfigManager from "../src/config/ConfigManager";
 
 describe("Audio Logic", () => {
   let slideshow;
   let mockScene;
+  let mockAudioManager;
 
   beforeEach(() => {
+    mockAudioManager = {
+      playMusic: vi.fn(),
+      stopMusic: vi.fn(),
+    };
+
     mockScene = {
       scene: { start: vi.fn() },
       sound: {
@@ -14,6 +21,19 @@ describe("Audio Logic", () => {
         add: vi.fn(() => ({ play: vi.fn(), stop: vi.fn() })),
       },
       cache: { audio: { exists: vi.fn() } },
+      time: {
+        delayedCall: vi.fn((delay, callback) => {
+          callback();
+        }),
+      },
+      registry: {
+        get: vi.fn().mockImplementation((key) => {
+          if (key === "audioManager") {
+            return mockAudioManager;
+          }
+          return null;
+        }),
+      },
     };
     slideshow = new VictorySlideshow(mockScene);
     // Mock global document
@@ -21,27 +41,23 @@ describe("Audio Logic", () => {
   });
 
   it("should play soundtrack if available", () => {
-    mockScene.cache.audio.exists.mockReturnValue(true);
-    // We need to trigger handleAudio. show() does it after delay.
-    // Let's mock timers or call handleAudio directly if exposed (it is).
+    // Manually override the method on the singleton instance
+    const originalMethod = ConfigManager.getVictoryMusicForCity;
+    ConfigManager.getVictoryMusicForCity = vi
+      .fn()
+      .mockReturnValue("soundtrack_walking_on_cars");
 
-    slideshow.handleAudio("Paris");
+    try {
+      slideshow.handleAudio("paris");
 
-    // We expect it to try loading 'soundtrack' if my code is updated to check it
-    // Or just play it.
-    // The test expects the NEW logic: play 'soundtrack' specifically.
-
-    // Wait for timeout (mocked or check setTimeout usage)
-    // Actually, in the previous implementation it used setTimeout 1500.
-    // We should probably check if sound.add was called with 'soundtrack'.
-
-    vi.useFakeTimers();
-    slideshow.handleAudio("Paris");
-    vi.advanceTimersByTime(2000);
-
-    expect(mockScene.sound.add).toHaveBeenCalledWith(
-      "soundtrack",
-      expect.anything(),
-    );
+      // Now it uses ConfigManager to get music, which defaults to victory_reward_music for Paris
+      expect(mockAudioManager.playMusic).toHaveBeenCalledWith(
+        "soundtrack_walking_on_cars",
+        expect.anything(),
+      );
+    } finally {
+      // Restore original method
+      ConfigManager.getVictoryMusicForCity = originalMethod;
+    }
   });
 });

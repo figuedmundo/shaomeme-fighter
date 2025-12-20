@@ -11,7 +11,25 @@ describe("VictorySlideshow Component", () => {
   beforeEach(() => {
     mockScene = {
       scene: { start: vi.fn(), resume: vi.fn() },
-      sound: { play: vi.fn(), stopAll: vi.fn() },
+      sound: {
+        play: vi.fn(),
+        stopAll: vi.fn(),
+        add: vi.fn().mockReturnValue({ play: vi.fn(), stop: vi.fn() }),
+      },
+      time: {
+        delayedCall: vi.fn((delay, callback) => callback()),
+      },
+      registry: {
+        get: vi.fn().mockImplementation((key) => {
+          if (key === "audioManager") {
+            return {
+              playMusic: vi.fn(),
+              stopMusic: vi.fn(),
+            };
+          }
+          return null;
+        }),
+      },
     };
     slideshow = new VictorySlideshow(mockScene);
     document.body.innerHTML = ""; // Clear DOM

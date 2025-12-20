@@ -30,16 +30,16 @@ export default class PreloadScene extends Phaser.Scene {
     // Audio
     console.log("PreloadScene: Loading Audio...");
     // UI Sounds
-    this.load.audio("ui_select", "/assets/audio/sfx/attack1.mp3"); // Using attack1 as placeholder for select
-    this.load.audio("ui_move", "/assets/audio/sfx/attack2.mp3"); // Using attack2 as placeholder for move
-    this.load.audio("ui_back", "/assets/audio/sfx/attack3.mp3"); // Using attack3 as placeholder for back
+    this.load.audio("ui_select", "/assets/audio/sounds/menu_command.mp3"); // Using attack1 as placeholder for select
+    this.load.audio("ui_move", "/assets/audio/sounds/menu_command.mp3"); // Using attack2 as placeholder for move
+    this.load.audio("ui_back", "/assets/audio/sounds/menu_command.mp3"); // Using attack3 as placeholder for back
 
     // Music
     this.load.audio(
-      "menu_music",
+      "victory_reward_music",
       "/assets/audio/music/soundtrack_walking_on_cars.mp3",
     );
-    this.load.audio("select_music", "/assets/audio/music/vs.mp3");
+    this.load.audio("menu_music", "/assets/audio/music/menu_music.mp3");
     this.load.audio("arena", "/assets/audio/music/arena.mp3");
 
     // Announcer/KO

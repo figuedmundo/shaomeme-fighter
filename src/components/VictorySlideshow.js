@@ -1,3 +1,5 @@
+import ConfigManager from "../config/ConfigManager";
+
 export default class VictorySlideshow {
   constructor(scene) {
     this.scene = scene;
@@ -5,7 +7,7 @@ export default class VictorySlideshow {
     this.photos = [];
     this.currentIndex = 0;
     this.intervalId = null;
-    this.music = null;
+    this.audioManager = scene.registry.get("audioManager");
   }
 
   async show(city) {
@@ -15,8 +17,10 @@ export default class VictorySlideshow {
       if (res.ok) {
         const allPhotos = await res.json();
         // EXCLUDE the arena background from the reward slideshow
-        this.photos = allPhotos.filter(p => !p.isBackground);
-        console.log(`VictorySlideshow: Found ${allPhotos.length} total photos, using ${this.photos.length} as rewards (excluded background).`);
+        this.photos = allPhotos.filter((p) => !p.isBackground);
+        console.log(
+          `VictorySlideshow: Found ${allPhotos.length} total photos, using ${this.photos.length} as rewards (excluded background).`,
+        );
       } else {
         console.warn("Failed to fetch photos");
       }
@@ -109,27 +113,20 @@ export default class VictorySlideshow {
   }
 
   handleAudio(city) {
-    // Stop all current sounds
-    this.scene.sound.stopAll();
+    // Wait slightly then play victory/slideshow music via AudioManager
+    this.scene.time.delayedCall(1500, () => {
+      if (!this.audioManager) return;
 
-    // Play KO sound immediately
-    this.scene.sound.play("KO", { volume: 0.8 });
-
-    // Wait slightly then play victory/slideshow music
-    setTimeout(() => {
-      // Use specific soundtrack if available
-      const trackKey = this.scene.cache.audio.exists("soundtrack")
-        ? "soundtrack"
-        : "arena";
-
-      this.music = this.scene.sound.add(trackKey, { loop: true, volume: 0.5 });
-      this.music.play();
-    }, 1500);
+      const trackKey = ConfigManager.getVictoryMusicForCity(city);
+      this.audioManager.playMusic(trackKey, { loop: true, volume: 0.5 });
+    });
   }
 
   exit() {
     if (this.intervalId) clearInterval(this.intervalId);
-    if (this.music) this.music.stop();
+    if (this.audioManager) {
+      this.audioManager.stopMusic(500); // 0.5s fade
+    }
     if (this.overlay) {
       document.body.removeChild(this.overlay);
       this.overlay = null;

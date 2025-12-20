@@ -5,10 +5,6 @@ export default class MainMenuScene extends Phaser.Scene {
     super("MainMenuScene");
   }
 
-  preload() {
-    this.load.image("logo", "resources/shaomeme_fighter.png");
-  }
-
   create() {
     const { width, height } = this.scale;
 
