@@ -1,4 +1,3 @@
-import Phaser from "phaser";
 import UnifiedLogger from "../utils/Logger.js";
 
 const logger = new UnifiedLogger("Frontend:HitFeedbackSystem");
@@ -100,6 +99,33 @@ export default class HitFeedbackSystem {
 
     // 5. Flash/Blink (on defender)
     this.flashFighter(defender);
+  }
+
+  /**
+   * Triggers visual feedback for a successful block
+   * - Blue/White flash on defender
+   * - Block Sparks (Blue)
+   * - Short Hit Stop
+   */
+  triggerBlockFeedback(defender) {
+    logger.info(`Triggering block feedback for ${defender.texture.key}`);
+
+    // 1. Short Hit Stop (simulating "Block Stun")
+    this.hitStop(40);
+
+    // 2. Block Sparks (Blue)
+    const impactX = defender.x; // Block happens AT the defender
+    const impactY = defender.y - 90;
+
+    // Set Blue Tint (0x4444ff)
+    this.hitSparkEmitter.setParticleTint(0x4444ff);
+    this.hitSparkEmitter.emitParticleAt(impactX, impactY, 5);
+
+    // 3. Flash Blue
+    defender.setTint(0x4444ff);
+    this.scene.time.delayedCall(50, () => {
+      defender.clearTint();
+    });
   }
 
   /**

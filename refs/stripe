@@ -1,0 +1,237 @@
+Refined Prompt for Midjourney/v6:
+  > [Character Description, e.g., A cyborg monk], full body character spritesheet, 8x4 grid, orthographic side profile view, 3D rendered style, Unreal Engine
+  5, realistic textures, pure white background, consistent character model, multiple action poses including idle, walking, punching, and falling. High
+  contrast, sharp edges, evenly spaced sequence --no shadows, perspective, blur, gradient --ar 1:1 --stylize 250 --v 6.0
+
+  3. Key Issues to Watch Out For
+   * Volumetric Lighting vs. White Background: These two conflict. Volumetric lighting needs "fog" or "dust" to be visible, which will create gray smudges on
+     your white background, making it impossible to get clean transparency. Recommendation: Use "studio lighting" or "rim lighting" instead.
+   * The 200x400 Aspect Ratio: Most AI models prefer square (1:1) or wide (3:2) generation. If you use --ar 2:3, the AI might try to stack frames vertically.
+     Stick to --ar 1:1 for the generation, then we can crop/resize to the 200x400 frame size later.
+
+  4. How I can help
+  If you generate an image that has, say, 20 good frames but they are in a 5x4 grid instead of an 8x4 grid:
+   1. Upload the image here.
+   2. I can write a script to automatically slice those frames and re-arrange them into the correct 8x4 layout required by the Fighter.js logic.
+
+  Would you like me to create a small Python script for you that takes a raw AI "grid" and converts it into the specific 8x4 format?
+
+> I dont understand for the die in the floor position, how it will fit in a rectangle 200x400 , because if it is in the floor, it will have more a style
+  400x200
+
+✦ That is an excellent observation. You are mathematically correct: a character standing 400px tall who then lies flat on the ground would typically be wider
+  than 200px.
+
+  In 2D fighting games with narrow frame widths (like our 200x400), there are three ways this is usually handled:
+
+  1. The "Foreshortened" Death (Recommended for 200x400)
+  Instead of the character lying perfectly flat sideways (like a _), they are drawn as if they fell slightly toward or away from the camera at an angle.
+   * Their head might be near the top-left of the box and their feet near the bottom-right.
+   * This uses the diagonal of the 200x400 box, giving you much more room (~440px of space).
+
+  2. The "Crumple" Pose
+  Most modern mobile fighters avoid the "plank" death. The character collapses into a heap:
+   * Knees tucked in.
+   * Arms pulled close to the chest.
+   * This keeps the horizontal width under 200px while still looking like a "KO".
+
+  3. Change the Grid to 400x400 (The "Pro" Solution)
+  If you want the character to lie completely flat and take up a lot of horizontal space, we should update the code to use 400x400 frames instead.
+   * Pros: Total freedom of movement; characters can do long-reaching kicks and lie flat.
+   * Cons: The spritesheet becomes very large (3200 x 1600), which might hit memory limits on very old iPhones (iPhone 6/7).
+
+  ---
+
+  My Recommendation
+  Since you are using AI to generate these, stick to the 200x400 logic for now but tell the AI to use a "side-view foreshortened" or "curled up" death pose.
+
+  Updated prompt snippet for the "Die" action:
+  > "...for the dying sequence, the character should collapse into a crumpled heap or fall at an angle toward the viewer to fit within a narrow vertical
+  frame, ensuring no part of the body is cut off by the side edges."
+
+  Would you like me to check the current `Fighter.js` code to see how hard it would be to switch the game to 400x400 frames? That would give you much more
+  "cinematic" looking sprites.
+
+> also for the punching and kicking poses, the AI generates a more square , becauase the arm and the leg are extended, how do I need to fix the promop ?
+
+✦ To fit a character's extended limbs (punches and kicks) into a narrow 200x400 frame, you have to move away from a "pure side profile" and use
+  foreshortening.
+
+  In a pure side profile, a punch is a long horizontal line. In a 3/4 view, the arm is coming partially toward the camera, making it look long but taking up
+  very little horizontal space on the screen.
+
+  Here are the specific prompt adjustments to fix the "square" problem:
+
+  1. Change the Viewpoint (The "3/4 Trick")
+  Replace "side profile view" with "3/4 profile view" or "slight perspective." This allows the limbs to extend "forward-diagonal" instead of "left-to-right."
+
+  2. Specify Vertical Actions
+  Instead of generic "punching," ask for actions that use the 400px height.
+   * Keywords: "Uppercuts," "High kicks," "Axe kicks," "Overhead strikes."
+
+  3. Add "Negative Space" Constraints
+  Tell the AI to keep the character "thin."
+   * Keywords: "Compact fighting stance," "Narrow horizontal footprint," "Tucked elbows," " limbs extending toward the viewer."
+
+  4. Updated "Pro" Prompt
+  Try this version of your prompt:
+
+  > "See attached; full body character spritesheet, 3/4 profile view, 3D rendered style, Unreal Engine 5, realistic lighting. The image is a grid of action
+  sequences: compact punching (foreshortened), high-angle kicking, hit reaction, and curled-up dying pose. Character must maintain a narrow vertical profile.
+  High fidelity, isolated on solid white background, consistent model, centered in frames with wide side margins, --no blur, noise, cropped, shadows --v 6.0
+  --ar 1:1"
+
+  ---
+
+  Why this works:
+   * 3/4 View: The arm doesn't go ----->, it goes /. It looks like a powerful punch but stays within the 200px width.
+   * Wide Side Margins: By telling the AI to keep "wide side margins," you force it to scale the character down slightly so the extension doesn't hit the
+     edge.
+   * High-Angle Kicking: Directs the AI to use the 400px height instead of the 200px width.
+
+  One Final Tip:
+  If you find that the AI simply cannot produce a good punch in 200px width (because the character is too "thick" or detailed), we can easily update the game
+  code to use 400x400 frames. 
+
+  Do you want me to modify `Fighter.js` and the `rosterConfig.js` right now to support 400x400? This would give your AI much more room to breathe and allow
+  for much cooler, wider attack animations.
+
+> why we deciden a rectangle in first place and not a sqaure in first place ?
+
+✦ The choice of 200x400 (1:2 ratio) was likely made for three specific technical and stylistic reasons, but those reasons often clash with how AI likes to
+  work.
+
+  1. Texture Memory (Mobile Performance)
+  A fighting game loads many spritesheets at once. 
+   * 200x400: An 8x4 grid results in a 1600x1600 texture. This is small, fast to load, and works on every phone made in the last 10 years.
+   * 400x400: An 8x4 grid results in a 3200x1600 texture. This uses double the RAM. On a high-end iPhone it's fine, but on older devices, loading 10
+     characters might crash the browser.
+
+  2. Screen Real Estate
+  On a phone screen in landscape mode, the height is limited. If characters are 400px wide while just standing still, they take up half the stage. A 200px
+  width allows for more "footsies" (movement back and forth) and makes the stage feel larger.
+
+  3. Nostalgic Style
+  Old-school games like Mortal Kombat or Street Fighter used narrow vertical rectangles because human bodies are taller than they are wide.
+
+  ---
+
+  The "AI Conflict"
+  The problem is that AI models (like Midjourney or DALL-E) are trained on square photos. When you ask for a "Full Body Shot," the AI automatically tries to
+  fill a square. 
+   * If we force it into a 200x400 box, the AI thinks the character is "too skinny" and starts to glitch.
+   * If the AI generates a square, and we crop it to 200x400, we cut off the arms and legs.
+
+  My Suggestion: Switch to 400x400
+  Since your primary workflow is AI generation, the 200x400 restriction is hurting you more than it's helping the game. 
+
+  I recommend we update the code to 400x400.
+   1. AI will follow the prompt better because it can draw full arm extensions and legs.
+   2. Lying on the floor will look much more natural.
+   3. Modern Phones can easily handle the 3200x1600 texture size.
+
+  Shall I update `Fighter.js` and the `ASSET_GUIDELINES.md` to support 400x400 frames? This will make your "Nano Banana Pro" prompt work much more reliably.
+
+> lets try with rectangle 200x400 , I need a prompt that follow your recomendation ,  1. The "Foreshortened" Death (Recommended for 200x400)
+    Instead of the character lying perfectly flat sideways (like a _), they are drawn as if they fell slightly toward or away from the camera at an angle.
+     * Their head might be near the top-left of the box and their feet near the bottom-right.
+     * This uses the diagonal of the 200x400 box, giving you much more room (~440px of space).
+
+    2. The "Crumple" Pose
+    Most modern mobile fighters avoid the "plank" death. The character collapses into a heap:
+     * Knees tucked in.
+     * Arms pulled close to the chest.
+     * This keeps the horizontal width under 200px while still looking like a "KO".
+
+    3. Change the Grid to 400x400 (The "Pro" Solution)
+    If you want the character to lie completely flat and take up a lot of horizontal space, we should update the code to use 400x400 frames instead.
+     * Pros: Total freedom of movement; characters can do long-reaching kicks and lie flat.
+     * Cons: The spritesheet becomes very large (3200 x 1600), which might hit memory limits on very old iPhones (iPhone 6/7).
+
+    ---
+
+    My Recommendation
+    Since you are using AI to generate these, stick to the 200x400 logic for now but tell the AI to use a "side-view foreshortened" or "curled up" death pose.
+
+    Updated prompt snippet for the "Die" action:
+    > "...for the dying sequence, the character should collapse into a crumpled heap or fall at an angle toward the viewer to fit within a narrow vertical
+    frame, ensuring no part of the body is cut off by the side edges."
+
+✦ To make the AI respect the 200x400 rectangle, we need to use keywords that prioritize verticality and depth over horizontal width.
+
+  Here is a highly optimized prompt designed to keep the character "thin" enough for the 200px width while using the 400px height effectively.
+
+  The "Vertical-First" Spritesheet Prompt
+
+  > Prompt:
+  > "Full body character spritesheet of [INSERT CHARACTER DESCRIPTION HERE], 3/4 profile view, 8x4 grid, 3D rendered style, Unreal Engine 5, realistic
+  textures, pure white background. Compact fighting stance with narrow horizontal footprint. Action sequences include: idle, walk, foreshortened punches
+  extending toward camera, high vertical axe-kicks, hit reaction, and a crumpled heap death pose. All poses must be taller than they are wide, centered in
+  frames with wide empty side margins to prevent limb clipping. High fidelity, sharp focus, consistent model --no shadows, perspective distortion, blur, or
+  noise --v 6.0 --ar 1:1"
+
+  ---
+
+  Why this prompt works for 200x400:
+
+   1. "3/4 Profile View": By turning the character slightly toward the camera, a punch that would be 300px wide in a flat side-view becomes only 100px wide
+      because of perspective (foreshortening).
+   2. "Compact fighting stance / Narrow horizontal footprint": This explicitly tells the AI not to let the character spread their legs or arms too wide.
+   3. "Foreshortened punches extending toward camera": This is the secret. It makes the attack look powerful and long, but on the 2D plane of the screen, the
+      arm stays within the character's body width.
+   4. "High vertical axe-kicks": Instead of a "roundhouse" (which is wide), an axe-kick or high-knee uses the 400px height we have available.
+   5. "Crumpled heap death pose": This prevents the "plank" problem. The character collapses downward into a pile rather than sliding out horizontally.
+   6. "Wide empty side margins": AI loves to fill the frame. By asking for "wide margins," you force the character to be smaller and centered, giving us the
+      "air" we need to crop them into 200x400 without losing a hand or a foot.
+
+  Pro-Tip for "The Floor"
+  If the AI still struggles with the death pose, you can try adding this specific instruction to the end:
+  > "...for the lying flat frames, the character is tilted diagonally from top-left to bottom-right to fit the narrow vertical space."
+
+  Would you like me to write a quick Python script that you can run on your computer to "slice and dice" the image the AI gives you into the exact 1600x1600
+  sheet the game needs? That way, even if the AI layout is slightly messy, we can fix it automatically.
+
+> what about this poses, please explain ,   8.  **Frames 19-22 (Row 3):** Intro sequence (4 frames).
+    9.  **Frames 23 (Row 3), 24-26 (Row 4):** Victory pose (4 frames).
+    10. **Frames 27-28 (Row 4):** Crumple/Knockdown (2 frames).
+
+✦ These three sequences are the "personality" of your character. Because we are using a 200x400 rectangle, these poses need to be very "tight" and vertical.
+
+  Here is an explanation of each, and how to make them work within that narrow 200px width:
+
+  8. Intro Sequence (Frames 19-22)
+  This is the "Entrance" the character makes before the fight starts.
+   * The Goal: Show who the character is.
+   * Visual Idea: Since you only have 200px of width, don't have them walk in from the side (they will be cut off). Instead, have them perform a vertical
+     action.
+   * Example: The character looking at the ground, then looking up at the camera and cracking their knuckles.
+   * AI Tip: Ask for a "facing-forward taunt" or "adjusting fighting gloves".
+
+  9. Victory Pose (Frames 23-26)
+  This is the "Reward" screen (and the loop that plays during the slideshow).
+   * The Goal: A proud, triumphant moment.
+   * Visual Idea: This is the easiest to fit in 200x400 because humans naturally get "tall" when they win.
+   * Example: Raising a fist high in the air, crossing arms and nodding, or pointing a finger at the camera.
+   * AI Tip: Ask for "triumphant overhead gesture" or "proud standing pose". Avoid "celebration jumps" which might make them go too wide.
+
+  10. Crumple / Knockdown (Frames 27-28)
+  This is the "Stagger" that happens right before they hit the floor. It’s the transition from standing to dying.
+   * The Goal: Show the character losing their balance and starting to fall.
+   * Visual Idea: The character should be folding at the waist.
+   * Example: Frame 27 is the character's knees hitting the ground; Frame 28 is their hands touching the floor as they start to collapse.
+   * AI Tip: Ask for "collapsing onto knees" or "stumbling backwards while clutching stomach".
+
+  ---
+
+  How to update your AI Prompt for these:
+  To get these specific sequences in your grid, you should add this "Scenario Section" to your prompt:
+
+  > "...the sequence must include: (Intro) a vertical 4-frame taunt looking at camera, (Victory) a 4-frame pose with a fist raised high, and (Defeat) a
+  2-frame sequence of the character collapsing onto their knees followed by a 3-frame lying flat pose tilted diagonally to fit the frame."
+
+  Summary of the "Golden Rule" for 200x400:
+  Whenever a character does something "wide" (like a big kick or falling down), tilt them toward the camera. 
+   * Instead of: _ (lying flat) 
+   * Use: / (tilted toward the corner)
+
+  This uses the hypotenuse (diagonal) of your rectangle, which gives you about 440 pixels of room instead of just 200

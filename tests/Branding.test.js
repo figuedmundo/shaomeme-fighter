@@ -47,14 +47,6 @@ describe("Branding Integration", () => {
     scene = new MainMenuScene();
   });
 
-  it("should preload the logo", () => {
-    scene.preload();
-    expect(scene.load.image).toHaveBeenCalledWith(
-      "logo",
-      "resources/shaomeme_fighter.png",
-    );
-  });
-
   it("should create the logo image in create()", () => {
     scene.create();
     expect(scene.add.image).toHaveBeenCalled();

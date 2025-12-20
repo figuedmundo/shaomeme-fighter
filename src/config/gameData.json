@@ -156,6 +156,12 @@
     }
   },
   "combat": {
+    "global": {
+      "walkSpeed": 160,
+      "jumpPower": -600,
+      "attackDamage": 10,
+      "maxHealth": 100
+    },
     "damage": {
       "LIGHT_ATTACK": 10,
       "HEAVY_ATTACK": 20
@@ -177,6 +183,11 @@
       }
     },
     "attackRange": 80
+  },
+  "difficulty": {
+    "easy": { "aggression": 0.2, "blockRate": 0.1, "reactionTime": 1000 },
+    "medium": { "aggression": 0.5, "blockRate": 0.4, "reactionTime": 500 },
+    "hard": { "aggression": 0.8, "blockRate": 0.7, "reactionTime": 200 }
   },
   "roster": [
     {

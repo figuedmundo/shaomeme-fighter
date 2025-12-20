@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import UnifiedLogger from "../utils/Logger.js";
+import ConfigManager from "../config/ConfigManager.js";
 
 const logger = new UnifiedLogger("Frontend:Fighter");
 
@@ -36,10 +37,18 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     this.body.setSize(120, 360);
     this.body.setOffset(40, 40);
 
-    // Properties
-    this.velocity = 160;
-    this.jumpPower = -600;
-    this.health = 100;
+    // Properties from Config
+    const combatConfig = ConfigManager.getCombatConfig();
+    const globalStats = combatConfig?.global || {
+      walkSpeed: 160,
+      jumpPower: -600,
+      maxHealth: 100,
+    };
+
+    this.velocity = globalStats.walkSpeed;
+    this.jumpPower = globalStats.jumpPower;
+    this.health = globalStats.maxHealth;
+
     this.currentState = FighterState.IDLE;
     this.isAttacking = false;
     this.isHit = false;
@@ -69,6 +78,10 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
 
   setAudioManager(manager) {
     this.audioManager = manager;
+  }
+
+  setOpponent(opponent) {
+    this.opponent = opponent;
   }
 
   createAnimations(textureKey) {
@@ -137,7 +150,8 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
       this.setVelocityX(0); // Stop moving if input disabled
       if (
         this.currentState === FighterState.WALK ||
-        this.currentState === FighterState.CROUCH
+        this.currentState === FighterState.CROUCH ||
+        this.currentState === FighterState.BLOCK
       ) {
         this.setState(FighterState.IDLE);
       }
@@ -327,13 +341,30 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
       } else if (attack) {
         this.setState(FighterState.ATTACK);
       } else if (left) {
-        this.setVelocityX(-this.velocity);
-        this.setFlipX(true);
-        this.setState(FighterState.WALK);
+        // Check for Block (Moving Left while Opponent is to the Left is Forward, Moving Left while Opponent is Right is Back)
+        const isBlocking = this.opponent && this.opponent.x > this.x; // Moving Left (Back) away from Opponent (Right)
+        // console.log(`DEBUG: left=${left} oppX=${this.opponent?.x} myX=${this.x} isBlocking=${isBlocking}`);
+
+        if (isBlocking) {
+          this.setVelocityX(0);
+          this.setState(FighterState.BLOCK);
+        } else {
+          this.setVelocityX(-this.velocity);
+          this.setFlipX(true);
+          this.setState(FighterState.WALK);
+        }
       } else if (right) {
-        this.setVelocityX(this.velocity);
-        this.setFlipX(false);
-        this.setState(FighterState.WALK);
+        // Check for Block (Moving Right while Opponent is to the Left is Back)
+        const isBlocking = this.opponent && this.opponent.x < this.x; // Moving Right (Back) away from Opponent (Left)
+
+        if (isBlocking) {
+          this.setVelocityX(0);
+          this.setState(FighterState.BLOCK);
+        } else {
+          this.setVelocityX(this.velocity);
+          this.setFlipX(false);
+          this.setState(FighterState.WALK);
+        }
       } else if (up) {
         this.setVelocityY(this.jumpPower);
         this.setState(FighterState.JUMP);

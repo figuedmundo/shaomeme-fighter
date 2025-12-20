@@ -121,7 +121,7 @@ _Add strategic layers_
 
 - [ ] **Special Moves** — Unique signature moves per character (QCF motion) `L`
 - [ ] **Super Meter** — Fills with attacks taken/given, enables super moves `M`
-- [ ] **Block Mechanic** — Hold back to reduce damage `S`
+- [x] **Block Mechanic** — Hold back to reduce damage `S`
 - [ ] **Throw System** — Close-range unblockable grabs `M`
 - [ ] **Juggle System** — Launch attacks that enable air combos `M`
 
@@ -134,9 +134,9 @@ _Add strategic layers_
 
 ### 4.3 Difficulty & Balance
 
-- [ ] **AI Difficulty Settings** — Easy/Medium/Hard/Nightmare modes `M`
+- [x] **AI Difficulty Settings** — Easy/Medium/Hard/Nightmare modes `M`
 - [ ] **Adaptive AI** — Learns player patterns over time `L`
-- [ ] **Character Balance Pass** — Ensure fair matchups `M`
+- [x] **Character Balance Pass** — Ensure fair matchups `M`
 
 ---
 

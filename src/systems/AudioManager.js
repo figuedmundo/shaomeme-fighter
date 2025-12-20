@@ -268,7 +268,15 @@ export default class AudioManager {
    * Play block sound
    */
   playBlock() {
-    this.playRandomVariation("block");
+    if (this.blockSounds && this.blockSounds.length > 0) {
+      this.playRandomVariation("block");
+    } else {
+      // Fallback: Play impact sound with lower volume and pitch
+      // Note: Phaser Sound Manager allows detune/rate
+      // Here we just use playRandomVariation("impact") with lower volume for simplicity
+      // Ideally we would play a specific muted sound
+      this.playRandomVariation("impact", this.volumes.impact * 0.5);
+    }
   }
 
   /**

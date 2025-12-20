@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import Fighter, { FighterState } from "../components/Fighter";
 import TouchInputController from "../systems/TouchInputController";
+import AIInputController from "../systems/AIInputController";
 import TouchVisuals from "../components/TouchVisuals";
 import VictorySlideshow from "../components/VictorySlideshow";
 import HitFeedbackSystem from "../systems/HitFeedbackSystem";
@@ -184,6 +185,11 @@ export default class FightScene extends Phaser.Scene {
     this.player1 = new Fighter(this, 300, height - 150, p1Texture);
     this.player2 = new Fighter(this, width - 300, height - 150, p2Texture);
     this.player2.setFlipX(true);
+
+    // Link opponents for relative direction logic (Blocking)
+    this.player1.setOpponent(this.player2);
+    this.player2.setOpponent(this.player1);
+
     logger.debug("FightScene: Fighters created");
 
     // PHASE 3.1: Add spotlights on fighters if enabled
@@ -207,23 +213,29 @@ export default class FightScene extends Phaser.Scene {
     this.touchVisuals = new TouchVisuals(this);
     logger.debug("FightScene: Touch controls initialized");
 
+    // Player 1: Human (Keyboard + Touch)
     const p1Cursors = this.input.keyboard.createCursorKeys();
     const p1Keys = {
       attack: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
     };
     this.player1.setControls(p1Cursors, p1Keys, this.touchController);
 
-    const p2Cursors = this.input.keyboard.addKeys({
-      up: Phaser.Input.Keyboard.KeyCodes.W,
-      down: Phaser.Input.Keyboard.KeyCodes.S,
-      left: Phaser.Input.Keyboard.KeyCodes.A,
-      right: Phaser.Input.Keyboard.KeyCodes.D,
-    });
-    const p2Keys = {
-      attack: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F),
-    };
-    this.player2.setControls(p2Cursors, p2Keys);
-    logger.debug("FightScene: All controls set");
+    // Player 2: AI (AI Input Controller)
+    // We use AIInputController as the "Touch Controller" (3rd arg) for consistency
+    // Passing null for keyboard keys as AI generates its own state
+    this.aiController = new AIInputController(
+      this,
+      this.player2,
+      this.player1,
+      "medium",
+    );
+    this.player2.setControls(
+      this.aiController.getCursorKeys(),
+      { attack: this.aiController.getAttackKey() },
+      null, // No touch controller for AI
+    );
+
+    logger.debug("FightScene: All controls set (P1 Human, P2 AI)");
 
     // 5. Hit Feedback System
     this.hitFeedback = new HitFeedbackSystem(this);
@@ -342,6 +354,11 @@ export default class FightScene extends Phaser.Scene {
   update(time, delta) {
     this.player1.update();
     this.player2.update();
+
+    // Update AI
+    if (this.aiController) {
+      this.aiController.update(time, delta);
+    }
 
     // 1. Dynamic Camera Follow
     this.updateCamera();
@@ -468,6 +485,18 @@ export default class FightScene extends Phaser.Scene {
         !defender.isHit &&
         defender.health > 0
       ) {
+        // Block Logic
+        if (defender.currentState === FighterState.BLOCK) {
+          logger.info(
+            `${defender.texture.key} blocked attack from ${attacker.texture.key}`,
+          );
+          this.hitFeedback.triggerBlockFeedback(defender);
+          if (this.audioManager) {
+            this.audioManager.playBlock();
+          }
+          return; // Damage mitigated (100%)
+        }
+
         logger.info(`${attacker.texture.key} hit ${defender.texture.key}!`);
 
         const damage = 10;
