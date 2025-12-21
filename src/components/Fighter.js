@@ -330,9 +330,11 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     const right = this.cursors.right.isDown || touchCursors.right.isDown;
     const up = this.cursors.up.isDown || touchCursors.up.isDown;
     const down = this.cursors.down.isDown || touchCursors.down.isDown;
-    const attack =
-      this.scene.input.keyboard.checkDown(this.keys.attack, 250) ||
-      touchAttack.isDown;
+    const keyAttack =
+      this.keys &&
+      this.keys.attack &&
+      this.scene.input.keyboard.checkDown(this.keys.attack, 250);
+    const attack = keyAttack || touchAttack.isDown;
 
     // Ground Movement
     if (onGround) {

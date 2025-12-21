@@ -90,10 +90,9 @@ export default class AIInputController {
 
   makeDecision() {
     const distance = Math.abs(this.fighter.x - this.opponent.x);
-    const attackRange = 100; // Roughly
+    const attackRange = 140; // Increased to account for body width (120px) collision
 
-    // Reset transient actions (Attack is a pulse, Block is a state)
-    this.attackKey.isDown = false;
+    // Reset transient actions (Attack is a pulse, Block is a state)    this.attackKey.isDown = false;
 
     // 1. Defensive Check (Reaction)
     // If opponent is attacking and close, chance to Block

@@ -231,8 +231,8 @@ export default class FightScene extends Phaser.Scene {
     );
     this.player2.setControls(
       this.aiController.getCursorKeys(),
-      { attack: this.aiController.getAttackKey() },
-      null, // No touch controller for AI
+      null, // No keyboard keys for AI (prevents checkDown errors)
+      this.aiController, // Treat AI as "Touch" controller for direct input reading
     );
 
     logger.debug("FightScene: All controls set (P1 Human, P2 AI)");
