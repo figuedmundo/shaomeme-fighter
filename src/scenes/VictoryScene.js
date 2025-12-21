@@ -59,10 +59,18 @@ export default class VictoryScene extends Phaser.Scene {
       .text(width / 2, statsY + 100, `TIME: ${99 - time}s`, statsStyle)
       .setOrigin(0.5);
 
+    // Save data for rematch
+    this.rematchData = {
+      city: data.city,
+      backgroundUrl: data.backgroundUrl,
+      backgroundKey: data.backgroundKey,
+      playerCharacter: data.playerCharacter,
+    };
+
     // Buttons
     // CLAIM REWARD (Main Action)
     const claimBtn = this.add
-      .text(width / 2, height * 0.75, "CLAIM REWARD >", {
+      .text(width / 2, height * 0.7, "CLAIM REWARD >", {
         fontFamily: '"Press Start 2P"',
         fontSize: "32px",
         fill: "#00ff00",
@@ -86,7 +94,30 @@ export default class VictoryScene extends Phaser.Scene {
       this.showSlideshow(city);
     });
 
-    // MAIN MENU (Secondary Action)
+    // REMATCH (Secondary Action)
+    const rematchBtn = this.add
+      .text(width / 2, height * 0.8, "REMATCH", {
+        fontFamily: '"Press Start 2P"',
+        fontSize: "24px",
+        fill: "#ffaa00", // Orange
+        backgroundColor: "#331100",
+        padding: { x: 15, y: 10 },
+      })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+
+    rematchBtn.on("pointerdown", async () => {
+      if (this.audioManager) this.audioManager.playUi("ui_select");
+      await this.transition.transitionTo(
+        "FightScene",
+        this.rematchData,
+        TransitionPresets.QUICK.type,
+        TransitionPresets.QUICK.duration,
+        TransitionPresets.QUICK.color,
+      );
+    });
+
+    // MAIN MENU (Tertiary Action)
     const menuBtn = this.add
       .text(width / 2, height * 0.9, "MAIN MENU", {
         fontFamily: '"Press Start 2P"',

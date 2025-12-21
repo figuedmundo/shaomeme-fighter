@@ -71,7 +71,11 @@ export default class FightScene extends Phaser.Scene {
         text: () => ({
           setOrigin: () => ({
             setScrollFactor: () => ({
-              setDepth: () => ({ setText: () => {} }),
+              setDepth: () => ({
+                setText: () => {},
+                setInteractive: () => ({ on: () => {} }),
+                on: () => {},
+              }),
             }),
           }),
           destroy: () => {},
@@ -304,7 +308,70 @@ export default class FightScene extends Phaser.Scene {
     // Start Round Sequence
     this.startRoundSequence();
 
+    // PHASE 5.4: Accessibility & QoL
+    this.createPauseButton();
+    this.checkTutorial();
+
     logger.info("FightScene: create() complete");
+  }
+
+  // PHASE 5.4: Pause Logic
+  createPauseButton() {
+    const { width } = this.scale;
+    const padding = 20;
+
+    const pauseButton = this.add.text(width - padding, padding, "PAUSE", {
+      fontFamily: '"Press Start 2P"',
+      fontSize: "16px",
+      fill: "#ffffff",
+      backgroundColor: "#000000",
+      padding: { x: 8, y: 4 },
+    });
+
+    if (pauseButton) {
+      if (typeof pauseButton.setOrigin === "function")
+        pauseButton.setOrigin(1, 0);
+      if (typeof pauseButton.setScrollFactor === "function")
+        pauseButton.setScrollFactor(0);
+      if (typeof pauseButton.setDepth === "function")
+        pauseButton.setDepth(2000);
+      if (typeof pauseButton.setInteractive === "function")
+        pauseButton.setInteractive({ useHandCursor: true });
+
+      if (typeof pauseButton.on === "function") {
+        pauseButton.on("pointerdown", () => {
+          logger.info("Pause button clicked");
+          if (this.audioManager) this.audioManager.playUi("ui_select");
+
+          this.scene.pause("FightScene");
+          this.scene.launch("PauseScene");
+        });
+      }
+
+      this.pauseButton = pauseButton;
+    }
+
+    // Ignore pause button on main camera if using UI camera pattern (though UIManager handles its own)
+    // Here we just set ScrollFactor(0) which works on main camera too if UI camera isn't exclusive.
+    // If UIManager uses a separate camera and main camera ignores UI, we might need to be careful.
+    // However, UIManager creates its own camera but doesn't force main camera to ignore *everything* unless explicitly told.
+    // UIManager ignores its own elements.
+  }
+
+  // PHASE 5.4: Tutorial Logic
+  checkTutorial() {
+    try {
+      const hasSeen = localStorage.getItem("has_seen_tutorial");
+      if (!hasSeen) {
+        logger.info("First time player detected, showing tutorial");
+        // We pause immediately.
+        // Note: startRoundSequence sets up tweens. Pausing stops update() and tweens.
+        this.scene.pause("FightScene");
+        this.scene.launch("TutorialOverlayScene");
+      }
+    } catch (e) {
+      logger.warn("LocalStorage error checking tutorial", e);
+    }
   }
 
   startRoundSequence() {
@@ -650,8 +717,12 @@ export default class FightScene extends Phaser.Scene {
                 winner: 1,
                 health: this.player1.health,
                 combo: 5, // TODO: Track actual max combo in stats
-                time: this.uiManager ? this.uiManager.currentTime : 99,
+                time: this.uiManager ? this.uiManager.timeLeft : 99,
+                // Setup Data for Rematch
                 city: this.city,
+                backgroundUrl: this.backgroundUrl,
+                backgroundKey: this.backgroundKey,
+                playerCharacter: this.playerCharacter,
               },
               TransitionPresets.FIGHT_TO_VICTORY.type,
               TransitionPresets.FIGHT_TO_VICTORY.duration,
@@ -860,9 +931,13 @@ export default class FightScene extends Phaser.Scene {
             {
               winner: 1,
               health: this.player1.health,
-              combo: 0,
-              time: 0,
+              combo: 0, // TODO: Track max combo
+              time: this.uiManager ? this.uiManager.timeLeft : 0,
+              // Setup Data for Rematch
               city: this.city,
+              backgroundUrl: this.backgroundUrl,
+              backgroundKey: this.backgroundKey,
+              playerCharacter: this.playerCharacter,
             },
             TransitionPresets.FIGHT_TO_VICTORY.type,
             TransitionPresets.FIGHT_TO_VICTORY.duration,

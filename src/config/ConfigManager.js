@@ -214,6 +214,13 @@ class ConfigManager {
     return this.data.combat.combo.thresholds;
   }
 
+  // --- Difficulty ---
+  getDifficultyConfig(level) {
+    return (
+      this.data.difficulty[level.toLowerCase()] || this.data.difficulty.medium
+    );
+  }
+
   // --- Roster ---
   getRoster() {
     return this.data.roster;
@@ -221,6 +228,11 @@ class ConfigManager {
 
   getCharacter(id) {
     return this.data.roster.find((c) => c.id === id);
+  }
+
+  getCharacterPersonality(id) {
+    const char = this.getCharacter(id);
+    return char ? char.personality : "balanced";
   }
 
   getCharacterDisplayName(id) {

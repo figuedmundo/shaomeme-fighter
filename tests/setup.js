@@ -1,5 +1,21 @@
 import { vi } from "vitest";
 
+// Silence logs by mocking pino
+vi.mock("pino", () => {
+  const noop = () => {};
+  const mockLogger = {
+    info: noop,
+    error: noop,
+    warn: noop,
+    debug: noop,
+    trace: noop,
+    fatal: noop,
+    child: () => mockLogger,
+    level: "silent",
+  };
+  return { default: () => mockLogger };
+});
+
 // Centralized Phaser Mock
 const mockPhaser = {
   Scene: class {

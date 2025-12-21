@@ -32,4 +32,26 @@ describe("ConfigManager Internal Logic", () => {
     expect(config).toBeDefined();
     expect(config.ambientLevel).toBe(1.0); // Default to outdoor_day
   });
+
+  describe("Personality & Difficulty Data", () => {
+    it("should resolve character personality", () => {
+      expect(ConfigManager.getCharacterPersonality("dad")).toBe("aggressive");
+      expect(ConfigManager.getCharacterPersonality("mom")).toBe("defensive");
+      expect(ConfigManager.getCharacterPersonality("ann")).toBe("balanced");
+      expect(ConfigManager.getCharacterPersonality("unknown")).toBe("balanced");
+    });
+
+    it("should resolve difficulty parameters with reaction ranges", () => {
+      const easy = ConfigManager.getDifficultyConfig("easy");
+      expect(easy.aggression).toBe(0.2);
+      expect(easy.reactionTime).toBeDefined();
+      expect(easy.reactionTime.min).toBe(800);
+      expect(easy.reactionTime.max).toBe(1200);
+
+      const hard = ConfigManager.getDifficultyConfig("hard");
+      expect(hard.aggression).toBe(0.8);
+      expect(hard.reactionTime.min).toBe(150);
+      expect(hard.reactionTime.max).toBe(300);
+    });
+  });
 });

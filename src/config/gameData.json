@@ -185,9 +185,24 @@
     "attackRange": 80
   },
   "difficulty": {
-    "easy": { "aggression": 0.2, "blockRate": 0.1, "reactionTime": 1000 },
-    "medium": { "aggression": 0.5, "blockRate": 0.4, "reactionTime": 500 },
-    "hard": { "aggression": 0.8, "blockRate": 0.7, "reactionTime": 200 }
+    "easy": {
+      "aggression": 0.2,
+      "blockRate": 0.1,
+      "reactionTime": { "min": 800, "max": 1200 },
+      "mistakeChance": 0.4
+    },
+    "medium": {
+      "aggression": 0.5,
+      "blockRate": 0.4,
+      "reactionTime": { "min": 400, "max": 700 },
+      "mistakeChance": 0.2
+    },
+    "hard": {
+      "aggression": 0.8,
+      "blockRate": 0.7,
+      "reactionTime": { "min": 150, "max": 300 },
+      "mistakeChance": 0.05
+    }
   },
   "roster": [
     {
@@ -195,49 +210,56 @@
       "displayName": "Ann",
       "portraitPath": "/assets/fighters/ann/portrait.png",
       "iconPath": "/assets/fighters/ann/icon.png",
-      "fullBodyPath": "/assets/fighters/ann/fullBody.png"
+      "fullBodyPath": "/assets/fighters/ann/fullBody.png",
+      "personality": "balanced"
     },
     {
       "id": "mom",
       "displayName": "Mom",
       "portraitPath": "/assets/fighters/mom/portrait.png",
       "iconPath": "/assets/fighters/mom/icon.png",
-      "fullBodyPath": "/assets/fighters/mom/full-pose.png"
+      "fullBodyPath": "/assets/fighters/mom/full-pose.png",
+      "personality": "defensive"
     },
     {
       "id": "dad",
       "displayName": "Dad",
       "portraitPath": "/assets/fighters/dad/portrait.png",
       "iconPath": "/assets/fighters/dad/icon.png",
-      "fullBodyPath": "/assets/fighters/dad/full-pose.png"
+      "fullBodyPath": "/assets/fighters/dad/full-pose.png",
+      "personality": "aggressive"
     },
     {
       "id": "brother",
       "displayName": "Brother",
       "portraitPath": "/assets/fighters/brother/portrait.png",
       "iconPath": "/assets/fighters/brother/icon.png",
-      "fullBodyPath": "/assets/fighters/brother/full-pose.png"
+      "fullBodyPath": "/assets/fighters/brother/full-pose.png",
+      "personality": "aggressive"
     },
     {
       "id": "witch",
       "displayName": "The Witch",
       "portraitPath": "/assets/fighters/witch/portrait.png",
       "iconPath": "/assets/fighters/witch/icon.png",
-      "fullBodyPath": "/assets/fighters/witch/full-pose.png"
+      "fullBodyPath": "/assets/fighters/witch/full-pose.png",
+      "personality": "zoner"
     },
     {
       "id": "fat",
       "displayName": "Fat",
       "portraitPath": "/assets/fighters/fat/portrait.png",
       "iconPath": "/assets/fighters/fat/icon.png",
-      "fullBodyPath": "/assets/fighters/fat/full-pose.png"
+      "fullBodyPath": "/assets/fighters/fat/full-pose.png",
+      "personality": "balanced"
     },
     {
       "id": "fresway_worker",
       "displayName": "Fresway Worker",
       "portraitPath": "/assets/fighters/fresway_worker/portrait.png",
       "iconPath": "/assets/fighters/fresway_worker/icon.png",
-      "fullBodyPath": "/assets/fighters/fresway_worker/full-pose.png"
+      "fullBodyPath": "/assets/fighters/fresway_worker/full-pose.png",
+      "personality": "defensive"
     }
   ]
 }

@@ -11,6 +11,8 @@ import ArenaSelectScene from "./scenes/ArenaSelectScene";
 import FightScene from "./scenes/FightScene";
 import VictoryScene from "./scenes/VictoryScene";
 import ContinueScene from "./scenes/ContinueScene";
+import PauseScene from "./scenes/PauseScene";
+import TutorialOverlayScene from "./scenes/TutorialOverlayScene";
 import StageEffectsTestScene from "./scenes/StageEffectsTestScene";
 
 console.log("index.js: Imports complete");
@@ -51,6 +53,8 @@ const config = {
     FightScene,
     VictoryScene,
     ContinueScene,
+    PauseScene,
+    TutorialOverlayScene,
   ],
 };
 

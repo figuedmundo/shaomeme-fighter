@@ -135,6 +135,8 @@ _Add strategic layers_
 ### 4.3 Difficulty & Balance
 
 - [x] **AI Difficulty Settings** — Easy/Medium/Hard/Nightmare modes `M`
+- [x] **AI Attack Intelligence** — Personality-based behavior, dynamic reactions `L`
+- [x] **Mistake Injection** — Human-like errors based on difficulty `S`
 - [ ] **Adaptive AI** — Learns player patterns over time `L`
 - [x] **Character Balance Pass** — Ensure fair matchups `M`
 
@@ -165,13 +167,13 @@ _Professional polish_
 - [ ] **Background Music** — Soft music during slideshow `S`
 - [ ] **Skip Option** — Tap to skip to next photo `XS`
 
-### 5.4 Accessibility & QoL
+### 5.4 Accessibility & QoL ✅ COMPLETE
 
-- [ ] **Touch Control Tutorial** — First-time overlay explaining controls `S`
-- [ ] **Pause Menu** — Access settings mid-fight `S`
-- [ ] **Rematch Option** — Quick replay without going to menu `XS`
+- [x] **Touch Control Tutorial** — First-time overlay explaining controls `S`
+- [x] **Pause Menu** — Access settings mid-fight `S`
+- [x] **Rematch Option** — Quick replay without going to menu `XS`
 - [ ] **Practice Mode** — Fight with infinite health to learn combos `M`
-- [ ] **Gesture Indicators** — Subtle visual hints for touch zones `S`
+- [x] **Gesture Indicators** — Subtle visual hints for touch zones `S`
 
 ---
 
@@ -182,7 +184,7 @@ _The gift wrapping_
 ### 6.1 Branding
 
 - [ ] **Splash Screen** — Animated logo on startup `S`
-- [ ] **Credits Screen** — "Made with love for [GF Name]" `XS`
+- [ ] **Credits Screen** — "Made with love for Shaomeme QQ" `XS`
 - [ ] **Easter Eggs** — Hidden references to your relationship `S`
 
 ### 6.2 Performance
