@@ -87,22 +87,28 @@ describe("Fighter Blocking Logic", () => {
     mockScene.input.keyboard.checkDown = vi.fn(() => false);
   });
 
-  it("should enter BLOCK state when holding BACK (Left) while opponent is on Right", () => {
+  it("should enter BLOCK state when holding BACK (Left) while opponent is on Right AND Attacking", () => {
     // Simulate holding Left (Back)
     fighter.cursors.left.isDown = true;
     fighter.body = { blocked: { down: true }, velocity: { x: 0, y: 0 } }; // On ground
+
+    // Opponent must be attacking for BLOCK to trigger
+    opponent.currentState = FighterState.ATTACK;
 
     fighter.update();
 
     expect(fighter.currentState).toBe(FighterState.BLOCK);
   });
 
-  it("should enter BLOCK state when holding BACK (Right) while opponent is on Left", () => {
+  it("should enter BLOCK state when holding BACK (Right) while opponent is on Left AND Attacking", () => {
     // Swap positions
     fighter.setPosition(300, 300);
     fighter.x = 300;
     opponent.setPosition(100, 300);
     opponent.x = 100;
+
+    // Opponent must be attacking
+    opponent.currentState = FighterState.ATTACK;
 
     // Simulate holding Right (Back)
     fighter.cursors.right.isDown = true;
@@ -111,6 +117,31 @@ describe("Fighter Blocking Logic", () => {
     fighter.update();
 
     expect(fighter.currentState).toBe(FighterState.BLOCK);
+  });
+
+  it("should WALK BACK when holding BACK and opponent is NOT attacking", () => {
+    // Fighter on Left, Opponent on Right
+    // Holding Left is Back
+    fighter.cursors.left.isDown = true;
+    fighter.body = { blocked: { down: true }, velocity: { x: 0, y: 0 } };
+
+    // Opponent is IDLE (not attacking)
+    opponent.currentState = FighterState.IDLE;
+
+    fighter.update();
+
+    // Should be WALKING, not BLOCKING
+    expect(fighter.currentState).toBe(FighterState.WALK);
+    // Should be moving left (negative velocity) by at least some amount
+    // In actual code: setVelocityX(-this.velocity)
+    // Note: setVelocityX is a mock in some contexts or real in others.
+    // Here `fighter` is a real instance with mocked physics body/scene, but update() logic calls setVelocityX.
+    // Since we mocked `setVelocityX` in one test but not globally, we rely on the implementation logic.
+    // The implementation calls `this.setVelocityX(-this.velocity)`.
+    // `this.velocity` is 160.
+    // We can check fighter.body.velocity.x if physics mock supports it, or spy on setVelocityX.
+    // Let's rely on currentState being WALK for this unit test.
+    expect(fighter.currentState).toBe(FighterState.WALK);
   });
 
   it("should NOT enter BLOCK state when holding FORWARD", () => {
@@ -140,6 +171,9 @@ describe("Fighter Blocking Logic", () => {
     // Simulate holding Left (Back)
     fighter.cursors.left.isDown = true;
     fighter.body = { blocked: { down: true }, velocity: { x: 0, y: 0 } };
+
+    // Opponent must be attacking
+    opponent.currentState = FighterState.ATTACK;
 
     // Spy on setVelocityX
     const setVelSpy = vi.spyOn(fighter, "setVelocityX");

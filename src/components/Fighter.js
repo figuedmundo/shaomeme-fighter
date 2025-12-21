@@ -342,10 +342,11 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         this.setState(FighterState.ATTACK);
       } else if (left) {
         // Check for Block (Moving Left while Opponent is to the Left is Forward, Moving Left while Opponent is Right is Back)
-        const isBlocking = this.opponent && this.opponent.x > this.x; // Moving Left (Back) away from Opponent (Right)
-        // console.log(`DEBUG: left=${left} oppX=${this.opponent?.x} myX=${this.x} isBlocking=${isBlocking}`);
+        const isMovingBack = this.opponent && this.opponent.x > this.x; // Moving Left (Back) away from Opponent (Right)
+        const opponentAttacking =
+          this.opponent && this.opponent.currentState === FighterState.ATTACK;
 
-        if (isBlocking) {
+        if (isMovingBack && opponentAttacking) {
           this.setVelocityX(0);
           this.setState(FighterState.BLOCK);
         } else {
@@ -355,9 +356,11 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         }
       } else if (right) {
         // Check for Block (Moving Right while Opponent is to the Left is Back)
-        const isBlocking = this.opponent && this.opponent.x < this.x; // Moving Right (Back) away from Opponent (Left)
+        const isMovingBack = this.opponent && this.opponent.x < this.x; // Moving Right (Back) away from Opponent (Left)
+        const opponentAttacking =
+          this.opponent && this.opponent.currentState === FighterState.ATTACK;
 
-        if (isBlocking) {
+        if (isMovingBack && opponentAttacking) {
           this.setVelocityX(0);
           this.setState(FighterState.BLOCK);
         } else {

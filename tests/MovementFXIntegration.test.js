@@ -147,6 +147,7 @@ vi.mock("phaser", () => {
             createCursorKeys: vi.fn(),
             addKeys: vi.fn(),
             addKey: vi.fn(),
+            checkDown: vi.fn().mockReturnValue(false),
           },
           addPointer: vi.fn(),
           on: vi.fn(),
