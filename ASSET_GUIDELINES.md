@@ -47,13 +47,24 @@ Each character requires two types of static art for the UI.
 - **Content:** A clear "Headshot" of the character.
 - **Note:** In combat, these icons are "Reactive" and will shake or flash when the character is hit.
 
-### 3.2 Selection Portraits
+### 3.2 Full-Body Fighter Poses (`fullBodyPath`)
 
-- **Usage:** Large art shown on the sides of the screen during character selection.
-- **Recommended Size:** `800 x 1000` pixels (approx. 4:5 aspect ratio).
-- **Content:** High-detail art of the character. This can be a body shot (waist up or full body) in a cool fighting pose.
-- **Transparency:** Use `.png` with a transparent background.
-- **Style:** Digitized photo style (like Mortal Kombat) or stylized illustration.
+- **Usage:** These are the high-quality, full-body images shown on the left (Player) and right (AI) sides during character selection.
+- **Recommended Height:** `1024` pixels (Target for iPad Retina displays).
+- **Recommended Width:** Variable, but should keep the character centered.
+- **Content:** The character in a dynamic, high-detail "Fighter Pose."
+- **Preparation:**
+  - **Full Body:** The image must include the entire character from head to toe.
+  - **Transparency:** Use `.png` with a transparent background.
+  - **Anchoring:** The game anchors these to the **bottom** of the screen. Ensure there is no empty space at the bottom of the image (the feet should touch the bottom edge of the file) to prevent them from "floating."
+  - **No Distortion:** The game code now handles proportional scaling automatically. It will fit your image to the ideal screen height (80-90% of the display) without stretching or squashing, regardless of the source resolution. Providing a larger image (e.g., 2048px height) is fine and will ensure maximum sharpness on 4K/Retina screens.
+- **Differentiator:** These are distinct from the `portraitPath` (waist-up) used in other UI elements.
+
+### 3.3 Menu Portraits (`portraitPath`)
+
+- **Usage:** Smaller, waist-up or bust shots used in secondary menus or selection grids.
+- **Recommended Size:** `400 x 500` pixels.
+- **Content:** Clear view of the face and upper torso.
 
 ## 4. Performance Tips
 

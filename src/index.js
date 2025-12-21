@@ -3,11 +3,14 @@ import "./styles/touch.css";
 import "./styles/overlays.css";
 import Phaser from "phaser";
 import BootScene from "./scenes/BootScene";
+import LoadingScene from "./scenes/LoadingScene";
 import PreloadScene from "./scenes/PreloadScene";
 import MainMenuScene from "./scenes/MainMenuScene";
 import CharacterSelectScene from "./scenes/CharacterSelectScene";
 import ArenaSelectScene from "./scenes/ArenaSelectScene";
 import FightScene from "./scenes/FightScene";
+import VictoryScene from "./scenes/VictoryScene";
+import ContinueScene from "./scenes/ContinueScene";
 import StageEffectsTestScene from "./scenes/StageEffectsTestScene";
 
 console.log("index.js: Imports complete");
@@ -39,12 +42,15 @@ const config = {
   },
   scene: [
     BootScene,
+    LoadingScene,
     PreloadScene,
     StageEffectsTestScene, // Add this for testing Phase 3.1 effects
     MainMenuScene,
     CharacterSelectScene,
     ArenaSelectScene,
     FightScene,
+    VictoryScene,
+    ContinueScene,
   ],
 };
 

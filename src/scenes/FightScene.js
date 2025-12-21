@@ -12,6 +12,9 @@ import AnnouncerOverlay from "../components/AnnouncerOverlay";
 // PHASE 3.2: UI Polish
 import UIManager from "../systems/UIManager";
 
+// PHASE 5.1: Scene Transitions
+import { addTransitions, TransitionPresets } from "../utils/SceneTransition";
+
 // PHASE 3.1: Stage Enhancement Systems
 import ParallaxBackground from "../components/ParallaxBackground";
 import AnimatedBackgroundManager from "../components/AnimatedBackgroundManager";
@@ -32,7 +35,7 @@ import UnifiedLogger from "../utils/Logger.js";
 const logger = new UnifiedLogger("Frontend:FightScene");
 
 export default class FightScene extends Phaser.Scene {
-  constructor() {
+  constructor(config = {}) {
     super("FightScene");
 
     // Ensure basic structures exist for tests/subsystems
@@ -98,6 +101,9 @@ export default class FightScene extends Phaser.Scene {
 
     // PHASE 3.2: UI Manager
     this.uiManager = null;
+
+    this.transition = config.transitionManager;
+    this._transitionOverride = config.transitionManager;
   }
 
   init(data) {
@@ -136,6 +142,14 @@ export default class FightScene extends Phaser.Scene {
     logger.info("FightScene: Starting create...");
     const { width, height } = this.scale;
     this.isGameOver = false;
+
+    // PHASE 5.1: Initialize transition system
+    if (!this.transition) {
+      this.transition = addTransitions(this);
+    }
+
+    // Fade in from curtain effect
+    this.transition.fadeIn(400);
 
     // Get AudioManager from registry
     this.audioManager = this.registry.get("audioManager");
@@ -624,8 +638,40 @@ export default class FightScene extends Phaser.Scene {
           logger.debug("Victory spotlight activated");
         }
 
-        this.time.delayedCall(2000, () => {
-          this.slideshow.show(this.city);
+        this.time.delayedCall(2000, async () => {
+          // PHASE 5.1: Routing to Post-Match Screens
+          const finalWinnerNum = winner === this.player1 ? 1 : 2;
+
+          if (finalWinnerNum === 1) {
+            // Player 1 Wins -> Victory Scene
+            await this.transition.transitionTo(
+              "VictoryScene",
+              {
+                winner: 1,
+                health: this.player1.health,
+                combo: 5, // TODO: Track actual max combo in stats
+                time: this.uiManager ? this.uiManager.currentTime : 99,
+                city: this.city,
+              },
+              TransitionPresets.FIGHT_TO_VICTORY.type,
+              TransitionPresets.FIGHT_TO_VICTORY.duration,
+              TransitionPresets.FIGHT_TO_VICTORY.color,
+            );
+          } else {
+            // Player 1 Loses (AI Wins) -> Continue Scene
+            await this.transition.transitionTo(
+              "ContinueScene",
+              {
+                city: this.city,
+                backgroundUrl: this.backgroundUrl,
+                backgroundKey: this.backgroundKey,
+                playerCharacter: this.playerCharacter,
+              },
+              TransitionPresets.QUICK.type,
+              TransitionPresets.QUICK.duration,
+              TransitionPresets.QUICK.color,
+            );
+          }
         });
       });
     }
@@ -668,6 +714,12 @@ export default class FightScene extends Phaser.Scene {
     if (this.weather) {
       this.weather.destroy();
       this.weather = null;
+    }
+
+    // PHASE 5.1: Cleanup transitions
+    if (this.transition) {
+      this.transition.destroy();
+      this.transition = null;
     }
 
     logger.info("FightScene: All systems cleaned up");
@@ -799,8 +851,37 @@ export default class FightScene extends Phaser.Scene {
         this.audioManager.playAnnouncer("you_win");
       }
 
-      this.time.delayedCall(2000, () => {
-        this.slideshow.show(this.city);
+      this.time.delayedCall(2000, async () => {
+        const winnerNum = this.player1.health > this.player2.health ? 1 : 2;
+
+        if (winnerNum === 1) {
+          await this.transition.transitionTo(
+            "VictoryScene",
+            {
+              winner: 1,
+              health: this.player1.health,
+              combo: 0,
+              time: 0,
+              city: this.city,
+            },
+            TransitionPresets.FIGHT_TO_VICTORY.type,
+            TransitionPresets.FIGHT_TO_VICTORY.duration,
+            TransitionPresets.FIGHT_TO_VICTORY.color,
+          );
+        } else {
+          await this.transition.transitionTo(
+            "ContinueScene",
+            {
+              city: this.city,
+              backgroundUrl: this.backgroundUrl,
+              backgroundKey: this.backgroundKey,
+              playerCharacter: this.playerCharacter,
+            },
+            TransitionPresets.QUICK.type,
+            TransitionPresets.QUICK.duration,
+            TransitionPresets.QUICK.color,
+          );
+        }
       });
     });
   }

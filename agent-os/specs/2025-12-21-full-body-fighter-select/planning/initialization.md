@@ -1,0 +1,1 @@
+In the select fighter screen, there is 2 parts, left for the player, right for the AI that will be chossen randomically after the player select the character. I want that in the select fighter screen the image shown is full body, high quality in a fighter pose. I think that is the portrait but the portrait is shown in other parts of the game, we need to differenciate that.

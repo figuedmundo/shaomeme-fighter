@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { addTransitions, TransitionPresets } from "../utils/SceneTransition";
 
 export default class MainMenuScene extends Phaser.Scene {
   constructor() {
@@ -7,6 +8,12 @@ export default class MainMenuScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
+
+    // Initialize transition system
+    this.transition = addTransitions(this);
+
+    // Fade in when scene starts
+    this.transition.fadeIn(500);
 
     // Get AudioManager
     this.audioManager = this.registry.get("audioManager");
@@ -34,9 +41,20 @@ export default class MainMenuScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setInteractive();
 
-    startText.on("pointerdown", () => {
+    startText.on("pointerdown", async () => {
       if (this.audioManager) this.audioManager.playUi("ui_select");
-      this.scene.start("CharacterSelectScene");
+
+      // Disable button to prevent double-clicks
+      startText.disableInteractive();
+
+      // Use dramatic radial wipe transition
+      await this.transition.transitionTo(
+        "CharacterSelectScene",
+        {},
+        TransitionPresets.MENU_TO_SELECT.type,
+        TransitionPresets.MENU_TO_SELECT.duration,
+        TransitionPresets.MENU_TO_SELECT.color,
+      );
     });
 
     startText.on("pointerover", () => {
@@ -55,5 +73,11 @@ export default class MainMenuScene extends Phaser.Scene {
         fill: "#666666",
       })
       .setOrigin(0.5);
+  }
+
+  shutdown() {
+    if (this.transition) {
+      this.transition.destroy();
+    }
   }
 }

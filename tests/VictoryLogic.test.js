@@ -38,6 +38,15 @@ vi.mock("phaser", () => {
 
         scene = { start: vi.fn() };
 
+        tweens = { add: vi.fn() };
+
+        transition = {
+          fadeIn: vi.fn().mockResolvedValue(),
+          fadeOut: vi.fn().mockResolvedValue(),
+          flash: vi.fn().mockResolvedValue(),
+          transitionTo: vi.fn().mockResolvedValue(),
+        };
+
         sound = { stopAll: vi.fn(), play: vi.fn(), add: vi.fn() };
 
         time = { delayedCall: vi.fn((delay, cb) => cb()) }; // Execute immediately for test
@@ -138,6 +147,15 @@ describe("Victory Logic in FightScene", () => {
     scene.player1 = new Fighter();
     scene.player2 = new Fighter();
     scene.slideshow = new VictorySlideshow(scene); // Use the mocked class instance
+    scene.uiManager = {
+      stopTimer: vi.fn(),
+      showVictory: vi.fn(),
+      updateHealth: vi.fn(),
+    };
+    scene.announcerOverlay = {
+      showKO: vi.fn(),
+      showWin: vi.fn(),
+    };
   });
 
   it("should trigger victory sequence when opponent health is 0", () => {
@@ -154,8 +172,8 @@ describe("Victory Logic in FightScene", () => {
     expect(scene.physics.pause).toHaveBeenCalled();
     expect(scene.player1.setControls).toHaveBeenCalledWith(null, null, null);
 
-    // Since we mocked time.delayedCall to execute immediately:
-    expect(scene.slideshow.show).toHaveBeenCalledWith("TestCity");
+    // Verify UI updates
+    expect(scene.uiManager.showVictory).toHaveBeenCalledWith(1);
   });
 
   it("should not trigger victory if both alive", () => {

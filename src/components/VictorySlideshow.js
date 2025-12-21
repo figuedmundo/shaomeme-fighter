@@ -1,4 +1,5 @@
 import ConfigManager from "../config/ConfigManager";
+import { TransitionPresets } from "../utils/SceneTransition";
 
 export default class VictorySlideshow {
   constructor(scene) {
@@ -47,10 +48,10 @@ export default class VictorySlideshow {
     this.overlay = document.createElement("div");
     this.overlay.className = "victory-overlay";
 
-    // Title
+    // Add Title
     const title = document.createElement("h1");
     title.className = "victory-title";
-    title.innerText = "YOU WIN!";
+    title.innerText = "VICTORY";
     this.overlay.appendChild(title);
 
     // Image Container
@@ -107,6 +108,7 @@ export default class VictorySlideshow {
       this.imgElement.style.display = "none";
     }
     const msg = document.createElement("p");
+    msg.className = "victory-fallback-msg";
     msg.innerText = "No memories found for this location yet.";
     msg.style.color = "white";
     this.overlay.appendChild(msg);
@@ -122,7 +124,7 @@ export default class VictorySlideshow {
     });
   }
 
-  exit() {
+  async exit() {
     if (this.intervalId) clearInterval(this.intervalId);
     if (this.audioManager) {
       this.audioManager.stopMusic(500); // 0.5s fade
@@ -132,7 +134,18 @@ export default class VictorySlideshow {
       this.overlay = null;
     }
 
-    // Navigate back
-    this.scene.scene.start("ArenaSelectScene");
+    // PHASE 5.1: Fade transition back to arena select
+    if (this.scene._transition) {
+      await this.scene._transition.transitionTo(
+        "ArenaSelectScene",
+        {},
+        TransitionPresets.BACK_TO_MENU.type,
+        TransitionPresets.BACK_TO_MENU.duration,
+        TransitionPresets.BACK_TO_MENU.color,
+      );
+    } else {
+      // Fallback if transition not available
+      this.scene.scene.start("ArenaSelectScene");
+    }
   }
 }

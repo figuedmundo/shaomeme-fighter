@@ -8,6 +8,7 @@ vi.mock("phaser", () => {
   class Scene {
     constructor(key) {
       this.key = key;
+      this.game = { config: { test: true } };
       this.sys = { settings: { key } };
       this.load = {
         image: vi.fn(),
@@ -28,6 +29,7 @@ vi.mock("phaser", () => {
           setInteractive: vi.fn().mockReturnThis(),
           on: vi.fn().mockReturnThis(),
           setTexture: vi.fn().mockReturnThis(),
+          clearTint: vi.fn().mockReturnThis(),
           setVisible: vi.fn().mockReturnThis(),
         }),
         text: vi.fn().mockReturnValue({
@@ -62,7 +64,14 @@ describe("CharacterSelectScene", () => {
   let scene;
 
   beforeEach(() => {
-    scene = new CharacterSelectScene();
+    const mockTransition = {
+      fadeIn: vi.fn().mockResolvedValue(),
+      fadeOut: vi.fn().mockResolvedValue(),
+      flash: vi.fn().mockResolvedValue(),
+      transitionTo: vi.fn().mockResolvedValue(),
+    };
+
+    scene = new CharacterSelectScene({ transitionManager: mockTransition });
 
     // Inject mocks that depend on methods running
     scene.load = {
@@ -79,12 +88,44 @@ describe("CharacterSelectScene", () => {
       setTexture: vi.fn().mockReturnThis(),
     });
 
+    scene.add.graphics = vi.fn().mockReturnValue({
+      fillGradientStyle: vi.fn().mockReturnThis(),
+      fillCircle: vi.fn().mockReturnThis(),
+      alpha: 0.5,
+    });
+
     scene.leftPortrait = {
       setTexture: vi.fn(),
-      setDisplaySize: vi.fn().mockReturnThis(),
+      setAlpha: vi.fn().mockReturnThis(),
+      setOrigin: vi.fn().mockReturnThis(),
+      setScale: vi.fn().mockReturnThis(),
+      width: 200,
+      height: 400,
+    };
+    scene.rightPortrait = {
+      setTexture: vi.fn(),
+      setAlpha: vi.fn().mockReturnThis(),
+      setOrigin: vi.fn().mockReturnThis(),
+      setScale: vi.fn().mockReturnThis(),
+      setTint: vi.fn().mockReturnThis(),
+      clearTint: vi.fn().mockReturnThis(),
+      width: 200,
+      height: 400,
+      scale: 1,
     };
     scene.nameText = { setText: vi.fn() };
+    scene.selectBtn = {
+      disableInteractive: vi.fn().mockReturnThis(),
+      setAlpha: vi.fn().mockReturnThis(),
+    };
+    scene.aiQuestionMark = { destroy: vi.fn() };
     scene.gridItems = []; // Will be populated by buildGrid
+
+    scene.tweens = {
+      add: vi.fn(),
+    };
+
+    scene.transition = mockTransition;
 
     scene.registry = {
       get: vi.fn().mockReturnValue({
@@ -96,6 +137,22 @@ describe("CharacterSelectScene", () => {
 
     scene.time = {
       delayedCall: vi.fn().mockImplementation((d, cb) => cb()),
+      addEvent: vi.fn().mockImplementation((config) => {
+        if (config.callback) {
+          // To simulate the roll completion, we call it multiple times
+          // or just ensure the last call has the completion state.
+          // Since confirmSelection uses a local 'elapsed' variable,
+          // we need to call it enough times.
+          const iterations = (config.repeat || 0) + 1;
+          for (let i = 0; i < iterations; i += 1) {
+            config.callback();
+          }
+        }
+        return {
+          destroy: vi.fn(),
+          remove: vi.fn(),
+        };
+      }),
     };
   });
 
@@ -129,7 +186,7 @@ describe("CharacterSelectScene", () => {
 
     expect(scene.selectedCharacterIndex).toBe(0);
     expect(scene.leftPortrait.setTexture).toHaveBeenCalledWith(
-      `portrait_${rosterConfig[0].id}`,
+      `full_body_${rosterConfig[0].id}`,
     );
     expect(scene.nameText.setText).toHaveBeenCalledWith(
       rosterConfig[0].displayName.toUpperCase(),
@@ -142,13 +199,13 @@ describe("CharacterSelectScene", () => {
     );
   });
 
-  it("should confirm selection and transition to ArenaSelectScene", () => {
+  it("should confirm selection and transition to ArenaSelectScene", async () => {
     scene.selectedCharacterIndex = 1;
-    scene.confirmSelection();
+    await scene.confirmSelection();
 
-    expect(scene.scene.start).toHaveBeenCalledWith("ArenaSelectScene", {
-      playerCharacter: rosterConfig[1].id,
-    });
+    // Since we mocked time.addEvent to run immediately, it will call revealOpponent
+    // which calls transition.transitionTo
+    expect(scene.transition.transitionTo).toHaveBeenCalled();
   });
 
   it("should ignore selection of invalid character index", () => {

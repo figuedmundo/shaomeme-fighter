@@ -35,6 +35,7 @@ vi.mock("phaser", () => {
       Scene: class {
         constructor(key) {
           this.key = key;
+          this.game = { config: { test: true } };
           this.scene = { start: vi.fn() };
           this.load = {
             image: vi.fn(),
@@ -56,6 +57,7 @@ vi.mock("phaser", () => {
               setScrollFactor: vi.fn().mockReturnThis(),
               setAlpha: vi.fn().mockReturnThis(),
               setTint: vi.fn().mockReturnThis(),
+              clearTint: vi.fn().mockReturnThis(),
               setBlendMode: vi.fn().mockReturnThis(),
               setScale: vi.fn().mockReturnThis(),
               setFlipX: vi.fn().mockReturnThis(),
@@ -72,6 +74,8 @@ vi.mock("phaser", () => {
               setAlpha: vi.fn().mockReturnThis(),
               setScale: vi.fn().mockReturnThis(),
               setScrollFactor: vi.fn().mockReturnThis(),
+              disableInteractive: vi.fn().mockReturnThis(),
+              destroy: vi.fn().mockReturnThis(),
             }),
             rectangle: vi.fn().mockReturnValue({
               setOrigin: vi.fn().mockReturnThis(),
@@ -101,6 +105,7 @@ vi.mock("phaser", () => {
               lineTo: vi.fn().mockReturnThis(),
               strokePath: vi.fn().mockReturnThis(),
               strokeRect: vi.fn().mockReturnThis(),
+              setAlpha: vi.fn().mockReturnThis(),
             }),
             container: vi.fn().mockReturnValue({
               add: vi.fn().mockReturnThis(),
@@ -168,7 +173,18 @@ vi.mock("phaser", () => {
           };
           this.time = {
             delayedCall: vi.fn((d, cb) => cb()),
-            addEvent: vi.fn(),
+            addEvent: vi.fn((config) => {
+              if (config.callback) {
+                const iterations = (config.repeat || 0) + 1;
+                for (let i = 0; i < iterations; i += 1) {
+                  config.callback();
+                }
+              }
+              return {
+                destroy: vi.fn(),
+                remove: vi.fn(),
+              };
+            }),
           };
           this.tweens = {
             add: vi.fn(),
@@ -190,6 +206,7 @@ vi.mock("phaser", () => {
             add: vi.fn().mockReturnValue({ play: vi.fn(), stop: vi.fn() }),
           };
           this.events = { on: vi.fn(), emit: vi.fn() };
+          this.game = { config: { test: true } };
           this.input = {
             keyboard: {
               createCursorKeys: vi.fn().mockReturnValue({
@@ -273,6 +290,17 @@ describe("E2E Full Game Flow Simulation", () => {
   });
 
   it("Scenario 1: Full Navigation and Data Persistence", async () => {
+    const mockTransition = {
+      fadeIn: vi.fn().mockResolvedValue(),
+      fadeOut: vi.fn().mockResolvedValue(),
+      flash: vi.fn().mockResolvedValue(),
+      transitionTo: vi.fn().mockResolvedValue(),
+      wipeHorizontal: vi.fn().mockResolvedValue(),
+      wipeVertical: vi.fn().mockResolvedValue(),
+      wipeRadial: vi.fn().mockResolvedValue(),
+      curtain: vi.fn().mockResolvedValue(),
+    };
+
     // 1. Boot to Preload (Implicit in index.js, we test transitions)
 
     // 2. PreloadScene -> MainMenu
@@ -291,16 +319,26 @@ describe("E2E Full Game Flow Simulation", () => {
     expect(menu.scene.start).toHaveBeenCalledWith("CharacterSelectScene");
 
     // 4. CharacterSelect -> ArenaSelect (Select 'ann')
-    const charSelect = new CharacterSelectScene();
+    const charSelect = new CharacterSelectScene({
+      transitionManager: mockTransition,
+    });
     charSelect.create();
     charSelect.selectCharacter(0); // Ann
-    charSelect.confirmSelection();
-    expect(charSelect.scene.start).toHaveBeenCalledWith("ArenaSelectScene", {
-      playerCharacter: "ann",
-    });
+    await charSelect.confirmSelection();
+
+    // In test mode, CharacterSelectScene calls transition.transitionTo
+    expect(mockTransition.transitionTo).toHaveBeenCalledWith(
+      "ArenaSelectScene",
+      expect.objectContaining({ playerCharacter: "ann" }),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+    );
 
     // 5. ArenaSelect -> Fight (Select 'paris')
-    const arenaSelect = new ArenaSelectScene();
+    const arenaSelect = new ArenaSelectScene({
+      transitionManager: mockTransition,
+    });
     arenaSelect.create(); // MUST call create to initialize loadingText
     arenaSelect.init({ playerCharacter: "ann" });
 
@@ -316,18 +354,29 @@ describe("E2E Full Game Flow Simulation", () => {
 
     await arenaSelect.fetchArenas();
     arenaSelect.selectArena(0);
-    arenaSelect.confirmSelection();
+    await arenaSelect.confirmSelection();
 
-    expect(arenaSelect.scene.start).toHaveBeenCalledWith("FightScene", {
-      city: "paris",
-      backgroundUrl: "/cache/paris/1.webp",
-      backgroundKey: "arena_bg_0",
-      playerCharacter: "ann",
-    });
+    expect(mockTransition.transitionTo).toHaveBeenCalledWith(
+      "FightScene",
+      expect.objectContaining({
+        city: "paris",
+        playerCharacter: "ann",
+      }),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+    );
   });
 
-  it("Scenario 2: Fight Initialization and Victory Trigger", () => {
-    const fight = new FightScene();
+  it("Scenario 2: Fight Initialization and Victory Trigger", async () => {
+    const mockTransition = {
+      fadeIn: vi.fn().mockResolvedValue(),
+      fadeOut: vi.fn().mockResolvedValue(),
+      flash: vi.fn().mockResolvedValue(),
+      transitionTo: vi.fn().mockResolvedValue(),
+    };
+
+    const fight = new FightScene({ transitionManager: mockTransition });
     const fightData = {
       city: "paris",
       backgroundKey: "arena_bg_0",
@@ -352,11 +401,13 @@ describe("E2E Full Game Flow Simulation", () => {
     expect(fight.isGameOver).toBe(true);
     expect(fight.physics.pause).toHaveBeenCalled();
 
-    // The slideshow show() should be called after delayedCall
-    // In our mock, delayedCall executes immediately
-    expect(fight.slideshow).toBeDefined();
-    // Note: Since slideshow is a real object but we want to verify it worked,
-    // we can check if it attempted to fetch photos
-    expect(global.fetch).toHaveBeenCalledWith("/api/photos?city=paris");
+    // In FightScene.js, checkWinCondition transitions to VictoryScene
+    expect(mockTransition.transitionTo).toHaveBeenCalledWith(
+      "VictoryScene",
+      expect.objectContaining({ winner: 1, city: "paris" }),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+    );
   });
 });

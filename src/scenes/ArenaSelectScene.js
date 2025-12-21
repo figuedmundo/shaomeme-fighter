@@ -1,15 +1,18 @@
 import Phaser from "phaser";
 import UnifiedLogger from "../utils/Logger.js";
+import { addTransitions, TransitionPresets } from "../utils/SceneTransition";
 
 const logger = new UnifiedLogger("Frontend:ArenaSelectScene");
 
 export default class ArenaSelectScene extends Phaser.Scene {
-  constructor() {
+  constructor(config = {}) {
     super("ArenaSelectScene");
     this.arenas = [];
     this.selectedArenaIndex = 0;
     this.thumbnails = [];
     this.playerCharacter = null;
+    this.transition = config.transitionManager;
+    this._transitionOverride = config.transitionManager;
   }
 
   init(data) {
@@ -26,6 +29,14 @@ export default class ArenaSelectScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
+
+    // Initialize transition system if not overridden
+    if (!this.transition) {
+      this.transition = addTransitions(this);
+    }
+
+    // Fade in from previous transition
+    this.transition.fadeIn(300);
 
     // Get AudioManager
     this.audioManager = this.registry.get("audioManager");
@@ -88,9 +99,12 @@ export default class ArenaSelectScene extends Phaser.Scene {
         padding: { x: 10, y: 10 },
       })
       .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => {
+      .on("pointerdown", async () => {
         if (this.audioManager) this.audioManager.playUi("ui_select");
-        this.scene.start("MainMenuScene");
+
+        // Horizontal wipe left to go back
+        await this.transition.wipeHorizontal(500, 0x000000, "left");
+        this.scene.start("CharacterSelectScene");
       });
 
     // 5. Fight Button (Confirm)
@@ -261,15 +275,30 @@ export default class ArenaSelectScene extends Phaser.Scene {
     });
   }
 
-  confirmSelection() {
+  async confirmSelection() {
     const arena = this.arenas[this.selectedArenaIndex];
-    this.scene.start("FightScene", {
-      city: arena.name,
-      backgroundUrl: arena.url,
-      // Pass the preloaded texture key so FightScene doesn't have to fetch it again if possible,
-      // OR FightScene can rely on the cache since we loaded it here.
-      backgroundKey: `arena_bg_${this.selectedArenaIndex}`,
-      playerCharacter: this.playerCharacter,
-    });
+
+    // Disable button
+    this.fightBtn.disableInteractive();
+
+    // Dramatic curtain close
+    await this.transition.transitionTo(
+      "FightScene",
+      {
+        city: arena.name,
+        backgroundUrl: arena.url,
+        backgroundKey: `arena_bg_${this.selectedArenaIndex}`,
+        playerCharacter: this.playerCharacter,
+      },
+      TransitionPresets.ARENA_TO_FIGHT.type,
+      TransitionPresets.ARENA_TO_FIGHT.duration,
+      TransitionPresets.ARENA_TO_FIGHT.color,
+    );
+  }
+
+  shutdown() {
+    if (this.transition) {
+      this.transition.destroy();
+    }
   }
 }

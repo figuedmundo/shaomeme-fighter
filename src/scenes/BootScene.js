@@ -23,9 +23,12 @@ export default class BootScene extends Phaser.Scene {
     // PHASE 3.1 TESTING: Uncomment the line below to test stage effects
     // Comment out when done testing
     // this.scene.start("StageEffectsTestScene");
-    
+
     // Normal flow:
-    this.scene.start("PreloadScene");
+    // PHASE 5.1: Use LoadingScene as intermediary
+    this.scene.start("LoadingScene", {
+      targetScene: "PreloadScene",
+    });
   }
 
   checkOrientation(orientation) {

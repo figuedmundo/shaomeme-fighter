@@ -146,17 +146,16 @@ _Professional polish_
 
 ### 5.1 Scene Transitions
 
-- [ ] **Screen Wipes** — Stylish transitions between scenes `S`
-- [ ] **Loading Screens** — Character tips or lore during loads `S`
-- [ ] **Victory Screen** — Stats, replay, and photo unlock prompt `M`
-- [ ] **Continue Screen** — Arcade-style countdown after loss `S`
+- [x] **Screen Wipes** — Stylish transitions between scenes `S`
+- [x] **Loading Screens** — Character tips or lore during loads `S`
+- [x] **Victory Screen** — Stats, replay, and photo unlock prompt `M`
+- [x] **Continue Screen** — Arcade-style countdown after loss `S`
 
 ### 5.2 Character Select
 
-- [ ] **Hover Effects** — Characters react when cursor over them `S`
-- [ ] **Stage Preview** — Show arena when selected `S`
-- [ ] **Zoom Camera** — Close-up on selected character `S`
-- [ ] **Voice Lines** — Characters speak when selected `M`
+- [x] **Stage Preview** — Inprove arena preview when selected `S`
+- [x] **Zoom Camera** — Close-up on selected character `S`
+- [x] **Voice Lines** — Characters speak when selected `M`
 
 ### 5.3 Photo Reward Polish
 
