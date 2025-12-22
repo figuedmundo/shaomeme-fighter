@@ -227,6 +227,15 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
       });
     }
 
+    if (newState === FighterState.BLOCK) {
+      this.once("animationcomplete", () => {
+        if (this.currentState === FighterState.BLOCK) {
+          this.setState(FighterState.IDLE);
+          this.isHit = false;
+        }
+      });
+    }
+
     // Reset physics on certain state changes
     if (
       newState === FighterState.CROUCH ||

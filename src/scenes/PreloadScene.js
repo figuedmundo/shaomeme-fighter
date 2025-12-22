@@ -1,5 +1,4 @@
 import Phaser from "phaser";
-import rosterConfig from "../config/rosterConfig";
 import UnifiedLogger from "../utils/Logger.js";
 import AudioManager from "../systems/AudioManager.js";
 
@@ -94,20 +93,11 @@ export default class PreloadScene extends Phaser.Scene {
     // TODO: Add hit reaction sounds
     // TODO: Add block sounds
 
-    // Load All Fighter Spritesheets from Roster
-    console.log("PreloadScene: Loading Fighter spritesheets...");
-    rosterConfig.forEach((char) => {
-      // Skip hidden characters in loop if desired, but we need to load them if they might appear
-      console.log(`PreloadScene: Loading spritesheet for ${char.id}`);
-      this.load.spritesheet(
-        char.id,
-        `/assets/fighters/${char.id}/${char.id}.png`, // Added leading slash
-        {
-          frameWidth: 200,
-          frameHeight: 400,
-        },
-      );
-    });
+    // Load All Fighter Spritesheets from Roster - REMOVED for Lazy Loading
+    // They are now loaded in LoadingScene.js just-in-time
+    console.log(
+      "PreloadScene: Skipping Fighter spritesheets (Lazy Load enabled)",
+    );
 
     // Handle loading events
     this.load.on("filecomplete", (key) => {
@@ -136,8 +126,8 @@ export default class PreloadScene extends Phaser.Scene {
 
       // Small delay for smooth transition
       this.time.delayedCall(500, () => {
-        console.log("PreloadScene: Transitioning to MainMenuScene...");
-        this.scene.start("MainMenuScene");
+        console.log("PreloadScene: Transitioning to SplashScene...");
+        this.scene.start("SplashScene");
       });
     });
   }

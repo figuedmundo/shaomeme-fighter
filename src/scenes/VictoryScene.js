@@ -65,6 +65,9 @@ export default class VictoryScene extends Phaser.Scene {
       backgroundUrl: data.backgroundUrl,
       backgroundKey: data.backgroundKey,
       playerCharacter: data.playerCharacter,
+      opponentCharacter: data.opponentCharacter,
+      player1: data.playerCharacter, // For LoadingScene loader
+      player2: data.opponentCharacter, // For LoadingScene loader
     };
 
     // Buttons
@@ -108,9 +111,14 @@ export default class VictoryScene extends Phaser.Scene {
 
     rematchBtn.on("pointerdown", async () => {
       if (this.audioManager) this.audioManager.playUi("ui_select");
+
+      // Use LoadingScene for JIT reloading of fighter assets
       await this.transition.transitionTo(
-        "FightScene",
-        this.rematchData,
+        "LoadingScene",
+        {
+          targetScene: "FightScene",
+          targetData: this.rematchData,
+        },
         TransitionPresets.QUICK.type,
         TransitionPresets.QUICK.duration,
         TransitionPresets.QUICK.color,

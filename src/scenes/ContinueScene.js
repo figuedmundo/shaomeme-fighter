@@ -97,8 +97,11 @@ export default class ContinueScene extends Phaser.Scene {
     // Flash white then restart
     await this.transition.flash(200, 0xffffff);
 
-    // Pass same data back to FightScene
-    this.scene.start("FightScene", this.restartData);
+    // Pass same data back to FightScene via LoadingScene for JIT asset reloading
+    this.scene.start("LoadingScene", {
+      targetScene: "FightScene",
+      targetData: this.restartData,
+    });
   }
 
   async gameover() {

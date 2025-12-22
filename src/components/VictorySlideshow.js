@@ -115,13 +115,11 @@ export default class VictorySlideshow {
   }
 
   handleAudio(city) {
-    // Wait slightly then play victory/slideshow music via AudioManager
-    this.scene.time.delayedCall(1500, () => {
-      if (!this.audioManager) return;
+    // Play victory/slideshow music immediately
+    if (!this.audioManager) return;
 
-      const trackKey = ConfigManager.getVictoryMusicForCity(city);
-      this.audioManager.playMusic(trackKey, { loop: true, volume: 0.5 });
-    });
+    const trackKey = ConfigManager.getVictoryMusicForCity(city);
+    this.audioManager.playMusic(trackKey, { loop: true, volume: 0.5 });
   }
 
   async exit() {
@@ -134,10 +132,10 @@ export default class VictorySlideshow {
       this.overlay = null;
     }
 
-    // PHASE 5.1: Fade transition back to arena select
+    // PHASE 5.1: Fade transition back to main menu
     if (this.scene._transition) {
       await this.scene._transition.transitionTo(
-        "ArenaSelectScene",
+        "MainMenuScene",
         {},
         TransitionPresets.BACK_TO_MENU.type,
         TransitionPresets.BACK_TO_MENU.duration,
@@ -145,7 +143,7 @@ export default class VictorySlideshow {
       );
     } else {
       // Fallback if transition not available
-      this.scene.scene.start("ArenaSelectScene");
+      this.scene.scene.start("MainMenuScene");
     }
   }
 }

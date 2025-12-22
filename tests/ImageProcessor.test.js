@@ -29,7 +29,12 @@ vi.mock("sharp", () => {
 
 // Mock node:fs/promises
 vi.mock("node:fs/promises", () => ({
-  access: vi.fn(async (path) => Promise.reject(new Error("File not found"))), // Default to not found
+  access: vi.fn(async (filePath) => {
+    if (filePath.includes("cached_image.webp")) {
+      return Promise.resolve();
+    }
+    return Promise.reject(new Error("File not found"));
+  }),
   mkdir: vi.fn(async () => {}),
   readdir: vi.fn(async () => []),
   readFile: vi.fn(async (filePath) => {
@@ -55,8 +60,8 @@ describe("ImageProcessor", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset default mock implementations for fs methods
-    mockedFs.access.mockImplementation(async (path) => {
-      if (path.includes("cached_image.webp")) {
+    mockedFs.access.mockImplementation(async (targetPath) => {
+      if (targetPath.includes("cached_image.webp")) {
         // Only for the 'cached path exists' test
         return Promise.resolve();
       }

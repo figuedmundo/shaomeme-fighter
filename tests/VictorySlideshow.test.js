@@ -89,6 +89,6 @@ describe("VictorySlideshow Component", () => {
 
     const overlay = document.querySelector(".victory-overlay");
     expect(overlay).toBeNull(); // Should be removed
-    expect(mockScene.scene.start).toHaveBeenCalledWith("ArenaSelectScene");
+    expect(mockScene.scene.start).toHaveBeenCalledWith("MainMenuScene");
   });
 });

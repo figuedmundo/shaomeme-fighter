@@ -116,8 +116,9 @@ export default class FightScene extends Phaser.Scene {
       this.backgroundUrl = data.backgroundUrl;
       this.backgroundKey = data.backgroundKey;
       this.playerCharacter = data.playerCharacter;
+      this.opponentCharacter = data.opponentCharacter;
       logger.info(
-        `Fight initialized with character: ${this.playerCharacter} in city: ${this.city}`,
+        `Fight initialized with character: ${this.playerCharacter} vs ${this.opponentCharacter} in city: ${this.city}`,
       );
     }
   }
@@ -191,11 +192,17 @@ export default class FightScene extends Phaser.Scene {
     // 2. Instantiate Fighters
     const p1Texture = this.playerCharacter || rosterConfig[0].id;
 
-    // Pick random opponent from roster excluding P1
-    const availableOpponents = rosterConfig.filter((c) => c.id !== p1Texture);
-    const randomOpponent =
-      availableOpponents[Math.floor(Math.random() * availableOpponents.length)];
-    const p2Texture = randomOpponent ? randomOpponent.id : rosterConfig[0].id;
+    // Determine opponent
+    let p2Texture = this.opponentCharacter;
+    if (!p2Texture) {
+      // Fallback to random if not passed (e.g. direct boot)
+      const availableOpponents = rosterConfig.filter((c) => c.id !== p1Texture);
+      const randomOpponent =
+        availableOpponents[
+          Math.floor(Math.random() * availableOpponents.length)
+        ];
+      p2Texture = randomOpponent ? randomOpponent.id : rosterConfig[0].id;
+    }
 
     logger.debug(
       `FightScene: Creating fighters P1:${p1Texture}, P2:${p2Texture}`,
@@ -203,6 +210,9 @@ export default class FightScene extends Phaser.Scene {
     this.player1 = new Fighter(this, 300, height - 150, p1Texture);
     this.player2 = new Fighter(this, width - 300, height - 150, p2Texture);
     this.player2.setFlipX(true);
+
+    // Ensure we track the actual opponent for rematch
+    this.opponentCharacter = p2Texture;
 
     // Link opponents for relative direction logic (Blocking)
     this.player1.setOpponent(this.player2);
@@ -462,6 +472,11 @@ export default class FightScene extends Phaser.Scene {
       this.movementFX.update();
     }
 
+    // PHASE 3.2: Update UI Manager (Ghost health lerping)
+    if (this.uiManager) {
+      this.uiManager.update();
+    }
+
     if (this.criticalMoments && !this.isGameOver) {
       const lowestHP = Math.min(this.player1.health, this.player2.health);
       this.criticalMoments.updateHealthPulse(lowestHP);
@@ -571,6 +586,12 @@ export default class FightScene extends Phaser.Scene {
           logger.info(
             `${defender.texture.key} blocked attack from ${attacker.texture.key}`,
           );
+          /* eslint-disable no-param-reassign */
+          defender.isHit = true; // Mark as hit to prevent multi-hit block stun loop
+          this.time.delayedCall(200, () => {
+            defender.isHit = false;
+          });
+          /* eslint-enable no-param-reassign */
           this.hitFeedback.triggerBlockFeedback(defender);
           if (this.audioManager) {
             this.audioManager.playBlock();
@@ -640,6 +661,7 @@ export default class FightScene extends Phaser.Scene {
 
   checkWinCondition() {
     if (this.player1.health <= 0 || this.player2.health <= 0) {
+      if (this.isGameOver) return;
       this.isGameOver = true;
       this.physics.pause();
 
@@ -710,24 +732,24 @@ export default class FightScene extends Phaser.Scene {
           const finalWinnerNum = winner === this.player1 ? 1 : 2;
 
           if (finalWinnerNum === 1) {
-            // Player 1 Wins -> Victory Scene
-            await this.transition.transitionTo(
-              "VictoryScene",
-              {
-                winner: 1,
-                health: this.player1.health,
-                combo: 5, // TODO: Track actual max combo in stats
-                time: this.uiManager ? this.uiManager.timeLeft : 99,
-                // Setup Data for Rematch
-                city: this.city,
-                backgroundUrl: this.backgroundUrl,
-                backgroundKey: this.backgroundKey,
-                playerCharacter: this.playerCharacter,
-              },
-              TransitionPresets.FIGHT_TO_VICTORY.type,
-              TransitionPresets.FIGHT_TO_VICTORY.duration,
-              TransitionPresets.FIGHT_TO_VICTORY.color,
-            );
+            // Player 1 Wins -> Auto Reward Flow (Slideshow)
+            logger.info("Player 1 victory - starting auto reward flow");
+
+            // Fade out camera and music for smooth transition to DOM overlay
+            if (this.audioManager) {
+              this.audioManager.stopMusic(500); // Quick fade out of remaining audio
+            }
+
+            if (this.transition) {
+              await this.transition.fadeOut(500);
+            }
+
+            // Start slideshow immediately
+            if (this.slideshow) {
+              this.slideshow.show(this.city);
+            } else {
+              logger.error("Slideshow component NOT FOUND");
+            }
           } else {
             // Player 1 Loses (AI Wins) -> Continue Scene
             await this.transition.transitionTo(
@@ -737,6 +759,9 @@ export default class FightScene extends Phaser.Scene {
                 backgroundUrl: this.backgroundUrl,
                 backgroundKey: this.backgroundKey,
                 playerCharacter: this.playerCharacter,
+                opponentCharacter: this.opponentCharacter,
+                player1: this.playerCharacter,
+                player2: this.opponentCharacter,
               },
               TransitionPresets.QUICK.type,
               TransitionPresets.QUICK.duration,
@@ -791,6 +816,26 @@ export default class FightScene extends Phaser.Scene {
     if (this.transition) {
       this.transition.destroy();
       this.transition = null;
+    }
+
+    // PHASE 6.2: Resource Cleanup
+    if (this.player1 && this.player1.texture) {
+      const { key } = this.player1.texture;
+      logger.debug(`Cleaning up texture: ${key}`);
+      this.textures.remove(key);
+      this.anims.remove(key); // Assuming animations start with key
+    }
+
+    if (this.player2 && this.player2.texture) {
+      const { key } = this.player2.texture;
+      logger.debug(`Cleaning up texture: ${key}`);
+      this.textures.remove(key);
+      this.anims.remove(key);
+    }
+
+    if (this.backgroundKey && this.backgroundKey.startsWith("dynamic_bg_")) {
+      logger.debug(`Cleaning up dynamic background: ${this.backgroundKey}`);
+      this.textures.remove(this.backgroundKey);
     }
 
     logger.info("FightScene: All systems cleaned up");
@@ -926,23 +971,18 @@ export default class FightScene extends Phaser.Scene {
         const winnerNum = this.player1.health > this.player2.health ? 1 : 2;
 
         if (winnerNum === 1) {
-          await this.transition.transitionTo(
-            "VictoryScene",
-            {
-              winner: 1,
-              health: this.player1.health,
-              combo: 0, // TODO: Track max combo
-              time: this.uiManager ? this.uiManager.timeLeft : 0,
-              // Setup Data for Rematch
-              city: this.city,
-              backgroundUrl: this.backgroundUrl,
-              backgroundKey: this.backgroundKey,
-              playerCharacter: this.playerCharacter,
-            },
-            TransitionPresets.FIGHT_TO_VICTORY.type,
-            TransitionPresets.FIGHT_TO_VICTORY.duration,
-            TransitionPresets.FIGHT_TO_VICTORY.color,
-          );
+          // Player 1 Wins -> Auto Reward Flow (Slideshow)
+          logger.info("Player 1 victory (Time Up) - starting auto reward flow");
+
+          if (this.audioManager) {
+            this.audioManager.stopMusic(500);
+          }
+
+          await this.transition.fadeOut(500);
+
+          if (this.slideshow) {
+            this.slideshow.show(this.city);
+          }
         } else {
           await this.transition.transitionTo(
             "ContinueScene",

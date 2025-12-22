@@ -65,12 +65,42 @@ export default class MainMenuScene extends Phaser.Scene {
       startText.setStyle({ fill: "#ffd700" });
     });
 
+    // Credits Button
+    const creditsBtn = this.add
+      .text(width - 20, height - 20, "CREDITS", {
+        fontFamily: '"Press Start 2P", sans-serif',
+        fontSize: "16px",
+        fill: "#666666",
+      })
+      .setOrigin(1, 1) // Bottom Right
+      .setInteractive({ useHandCursor: true });
+
+    creditsBtn.on("pointerover", () =>
+      creditsBtn.setStyle({ fill: "#ffffff" }),
+    );
+    creditsBtn.on("pointerout", () => creditsBtn.setStyle({ fill: "#666666" }));
+    creditsBtn.on("pointerdown", async () => {
+      if (this.audioManager) this.audioManager.playUi("ui_select");
+      await this.transition.transitionTo(
+        "CreditsScene",
+        {},
+        TransitionPresets.QUICK.type,
+        TransitionPresets.QUICK.duration,
+      );
+    });
+
+    // Footer (Replaced by Credits Button logic essentially, but keeping original footer text as plain decoration if needed,
+    // or we can remove it since Credits Scene has the info. Spec said to reuse footer style, but maybe we replace the static footer with the button?)
+    // Let's keep the static footer but maybe make it the button?
+    // Spec said: "Add a small 'Credits' button... Position: Bottom-Right or distinct".
+    // I will keep the footer text as "Created by..." and ADD the Credits button.
+
     // Footer
     this.add
       .text(width / 2, height * 0.95, "Created by FeiFei for Shaomeme QQ", {
         fontFamily: '"Press Start 2P", sans-serif',
         fontSize: "12px",
-        fill: "#666666",
+        fill: "#333333", // Darker to not compete
       })
       .setOrigin(0.5);
   }

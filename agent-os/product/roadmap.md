@@ -150,7 +150,7 @@ _Professional polish_
 
 - [x] **Screen Wipes** — Stylish transitions between scenes `S`
 - [x] **Loading Screens** — Character tips or lore during loads `S`
-- [x] **Victory Screen** — Stats, replay, and photo unlock prompt `M`
+- [x] **Victory Screen** — (Auto Reward Flow) Bypassed for direct slideshow `M`
 - [x] **Continue Screen** — Arcade-style countdown after loss `S`
 
 ### 5.2 Character Select
@@ -171,7 +171,7 @@ _Professional polish_
 
 - [x] **Touch Control Tutorial** — First-time overlay explaining controls `S`
 - [x] **Pause Menu** — Access settings mid-fight `S`
-- [x] **Rematch Option** — Quick replay without going to menu `XS`
+- [x] **Rematch Option** — (Removed per user request) `XS`
 - [ ] **Practice Mode** — Fight with infinite health to learn combos `M`
 - [x] **Gesture Indicators** — Subtle visual hints for touch zones `S`
 
@@ -183,16 +183,16 @@ _The gift wrapping_
 
 ### 6.1 Branding
 
-- [ ] **Splash Screen** — Animated logo on startup `S`
-- [ ] **Credits Screen** — "Made with love for Shaomeme QQ" `XS`
-- [ ] **Easter Eggs** — Hidden references to your relationship `S`
+- [x] **Splash Screen** — Animated logo on startup `S`
+- [x] **Credits Screen** — "Made with love for Shaomeme QQ" `XS`
+- [x] **Easter Eggs** — Hidden references to your relationship `S`
 
 ### 6.2 Performance
 
-- [ ] **Optimize Assets** — Compress images/audio without quality loss `S`
-- [ ] **60 FPS Lock** — Ensure smooth gameplay on iPad `M`
-- [ ] **Memory Management** — Proper cleanup between scenes `S`
-- [ ] **Load Time Optimization** — Lazy load non-critical assets `M`
+- [x] **Optimize Assets** — Compress images/audio without quality loss `S`
+- [x] **60 FPS Lock** — Ensure smooth gameplay on iPad `M`
+- [x] **Memory Management** — Proper cleanup between scenes `S`
+- [x] **Load Time Optimization** — Lazy load non-critical assets `M`
 
 ### 6.3 Testing
 

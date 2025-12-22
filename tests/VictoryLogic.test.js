@@ -151,6 +151,7 @@ describe("Victory Logic in FightScene", () => {
       stopTimer: vi.fn(),
       showVictory: vi.fn(),
       updateHealth: vi.fn(),
+      update: vi.fn(),
     };
     scene.announcerOverlay = {
       showKO: vi.fn(),

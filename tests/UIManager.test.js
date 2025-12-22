@@ -154,4 +154,27 @@ describe("UIManager", () => {
     uiManager.stopTimer();
     expect(uiManager.isTimerRunning).toBe(false);
   });
+
+  it("should trigger immediate redraw on health update", () => {
+    const drawSpy = vi.spyOn(uiManager, "drawHealthBars");
+    uiManager.updateHealth(1, 70);
+    expect(drawSpy).toHaveBeenCalled();
+  });
+
+  it("should lerp ghost health towards current health in update loop", () => {
+    uiManager.updateHealth(1, 50);
+    expect(uiManager.p1Health).toBe(50);
+    expect(uiManager.p1GhostHealth).toBe(100);
+
+    // One update step
+    uiManager.update();
+    expect(uiManager.p1GhostHealth).toBeLessThan(100);
+    expect(uiManager.p1GhostHealth).toBeGreaterThan(50);
+
+    // Multiple updates should reach 50 eventually
+    for (let i = 0; i < 200; i += 1) {
+      uiManager.update();
+    }
+    expect(uiManager.p1GhostHealth).toBe(50);
+  });
 });

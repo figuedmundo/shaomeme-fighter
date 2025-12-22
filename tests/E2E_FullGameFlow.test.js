@@ -4,7 +4,21 @@ import CharacterSelectScene from "../src/scenes/CharacterSelectScene";
 import ArenaSelectScene from "../src/scenes/ArenaSelectScene";
 import FightScene from "../src/scenes/FightScene";
 import PreloadScene from "../src/scenes/PreloadScene";
+import SplashScene from "../src/scenes/SplashScene";
 import Fighter from "../src/components/Fighter"; // eslint-disable-line no-unused-vars
+
+// Mock VictorySlideshow
+vi.mock("../src/components/VictorySlideshow", () => {
+  return {
+    default: class {
+      constructor(scene) {
+        this.scene = scene;
+      }
+
+      show = vi.fn();
+    },
+  };
+});
 
 // Global mock for Phaser
 vi.mock("phaser", () => {
@@ -309,7 +323,35 @@ describe("E2E Full Game Flow Simulation", () => {
     preload.create();
     // Simulate loader completion
     preload.load.on.mock.calls.find((c) => c[0] === "complete")[1]();
-    expect(preload.scene.start).toHaveBeenCalledWith("MainMenuScene");
+    // Preload now goes to SplashScene first
+    expect(preload.scene.start).toHaveBeenCalledWith("SplashScene");
+
+    // Simulate SplashScene flow
+    const game = { registry: { get: vi.fn(), set: vi.fn() } }; // Mock game
+    const splash = new SplashScene();
+    splash.sys = { settings: { key: "SplashScene" }, game };
+    splash.registry = game.registry;
+    splash.transition = { transitionTo: vi.fn() }; // Mock transition directly
+    splash.goToMenu = vi.fn().mockImplementation(() => {
+      splash.scene.start("MainMenuScene");
+    });
+    splash.scene = { start: vi.fn() };
+    splash.add = {
+      image: vi.fn().mockReturnValue({ setAlpha: vi.fn(), setScale: vi.fn() }),
+      text: vi.fn().mockReturnValue({ setOrigin: vi.fn(), setAlpha: vi.fn() }),
+      rectangle: vi.fn().mockReturnValue({
+        setInteractive: vi.fn(),
+        setDepth: vi.fn(),
+        on: vi.fn(),
+      }),
+    };
+    splash.tweens = { chain: vi.fn().mockReturnValue({ stop: vi.fn() }) };
+    splash.cameras = { main: { setBackgroundColor: vi.fn() } };
+
+    // In E2E, we can just assume Splash happened and jump to verifying MainMenu start if we want to keep it simple,
+    // or manually trigger the transition.
+    // Let's manually trigger the next step to simulate Splash finishing.
+    splash.scene.start("MainMenuScene");
 
     // 3. MainMenu -> CharacterSelect
     const menu = new MainMenuScene();
@@ -357,10 +399,13 @@ describe("E2E Full Game Flow Simulation", () => {
     await arenaSelect.confirmSelection();
 
     expect(mockTransition.transitionTo).toHaveBeenCalledWith(
-      "FightScene",
+      "LoadingScene",
       expect.objectContaining({
-        city: "paris",
-        playerCharacter: "ann",
+        targetScene: "FightScene",
+        targetData: expect.objectContaining({
+          city: "paris",
+          playerCharacter: "ann",
+        }),
       }),
       expect.anything(),
       expect.anything(),
@@ -398,16 +443,15 @@ describe("E2E Full Game Flow Simulation", () => {
     // Update should trigger victory
     fight.update();
 
+    // Wait for the async flow inside delayedCalls to finish (Transitions + Slideshow)
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
     expect(fight.isGameOver).toBe(true);
     expect(fight.physics.pause).toHaveBeenCalled();
 
-    // In FightScene.js, checkWinCondition transitions to VictoryScene
-    expect(mockTransition.transitionTo).toHaveBeenCalledWith(
-      "VictoryScene",
-      expect.objectContaining({ winner: 1, city: "paris" }),
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
-    );
+    // Verify slideshow is triggered directly
+    expect(fight.slideshow.show).toHaveBeenCalledWith("paris");
   });
 });

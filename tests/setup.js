@@ -177,6 +177,7 @@ export const createMockScene = () => {
       create: vi.fn(),
       exists: vi.fn(() => false),
       generateFrameNumbers: vi.fn(() => []),
+      remove: vi.fn(),
     },
     cameras: {
       main: {
@@ -241,6 +242,7 @@ export const createMockScene = () => {
       exists: vi.fn(() => true),
       get: vi.fn(() => ({ getSource: vi.fn(() => ({})) })),
       addCanvas: vi.fn(),
+      remove: vi.fn(),
     },
     registry: {
       get: vi.fn(),

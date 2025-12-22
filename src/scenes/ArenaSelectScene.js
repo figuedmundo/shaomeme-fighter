@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import UnifiedLogger from "../utils/Logger.js";
 import { addTransitions, TransitionPresets } from "../utils/SceneTransition";
+import rosterConfig from "../config/rosterConfig";
 
 const logger = new UnifiedLogger("Frontend:ArenaSelectScene");
 
@@ -281,14 +282,31 @@ export default class ArenaSelectScene extends Phaser.Scene {
     // Disable button
     this.fightBtn.disableInteractive();
 
-    // Dramatic curtain close
+    // Select Random Opponent here to allow Preloading
+    const availableOpponents = rosterConfig.filter(
+      (c) => c.id !== this.playerCharacter,
+    );
+    const randomOpponent =
+      availableOpponents[Math.floor(Math.random() * availableOpponents.length)];
+    const opponentCharacter = randomOpponent
+      ? randomOpponent.id
+      : rosterConfig[0].id;
+
+    // Transition to LoadingScene (JIT Loading)
+    // Pass 'player1' and 'player2' keys for the loader to recognize
     await this.transition.transitionTo(
-      "FightScene",
+      "LoadingScene",
       {
-        city: arena.name,
-        backgroundUrl: arena.url,
-        backgroundKey: `arena_bg_${this.selectedArenaIndex}`,
-        playerCharacter: this.playerCharacter,
+        targetScene: "FightScene",
+        targetData: {
+          city: arena.name,
+          backgroundUrl: arena.url,
+          backgroundKey: `arena_bg_${this.selectedArenaIndex}`,
+          playerCharacter: this.playerCharacter,
+          opponentCharacter,
+          player1: this.playerCharacter, // For LoadingScene loader
+          player2: opponentCharacter, // For LoadingScene loader
+        },
       },
       TransitionPresets.ARENA_TO_FIGHT.type,
       TransitionPresets.ARENA_TO_FIGHT.duration,

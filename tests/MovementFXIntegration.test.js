@@ -156,6 +156,7 @@ vi.mock("phaser", () => {
         textures = {
           exists: vi.fn(() => true),
           addCanvas: vi.fn(),
+          remove: vi.fn(),
         };
 
         anims = {
@@ -164,6 +165,7 @@ vi.mock("phaser", () => {
           exists: vi.fn(),
           pauseAll: vi.fn(),
           resumeAll: vi.fn(),
+          remove: vi.fn(),
         };
 
         time = {

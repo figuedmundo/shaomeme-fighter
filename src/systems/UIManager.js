@@ -228,6 +228,8 @@ export default class UIManager {
       this.p2Health = Phaser.Math.Clamp(health, 0, 100);
       this.shakePortrait(2);
     }
+    // PHASE 3.2: Redraw immediately for instant health bar feedback
+    this.drawHealthBars();
   }
 
   /**

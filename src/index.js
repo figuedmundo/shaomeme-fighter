@@ -5,12 +5,14 @@ import Phaser from "phaser";
 import BootScene from "./scenes/BootScene";
 import LoadingScene from "./scenes/LoadingScene";
 import PreloadScene from "./scenes/PreloadScene";
+import SplashScene from "./scenes/SplashScene";
 import MainMenuScene from "./scenes/MainMenuScene";
 import CharacterSelectScene from "./scenes/CharacterSelectScene";
 import ArenaSelectScene from "./scenes/ArenaSelectScene";
 import FightScene from "./scenes/FightScene";
 import VictoryScene from "./scenes/VictoryScene";
 import ContinueScene from "./scenes/ContinueScene";
+import CreditsScene from "./scenes/CreditsScene";
 import PauseScene from "./scenes/PauseScene";
 import TutorialOverlayScene from "./scenes/TutorialOverlayScene";
 import StageEffectsTestScene from "./scenes/StageEffectsTestScene";
@@ -46,8 +48,10 @@ const config = {
     BootScene,
     LoadingScene,
     PreloadScene,
+    SplashScene,
     StageEffectsTestScene, // Add this for testing Phase 3.1 effects
     MainMenuScene,
+    CreditsScene,
     CharacterSelectScene,
     ArenaSelectScene,
     FightScene,
