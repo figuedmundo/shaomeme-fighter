@@ -20,6 +20,9 @@ export default class ArenaSelectScene extends Phaser.Scene {
     if (data && data.playerCharacter) {
       this.playerCharacter = data.playerCharacter;
     }
+    if (data && data.opponentCharacter) {
+      this.opponentCharacter = data.opponentCharacter;
+    }
   }
 
   preload() {
@@ -282,15 +285,21 @@ export default class ArenaSelectScene extends Phaser.Scene {
     // Disable button
     this.fightBtn.disableInteractive();
 
-    // Select Random Opponent here to allow Preloading
-    const availableOpponents = rosterConfig.filter(
-      (c) => c.id !== this.playerCharacter,
-    );
-    const randomOpponent =
-      availableOpponents[Math.floor(Math.random() * availableOpponents.length)];
-    const opponentCharacter = randomOpponent
-      ? randomOpponent.id
-      : rosterConfig[0].id;
+    // Determine Opponent
+    // If passed from CharacterSelect, use it. Otherwise (fallback), pick random.
+    let { opponentCharacter } = this;
+    if (!opponentCharacter) {
+      const availableOpponents = rosterConfig.filter(
+        (c) => c.id !== this.playerCharacter,
+      );
+      const randomOpponent =
+        availableOpponents[
+          Math.floor(Math.random() * availableOpponents.length)
+        ];
+      opponentCharacter = randomOpponent
+        ? randomOpponent.id
+        : rosterConfig[0].id;
+    }
 
     // Transition to LoadingScene (JIT Loading)
     // Pass 'player1' and 'player2' keys for the loader to recognize

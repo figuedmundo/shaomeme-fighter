@@ -238,14 +238,6 @@
       "personality": "aggressive"
     },
     {
-      "id": "witch",
-      "displayName": "The Witch",
-      "portraitPath": "/assets/fighters/witch/portrait.png",
-      "iconPath": "/assets/fighters/witch/icon.png",
-      "fullBodyPath": "/assets/fighters/witch/fullBody.png",
-      "personality": "zoner"
-    },
-    {
       "id": "fat",
       "displayName": "Fat",
       "portraitPath": "/assets/fighters/fat/portrait.png",
