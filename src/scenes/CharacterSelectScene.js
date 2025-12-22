@@ -318,7 +318,7 @@ export default class CharacterSelectScene extends Phaser.Scene {
 
     // "Slot Machine" cycling
     const rollDuration = 500;
-    const rollInterval = 50;
+    const rollInterval = 100; // Increased from 50ms to prevent sound spam
     let elapsed = 0;
 
     this.time.addEvent({

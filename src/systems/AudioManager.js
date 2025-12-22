@@ -38,6 +38,7 @@ export default class AudioManager {
       hitReaction: 0,
       block: 0,
       announcer: 0,
+      ui: 0,
     };
 
     this.minTimeBetweenSounds = 100; // milliseconds
@@ -168,11 +169,18 @@ export default class AudioManager {
    * @param {string} key - UI sound asset key
    */
   playUi(key) {
+    const now = Date.now();
+    // Anti-spam for UI sounds (e.g. during fast rolls)
+    if (now - this.lastPlayTime.ui < 50) {
+      return;
+    }
+
     if (!this.scene.cache.audio.exists(key)) {
       logger.warn(`UI sound asset missing: ${key}`);
       return;
     }
     this.scene.sound.play(key, { volume: this.volumes.music * 1.5 }); // UI sounds usually bit louder than bg music
+    this.lastPlayTime.ui = now;
   }
 
   /**
