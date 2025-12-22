@@ -218,7 +218,7 @@
       "displayName": "Mom",
       "portraitPath": "/assets/fighters/mom/portrait.png",
       "iconPath": "/assets/fighters/mom/icon.png",
-      "fullBodyPath": "/assets/fighters/mom/full-pose.png",
+      "fullBodyPath": "/assets/fighters/mom/fullBody.png",
       "personality": "defensive"
     },
     {
@@ -226,7 +226,7 @@
       "displayName": "Dad",
       "portraitPath": "/assets/fighters/dad/portrait.png",
       "iconPath": "/assets/fighters/dad/icon.png",
-      "fullBodyPath": "/assets/fighters/dad/full-pose.png",
+      "fullBodyPath": "/assets/fighters/dad/fullBody.png",
       "personality": "aggressive"
     },
     {
@@ -234,7 +234,7 @@
       "displayName": "Brother",
       "portraitPath": "/assets/fighters/brother/portrait.png",
       "iconPath": "/assets/fighters/brother/icon.png",
-      "fullBodyPath": "/assets/fighters/brother/full-pose.png",
+      "fullBodyPath": "/assets/fighters/brother/fullBody.png",
       "personality": "aggressive"
     },
     {
@@ -242,7 +242,7 @@
       "displayName": "The Witch",
       "portraitPath": "/assets/fighters/witch/portrait.png",
       "iconPath": "/assets/fighters/witch/icon.png",
-      "fullBodyPath": "/assets/fighters/witch/full-pose.png",
+      "fullBodyPath": "/assets/fighters/witch/fullBody.png",
       "personality": "zoner"
     },
     {
@@ -250,7 +250,7 @@
       "displayName": "Fat",
       "portraitPath": "/assets/fighters/fat/portrait.png",
       "iconPath": "/assets/fighters/fat/icon.png",
-      "fullBodyPath": "/assets/fighters/fat/full-pose.png",
+      "fullBodyPath": "/assets/fighters/fat/fullBody.png",
       "personality": "balanced"
     },
     {
@@ -258,7 +258,7 @@
       "displayName": "Fresway Worker",
       "portraitPath": "/assets/fighters/fresway_worker/portrait.png",
       "iconPath": "/assets/fighters/fresway_worker/icon.png",
-      "fullBodyPath": "/assets/fighters/fresway_worker/full-pose.png",
+      "fullBodyPath": "/assets/fighters/fresway_worker/fullBody.png",
       "personality": "defensive"
     }
   ]

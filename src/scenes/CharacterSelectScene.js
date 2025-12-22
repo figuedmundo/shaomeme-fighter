@@ -16,6 +16,11 @@ export default class CharacterSelectScene extends Phaser.Scene {
     }
     this.transition = config.transitionManager; // Set early for tests
     this._transitionOverride = config.transitionManager;
+
+    // Layout Constants
+    this.PORTRAIT_FIT_WIDTH = 0.45;
+    this.PORTRAIT_FIT_HEIGHT = 0.75; // Reduced from 0.85 to allow 1.2x zoom to stay within screen
+    this.ZOOM_FACTOR = 1.2;
   }
 
   preload() {
@@ -93,7 +98,11 @@ export default class CharacterSelectScene extends Phaser.Scene {
     this.leftPortrait = this.add
       .image(p1X, centerY, `full_body_${rosterConfig[0].id}`)
       .setOrigin(0.5); // Center origin for better fitting
-    this.fitInArea(this.leftPortrait, width * 0.45, height * 0.85);
+    this.fitInArea(
+      this.leftPortrait,
+      width * this.PORTRAIT_FIT_WIDTH,
+      height * this.PORTRAIT_FIT_HEIGHT,
+    );
 
     // 2. Right Silhouette (Opponent)
     const aiX = width * 0.75;
@@ -102,7 +111,11 @@ export default class CharacterSelectScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setTint(0x000000)
       .setAlpha(0.3);
-    this.fitInArea(this.rightPortrait, width * 0.45, height * 0.85);
+    this.fitInArea(
+      this.rightPortrait,
+      width * this.PORTRAIT_FIT_WIDTH,
+      height * this.PORTRAIT_FIT_HEIGHT,
+    );
 
     // Add "?" Overlay for AI
     this.aiQuestionMark = this.add
@@ -243,7 +256,11 @@ export default class CharacterSelectScene extends Phaser.Scene {
     // Update Portrait (Full Body)
     this.leftPortrait.setTexture(`full_body_${char.id}`);
     const { width, height } = this.scale;
-    this.fitInArea(this.leftPortrait, width * 0.45, height * 0.85);
+    this.fitInArea(
+      this.leftPortrait,
+      width * this.PORTRAIT_FIT_WIDTH,
+      height * this.PORTRAIT_FIT_HEIGHT,
+    );
 
     // Smooth fade in for new texture
     this.leftPortrait.setAlpha(0);
@@ -316,8 +333,8 @@ export default class CharacterSelectScene extends Phaser.Scene {
           this.rightPortrait.setTexture(`full_body_${randomChar.id}`);
           this.fitInArea(
             this.rightPortrait,
-            this.scale.width * 0.45,
-            this.scale.height * 0.85,
+            this.scale.width * this.PORTRAIT_FIT_WIDTH,
+            this.scale.height * this.PORTRAIT_FIT_HEIGHT,
           );
           this.rightPortrait.setTint(0x000000);
           this.rightPortrait.setAlpha(0.3);
@@ -338,7 +355,11 @@ export default class CharacterSelectScene extends Phaser.Scene {
     this.rightPortrait.clearTint();
     this.rightPortrait.setTexture(`full_body_${opponent.id}`);
     const { width, height } = this.scale;
-    this.fitInArea(this.rightPortrait, width * 0.45, height * 0.85);
+    this.fitInArea(
+      this.rightPortrait,
+      width * this.PORTRAIT_FIT_WIDTH,
+      height * this.PORTRAIT_FIT_HEIGHT,
+    );
 
     // Update AI Spotlight
     this.tweens.add({
@@ -351,7 +372,7 @@ export default class CharacterSelectScene extends Phaser.Scene {
     this.rightPortrait.setAlpha(1);
     this.tweens.add({
       targets: this.rightPortrait,
-      scale: this.rightPortrait.scale * 1.2,
+      scale: this.rightPortrait.scale * this.ZOOM_FACTOR,
       duration: 200,
       yoyo: true,
       ease: "Sine.easeOut",
@@ -366,8 +387,8 @@ export default class CharacterSelectScene extends Phaser.Scene {
     // Scale both portraits
     this.tweens.add({
       targets: [this.leftPortrait, this.rightPortrait],
-      scaleX: this.leftPortrait.scaleX * 1.2,
-      scaleY: this.leftPortrait.scaleY * 1.2,
+      scaleX: this.leftPortrait.scaleX * this.ZOOM_FACTOR,
+      scaleY: this.leftPortrait.scaleY * this.ZOOM_FACTOR,
       duration: 200,
       ease: "Sine.easeOut",
     });
