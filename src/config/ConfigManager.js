@@ -66,6 +66,10 @@ const LIGHTING_PRESETS = {
     spotlights: true,
     spotlightConfig: { radius: 120, intensity: 1.3, color: 16746564 },
   },
+  foggy_night: {
+    ambientLevel: 0.7,
+    spotlights: false,
+  },
   dramatic_finale: {
     ambientLevel: 0.2,
     spotlights: true,

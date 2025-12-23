@@ -17,7 +17,7 @@
       "displayName": "Dublin",
       "presets": {
         "parallax": "city",
-        "lighting": "outdoor_night",
+        "lighting": "foggy_night",
         "weather": "london_fog",
         "animation": "city"
       },
@@ -50,7 +50,7 @@
       "displayName": "London",
       "presets": {
         "parallax": "city",
-        "lighting": "outdoor_night",
+        "lighting": "foggy_night",
         "weather": "london_fog",
         "animation": "city"
       },

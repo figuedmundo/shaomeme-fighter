@@ -13,11 +13,11 @@ describe("ConfigManager Internal Logic", () => {
   });
 
   it("should resolve lighting config from internal presets", () => {
-    // Dublin uses 'outdoor_night' lighting preset
+    // Dublin uses 'foggy_night' lighting preset
     const config = ConfigManager.getLightingPresetForCity("dublin");
     expect(config).toBeDefined();
-    expect(config.ambientLevel).toBe(0.4); // Known value from outdoor_night
-    expect(config.spotlights).toBe(true);
+    expect(config.ambientLevel).toBe(0.7); // Known value from foggy_night
+    expect(config.spotlights).toBe(false);
   });
 
   it("should resolve weather config from internal presets", () => {

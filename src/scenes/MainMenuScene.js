@@ -99,8 +99,8 @@ export default class MainMenuScene extends Phaser.Scene {
     this.add
       .text(width / 2, height * 0.95, "Created by FeiFei for Shaomeme QQ", {
         fontFamily: '"Press Start 2P", sans-serif',
-        fontSize: "12px",
-        fill: "#333333", // Darker to not compete
+        fontSize: "14px",
+        fill: "#d5ceceff", // Darker to not compete
       })
       .setOrigin(0.5);
   }

@@ -38,7 +38,7 @@ export default class CreditsScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(width / 2, contentY + 40, "FeiFei", {
+      .text(width / 2, contentY + 40, "Edmundo", {
         fontFamily: '"Press Start 2P", sans-serif',
         fontSize: "32px",
         fill: "#ffffff",
@@ -47,7 +47,7 @@ export default class CreditsScene extends Phaser.Scene {
 
     // Dedication
     this.add
-      .text(width / 2, contentY + 120, "For Shaomeme Fighter", {
+      .text(width / 2, contentY + 120, "For Ann", {
         fontFamily: '"Press Start 2P", sans-serif',
         fontSize: "16px",
         fill: "#aaaaaa",
