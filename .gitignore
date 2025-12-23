@@ -37,3 +37,4 @@ logs/
 temp_clone/
 
 photos/**/*.jpg
+cache/

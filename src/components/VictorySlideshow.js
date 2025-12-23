@@ -1,5 +1,6 @@
 import ConfigManager from "../config/ConfigManager";
 import { TransitionPresets } from "../utils/SceneTransition";
+import gameData from "../config/gameData.json";
 
 export default class VictorySlideshow {
   constructor(scene) {
@@ -8,7 +9,11 @@ export default class VictorySlideshow {
     this.photos = [];
     this.currentIndex = 0;
     this.intervalId = null;
+    this.heartIntervalId = null;
     this.audioManager = scene.registry.get("audioManager");
+
+    // Config check
+    this.cinematicMode = gameData.cinematicMode !== false;
   }
 
   async show(city) {
@@ -48,6 +53,32 @@ export default class VictorySlideshow {
     this.overlay = document.createElement("div");
     this.overlay.className = "victory-overlay";
 
+    // Heart Spawner Listener
+    this.overlay.addEventListener("click", (e) => {
+      // Only spawn if click is on overlay/background, not buttons
+      if (!e.target.closest("button")) {
+        this.spawnHeart(e.clientX, e.clientY);
+      }
+    });
+
+    // Background Container (Blurred)
+    this.bgElement = document.createElement("img");
+    this.bgElement.className = "blurred-background";
+    this.bgElement.alt = "";
+    this.overlay.appendChild(this.bgElement);
+
+    // Cinematic Overlay
+    if (this.cinematicMode) {
+      const cinematic = document.createElement("div");
+      cinematic.className = "cinematic-overlay";
+      this.overlay.appendChild(cinematic);
+    }
+
+    // Heart Container
+    this.heartContainer = document.createElement("div");
+    this.heartContainer.className = "heart-container";
+    this.overlay.appendChild(this.heartContainer);
+
     // Add Title
     const title = document.createElement("h1");
     title.className = "victory-title";
@@ -58,13 +89,19 @@ export default class VictorySlideshow {
     const imgContainer = document.createElement("div");
     imgContainer.className = "victory-image-container";
 
+    // Polaroid Frame
+    const polaroidFrame = document.createElement("div");
+    polaroidFrame.className = "polaroid-frame";
+
     // Image Element
     this.imgElement = document.createElement("img");
     this.imgElement.className = "victory-image cinematic-filter";
     this.imgElement.alt = "Memory";
-    imgContainer.appendChild(this.imgElement);
 
-    // Smoke Border (Overlay on top of image)
+    polaroidFrame.appendChild(this.imgElement);
+    imgContainer.appendChild(polaroidFrame);
+
+    // Smoke Border (Keeping existing visual element)
     const smokeBorder = document.createElement("div");
     smokeBorder.className = "smoke-border";
     imgContainer.appendChild(smokeBorder);
@@ -75,10 +112,20 @@ export default class VictorySlideshow {
     const exitBtn = document.createElement("button");
     exitBtn.className = "victory-close";
     exitBtn.innerText = "EXIT >";
-    exitBtn.onclick = () => this.exit();
+    exitBtn.onclick = (e) => {
+      e.stopPropagation();
+      this.exit();
+    };
     this.overlay.appendChild(exitBtn);
 
     document.body.appendChild(this.overlay);
+
+    // Start Heart Auto-Spawn
+    this.heartIntervalId = setInterval(() => {
+      const x = Math.random() * window.innerWidth;
+      const y = window.innerHeight; // Start from bottom
+      this.spawnHeart(x, y);
+    }, 2000); // Every 2 seconds
   }
 
   startSlideshow() {
@@ -88,19 +135,52 @@ export default class VictorySlideshow {
     this.intervalId = setInterval(() => {
       this.currentIndex = (this.currentIndex + 1) % this.photos.length;
       this.showPhoto(this.currentIndex);
-    }, 4000); // 4 seconds
+    }, 5000);
   }
 
   showPhoto(index) {
     if (!this.imgElement || !this.photos[index]) return;
 
-    // Simple opacity fade
+    const photoUrl = this.photos[index].url;
+
+    // Fade Out
     this.imgElement.style.opacity = 0;
+    if (this.bgElement) this.bgElement.style.opacity = 0;
 
     setTimeout(() => {
-      this.imgElement.src = this.photos[index].url;
+      // Update Source
+      this.imgElement.src = photoUrl;
+      if (this.bgElement) this.bgElement.src = photoUrl;
+
+      // Random Ken Burns Effect
+      this.imgElement.classList.remove("ken-burns-active");
+      const _triggerReflow = this.imgElement.offsetWidth;
+      this.imgElement.classList.add("ken-burns-active");
+
+      // Removed random polaroid rotation per user request
+
+      // Fade In
       this.imgElement.style.opacity = 1;
-    }, 200); // Wait for fade out
+      if (this.bgElement) this.bgElement.style.opacity = 1;
+    }, 200);
+  }
+
+  spawnHeart(x, y) {
+    if (!this.heartContainer) return;
+
+    const heart = document.createElement("div");
+    heart.className = "floating-heart";
+    heart.style.left = `${x}px`;
+    heart.style.top = `${y}px`;
+
+    this.heartContainer.appendChild(heart);
+
+    // Cleanup after animation
+    setTimeout(() => {
+      if (this.heartContainer && this.heartContainer.contains(heart)) {
+        this.heartContainer.removeChild(heart);
+      }
+    }, 3000);
   }
 
   showFallback() {
@@ -115,7 +195,6 @@ export default class VictorySlideshow {
   }
 
   handleAudio(city) {
-    // Play victory/slideshow music immediately
     if (!this.audioManager) return;
 
     const trackKey = ConfigManager.getVictoryMusicForCity(city);
@@ -124,15 +203,16 @@ export default class VictorySlideshow {
 
   async exit() {
     if (this.intervalId) clearInterval(this.intervalId);
+    if (this.heartIntervalId) clearInterval(this.heartIntervalId);
+
     if (this.audioManager) {
-      this.audioManager.stopMusic(500); // 0.5s fade
+      this.audioManager.stopMusic(500);
     }
     if (this.overlay) {
       document.body.removeChild(this.overlay);
       this.overlay = null;
     }
 
-    // PHASE 5.1: Fade transition back to main menu
     if (this.scene._transition) {
       await this.scene._transition.transitionTo(
         "MainMenuScene",
@@ -142,7 +222,6 @@ export default class VictorySlideshow {
         TransitionPresets.BACK_TO_MENU.color,
       );
     } else {
-      // Fallback if transition not available
       this.scene.scene.start("MainMenuScene");
     }
   }

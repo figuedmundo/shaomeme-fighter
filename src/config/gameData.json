@@ -1,4 +1,5 @@
 {
+  "cinematicMode": true,
   "arenas": {
     "paris": {
       "type": "city",

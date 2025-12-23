@@ -40,36 +40,55 @@ export async function processImage(sourcePath, cachePath) {
     throw readError;
   }
 
-  const fileExtension = path.extname(sourcePath).toLowerCase();
-
-  // Handle HEIC conversion
-  if (fileExtension === ".heic" || fileExtension === ".heif") {
-    try {
-      logger.info(`Converting HEIC to JPEG: ${sourcePath}`);
-      // Attempt HEIC conversion using heic-convert
-      imageBuffer = await heicConvert({
-        buffer: imageBuffer, // the HEIC buffer
-        format: "JPEG", // output format
-        quality: 1, // the quality setting between 0 and 1
-      });
-      // Sharp can then process the JPEG buffer
-    } catch (heicError) {
-      logger.error(`Error converting HEIC file ${sourcePath}:`, heicError);
-      // Fallback or re-throw, depending on desired behavior
-      throw new Error(`Failed to convert HEIC image: ${sourcePath}`);
-    }
-  }
-
-  // Process with sharp
+  // Process with sharp (try directly first to preserve metadata/orientation)
   try {
     await sharp(imageBuffer)
+      .rotate() // Auto-rotate based on EXIF
       .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: "inside" })
       .webp({ quality: WEBP_QUALITY })
       .toFile(cachePath);
     logger.info(`Successfully processed and cached: ${cachePath}`);
   } catch (sharpError) {
-    logger.error(`Sharp processing failed for ${sourcePath}:`, sharpError);
-    throw sharpError;
+    logger.warn(
+      `Direct sharp processing failed for ${sourcePath}. Trying fallback...`,
+      sharpError,
+    );
+
+    // Fallback: Check if it was HEIC/HEIF and try heic-convert
+    const fileExtension = path.extname(sourcePath).toLowerCase();
+    if (fileExtension === ".heic" || fileExtension === ".heif") {
+      try {
+        logger.info(`Fallback: Converting HEIC to JPEG: ${sourcePath}`);
+        // Attempt HEIC conversion using heic-convert
+        const jpegBuffer = await heicConvert({
+          buffer: imageBuffer,
+          format: "JPEG",
+          quality: 1,
+        });
+
+        // Retry sharp with the converted JPEG buffer
+        // Note: Metadata might be lost here, but at least we get an image
+        await sharp(jpegBuffer)
+          .rotate() // Try rotate again just in case, though likely no tag
+          .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: "inside" })
+          .webp({ quality: WEBP_QUALITY })
+          .toFile(cachePath);
+
+        logger.info(
+          `Successfully processed and cached (via fallback): ${cachePath}`,
+        );
+        return cachePath;
+      } catch (heicError) {
+        logger.error(
+          `Fallback HEIC conversion failed for ${sourcePath}:`,
+          heicError,
+        );
+        throw heicError; // Throw the HEIC error if fallback fails
+      }
+    } else {
+      // Not HEIC, re-throw the original sharp error
+      throw sharpError;
+    }
   }
 
   return cachePath;

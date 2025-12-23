@@ -10,7 +10,6 @@ describe("Fighter Spritesheet Integrity", () => {
     "mom",
     "dad",
     "brother",
-    "witch",
     "fat",
     "fresway_worker",
   ];

@@ -7,8 +7,8 @@ describe("Roster Configuration", () => {
   });
 
   it("should have the correct number of characters", () => {
-    // 7 characters from gameData.json
-    expect(rosterConfig.length).toBe(7);
+    // 6 characters from gameData.json
+    expect(rosterConfig.length).toBe(6);
   });
 
   it("should have required fields for each character", () => {

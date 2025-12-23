@@ -1,76 +1,200 @@
 /* Victory Screen */
 .victory-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: black;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 200;
-    color: white;
-    font-family: sans-serif;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  color: white;
+  font-family: sans-serif;
+  overflow: hidden; /* Ensure background doesn't overflow */
 }
 
 .victory-title {
-    font-size: 3rem;
-    color: #ffd700;
-    text-shadow: 0 0 10px #ff0000;
-    margin-bottom: 1rem;
-    z-index: 202; /* Above smoke */
+  font-size: 3rem;
+  color: #ffd700;
+  text-shadow: 0 0 10px #ff0000;
+  margin-bottom: 1rem;
+  z-index: 202; /* Above everything */
+  position: relative;
 }
 
 .victory-image-container {
-    position: relative;
-    width: 90vw;
-    height: 60vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  position: relative;
+  width: 95vw;
+  height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20; /* Above blurred background */
 }
 
 .victory-image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    transition: opacity 0.5s ease-in-out;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: opacity 0.5s ease-in-out;
 }
 
 /* Cinematic Filters */
 .cinematic-filter {
-    filter: sepia(0.3) contrast(1.1) brightness(0.9);
+  filter: sepia(0.3) contrast(1.1) brightness(0.9);
 }
 
 /* Smoke Border */
 .smoke-border {
-    position: absolute;
-    inset: -50px; /* Expand slightly beyond container */
-    background-image: url('/resources/smoke.png');
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    pointer-events: none;
-    z-index: 201; /* Above image */
-    /* Optional: Add blend mode if supported/desired, but normal is fine for transparent png */
+  position: absolute;
+  inset: -50px; /* Expand slightly beyond container */
+  background-image: url("/resources/smoke.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 201; /* Above image */
+  /* Optional: Add blend mode if supported/desired, but normal is fine for transparent png */
 }
 
 .victory-close {
-    margin-top: 20px;
-    padding: 10px 30px;
-    font-size: 1.5rem;
-    background: rgba(255, 0, 0, 0.8);
-    color: white;
-    border: 2px solid #ffd700;
-    cursor: pointer;
-    border-radius: 5px;
-    z-index: 202; /* Above smoke */
-    text-transform: uppercase;
-    font-weight: bold;
-    transition: background 0.3s;
+  margin-top: 20px;
+  padding: 10px 30px;
+  font-size: 1.5rem;
+  background: rgba(255, 0, 0, 0.8);
+  color: white;
+  border: 2px solid #ffd700;
+  cursor: pointer;
+  border-radius: 5px;
+  z-index: 202; /* Above smoke */
+  text-transform: uppercase;
+  font-weight: bold;
+  transition: background 0.3s;
+  position: relative;
 }
 
 .victory-close:hover {
-    background: rgba(255, 0, 0, 1);
+  background: rgba(255, 0, 0, 1);
+}
+
+/* --- NEW STYLES FOR POLISH --- */
+
+/* Background Fill */
+.blurred-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(20px) brightness(0.4);
+  z-index: 10;
+  transition: opacity 1s ease-in-out;
+}
+
+/* Polaroid Frame */
+.polaroid-frame {
+  position: relative;
+  z-index: 20; /* Above blurred background */
+  background: white;
+  padding: 10px 10px 40px 10px; /* Classic polaroid padding */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+  max-width: 95%;
+  max-height: 95%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* transform: rotate(-2deg); Removed per user request */
+  transition: transform 1s ease-in-out;
+}
+
+.polaroid-frame img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  transition: opacity 1s ease-in-out;
+}
+
+/* Cinematic Overlay */
+.cinematic-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Allow clicks through */
+  z-index: 100; /* Topmost visual layer */
+  background:
+    radial-gradient(circle, transparent 50%, black 150%),
+    /* Vignette */
+    url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="512" height="512"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noise)" opacity="0.4"/%3E%3C/svg%3E'); /* Noise */
+  mix-blend-mode: overlay;
+  opacity: 0.4;
+}
+
+/* Ken Burns Animation */
+@keyframes ken-burns {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  100% {
+    transform: scale(1.1) translate(2%, -2%);
+  }
+}
+
+@keyframes ken-burns-alt {
+  0% {
+    transform: scale(1.1) translate(-1%, 1%);
+  }
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+}
+
+.ken-burns-active {
+  animation: ken-burns 10s ease-out infinite alternate;
+}
+
+/* Floating Hearts */
+.heart-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 150; /* Above cinematic overlay */
+  overflow: hidden;
+}
+
+.floating-heart {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background-color: #ff4d6d;
+  clip-path: path(
+    "M15 27.5C15 27.5 1.875 16.5 1.875 9.125C1.875 5.5 4.875 2.5 8.5 2.5C11.5 2.5 13.875 4.625 15 7.125C16.125 4.625 18.5 2.5 21.5 2.5C25.125 2.5 28.125 5.5 28.125 9.125C28.125 16.5 15 27.5 15 27.5Z"
+  );
+  opacity: 0;
+  animation: floatUp 3s ease-out forwards;
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) scale(0.5);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+    transform: translateY(-20px) scale(1.2); /* Pop up */
+  }
+  100% {
+    transform: translateY(-200px) scale(1);
+    opacity: 0;
+  }
 }
