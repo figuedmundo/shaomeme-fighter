@@ -8,7 +8,7 @@ export default class VictorySlideshow {
     this.overlay = null;
     this.photos = [];
     this.currentIndex = 0;
-    this.intervalId = null;
+    this.slideshowTimeout = null;
     this.heartIntervalId = null;
     this.audioManager = scene.registry.get("audioManager");
 
@@ -17,16 +17,13 @@ export default class VictorySlideshow {
   }
 
   async show(city) {
+    this.currentCity = city;
     // 1. Fetch Photos
     try {
       const res = await fetch(`/api/photos?city=${city}`);
       if (res.ok) {
         const allPhotos = await res.json();
-        // EXCLUDE the arena background from the reward slideshow
         this.photos = allPhotos.filter((p) => !p.isBackground);
-        console.log(
-          `VictorySlideshow: Found ${allPhotos.length} total photos, using ${this.photos.length} as rewards (excluded background).`,
-        );
       } else {
         console.warn("Failed to fetch photos");
       }
@@ -49,69 +46,58 @@ export default class VictorySlideshow {
   }
 
   createOverlay() {
-    // Create Overlay Container
     this.overlay = document.createElement("div");
     this.overlay.className = "victory-overlay";
 
-    // Heart Spawner Listener
     this.overlay.addEventListener("click", (e) => {
-      // Only spawn if click is on overlay/background, not buttons
       if (!e.target.closest("button")) {
         this.spawnHeart(e.clientX, e.clientY);
       }
     });
 
-    // Background Container (Blurred)
     this.bgElement = document.createElement("img");
     this.bgElement.className = "blurred-background";
     this.bgElement.alt = "";
     this.overlay.appendChild(this.bgElement);
 
-    // Cinematic Overlay
     if (this.cinematicMode) {
       const cinematic = document.createElement("div");
       cinematic.className = "cinematic-overlay";
       this.overlay.appendChild(cinematic);
     }
 
-    // Heart Container
     this.heartContainer = document.createElement("div");
     this.heartContainer.className = "heart-container";
     this.overlay.appendChild(this.heartContainer);
 
-    // Add Title
-    const title = document.createElement("h1");
-    title.className = "victory-title";
-    title.innerText = "VICTORY";
-    this.overlay.appendChild(title);
-
-    // Image Container
     const imgContainer = document.createElement("div");
     imgContainer.className = "victory-image-container";
 
-    // Polaroid Frame
-    const polaroidFrame = document.createElement("div");
-    polaroidFrame.className = "polaroid-frame";
+    this.polaroidFrame = document.createElement("div");
+    this.polaroidFrame.className = "polaroid-frame";
 
-    // Image Element
     this.imgElement = document.createElement("img");
     this.imgElement.className = "victory-image cinematic-filter";
     this.imgElement.alt = "Memory";
 
-    polaroidFrame.appendChild(this.imgElement);
-    imgContainer.appendChild(polaroidFrame);
+    this.polaroidFrame.appendChild(this.imgElement);
 
-    // Smoke Border (Keeping existing visual element)
+    // Date Element
+    this.dateElement = document.createElement("div");
+    this.dateElement.className = "polaroid-date";
+    this.polaroidFrame.appendChild(this.dateElement);
+
+    imgContainer.appendChild(this.polaroidFrame);
+
     const smokeBorder = document.createElement("div");
     smokeBorder.className = "smoke-border";
     imgContainer.appendChild(smokeBorder);
 
     this.overlay.appendChild(imgContainer);
 
-    // Exit Button
     const exitBtn = document.createElement("button");
     exitBtn.className = "victory-close";
-    exitBtn.innerText = "EXIT >";
+    exitBtn.innerText = "✕";
     exitBtn.onclick = (e) => {
       e.stopPropagation();
       this.exit();
@@ -120,49 +106,82 @@ export default class VictorySlideshow {
 
     document.body.appendChild(this.overlay);
 
-    // Start Heart Auto-Spawn
     this.heartIntervalId = setInterval(() => {
-      const x = Math.random() * window.innerWidth;
-      const y = window.innerHeight; // Start from bottom
-      this.spawnHeart(x, y);
-    }, 2000); // Every 2 seconds
+      if (this.polaroidFrame) {
+        const rect = this.polaroidFrame.getBoundingClientRect();
+        // Spawn randomly within the polaroid frame
+        const x = rect.left + Math.random() * rect.width;
+        const y = rect.top + Math.random() * rect.height;
+        this.spawnHeart(x, y);
+      }
+    }, 800); // Increased frequency slightly for better effect
   }
 
   startSlideshow() {
     this.currentIndex = 0;
     this.showPhoto(this.currentIndex);
+  }
 
-    this.intervalId = setInterval(() => {
-      this.currentIndex = (this.currentIndex + 1) % this.photos.length;
-      this.showPhoto(this.currentIndex);
-    }, 5000);
+  nextPhoto() {
+    this.currentIndex = (this.currentIndex + 1) % this.photos.length;
+    this.showPhoto(this.currentIndex);
   }
 
   showPhoto(index) {
     if (!this.imgElement || !this.photos[index]) return;
 
     const photoUrl = this.photos[index].url;
+    // Use date from photo, or fallback to Arena Name (Capitalized)
+    const photoDate =
+      this.photos[index].date || this.capitalize(this.currentCity);
 
     // Fade Out
     this.imgElement.style.opacity = 0;
+    if (this.dateElement) this.dateElement.style.opacity = 0;
     if (this.bgElement) this.bgElement.style.opacity = 0;
 
+    if (this.slideshowTimeout) clearTimeout(this.slideshowTimeout);
+
     setTimeout(() => {
-      // Update Source
       this.imgElement.src = photoUrl;
+      if (this.dateElement) this.dateElement.innerText = photoDate;
       if (this.bgElement) this.bgElement.src = photoUrl;
 
-      // Random Ken Burns Effect
-      this.imgElement.classList.remove("ken-burns-active");
-      const _triggerReflow = this.imgElement.offsetWidth;
-      this.imgElement.classList.add("ken-burns-active");
+      this.imgElement.onload = () => {
+        // Trigger Ken Burns "Shake" on the whole frame
+        if (this.polaroidFrame) {
+          this.polaroidFrame.classList.remove("ken-burns-active");
+          this.polaroidFrame.classList.remove("is-portrait");
+          // Trigger reflow for animation restart
+          // eslint-disable-next-line no-unused-expressions
+          this.polaroidFrame.offsetHeight;
+          this.polaroidFrame.classList.add("ken-burns-active");
+        }
 
-      // Removed random polaroid rotation per user request
+        const isPortrait = this.isPortrait(this.imgElement);
+        if (isPortrait && this.polaroidFrame) {
+          this.polaroidFrame.classList.add("is-portrait");
+        }
 
-      // Fade In
-      this.imgElement.style.opacity = 1;
-      if (this.bgElement) this.bgElement.style.opacity = 1;
+        // Fade In
+        this.imgElement.style.opacity = 1;
+        if (this.dateElement) this.dateElement.style.opacity = 1;
+        if (this.bgElement) this.bgElement.style.opacity = 1;
+
+        this.slideshowTimeout = setTimeout(() => {
+          this.nextPhoto();
+        }, 5000);
+      };
     }, 200);
+  }
+
+  isPortrait(img) {
+    return img.naturalHeight > img.naturalWidth;
+  }
+
+  capitalize(str) {
+    if (!str) return "";
+    return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
   spawnHeart(x, y) {
@@ -175,7 +194,6 @@ export default class VictorySlideshow {
 
     this.heartContainer.appendChild(heart);
 
-    // Cleanup after animation
     setTimeout(() => {
       if (this.heartContainer && this.heartContainer.contains(heart)) {
         this.heartContainer.removeChild(heart);
@@ -196,13 +214,12 @@ export default class VictorySlideshow {
 
   handleAudio(city) {
     if (!this.audioManager) return;
-
     const trackKey = ConfigManager.getVictoryMusicForCity(city);
     this.audioManager.playMusic(trackKey, { loop: true, volume: 0.5 });
   }
 
   async exit() {
-    if (this.intervalId) clearInterval(this.intervalId);
+    if (this.slideshowTimeout) clearTimeout(this.slideshowTimeout);
     if (this.heartIntervalId) clearInterval(this.heartIntervalId);
 
     if (this.audioManager) {

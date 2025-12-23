@@ -68,10 +68,9 @@ describe("VictorySlideshow Component", () => {
 
     const overlay = document.querySelector(".victory-overlay");
     expect(overlay).not.toBeNull();
-    // Should verify fallback text or image is present
-    // Implementation detail: we might show a "Victory" text if no images
-    const title = document.querySelector(".victory-title");
-    expect(title).not.toBeNull();
+    // Should verify fallback text is present
+    const fallbackMsg = document.querySelector(".victory-fallback-msg");
+    expect(fallbackMsg).not.toBeNull();
   });
 
   it("should remove overlay and navigate on exit", async () => {

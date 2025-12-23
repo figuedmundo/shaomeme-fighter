@@ -2,12 +2,69 @@ import sharp from "sharp";
 import path from "path";
 import * as fs from "node:fs/promises";
 import heicConvert from "heic-convert"; // Only if sharp struggles with HEIC directly
+import exifReader from "exif-reader";
 import UnifiedLogger from "../src/utils/Logger.js";
 
 const logger = new UnifiedLogger("Backend:ImageProcessor");
 
 export const MAX_DIMENSION = 1920;
 export const WEBP_QUALITY = 80;
+
+/**
+ * Formats a Date object to "Month Day, Year" (e.g., "May 21, 2023").
+ * @param {Date} date
+ * @returns {string}
+ */
+export function formatDate(date) {
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+/**
+ * Extracts the best available date from an image (EXIF DateTimeOriginal > CreateDate > File Birthtime).
+ * @param {string} sourcePath
+ * @returns {Promise<string|null>} Formatted date string or null if fails
+ */
+export async function getPhotoDate(sourcePath) {
+  try {
+    const image = sharp(sourcePath);
+    const metadata = await image.metadata();
+    let dateObj = null;
+
+    if (metadata.exif) {
+      try {
+        const parsedExif = exifReader(metadata.exif);
+
+        // exif-reader v2+ uses 'Photo' for SubIFD tags like DateTimeOriginal
+        const exifTags = parsedExif.Photo || parsedExif.exif || {};
+
+        if (exifTags.DateTimeOriginal) {
+          dateObj = new Date(exifTags.DateTimeOriginal);
+        } else if (exifTags.CreateDate) {
+          dateObj = new Date(exifTags.CreateDate);
+        }
+      } catch (exifErr) {
+        logger.warn(`Failed to parse EXIF for ${sourcePath}:`, exifErr);
+      }
+    }
+
+    // Fallback to file creation time
+    if (!dateObj || Number.isNaN(dateObj.getTime())) {
+      const stats = await fs.stat(sourcePath);
+      dateObj = stats.birthtime;
+    }
+
+    if (dateObj && !Number.isNaN(dateObj.getTime())) {
+      return formatDate(dateObj);
+    }
+  } catch (err) {
+    logger.error(`Error getting date for ${sourcePath}:`, err);
+  }
+  return null;
+}
 
 /**
  * Processes an image, resizing and converting it to WebP if necessary, and saves it to a cache directory.

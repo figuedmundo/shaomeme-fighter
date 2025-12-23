@@ -59,6 +59,7 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "exif-reader": "^2.0.3",
     "express": "^5.2.1",
     "heic-convert": "^2.1.0",
     "phaser": "^3.90.0",

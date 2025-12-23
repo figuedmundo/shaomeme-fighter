@@ -8,6 +8,10 @@ All agents must read and internalize the following files before making changes:
 2. AGENTS.md
 3. src/ (existing code)
 
+## AI Memorie
+
+- To run any test always use pnpm with --run to don't get stuck wating for the test to complete
+
 <skills>
 
 ## Skills

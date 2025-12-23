@@ -3,7 +3,7 @@ import cors from "cors";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { processImage } from "./ImageProcessor.js"; // Import ImageProcessor
+import { processImage, getPhotoDate } from "./ImageProcessor.js"; // Import ImageProcessor
 import UnifiedLogger from "../src/utils/Logger.js";
 
 const logger = new UnifiedLogger("Backend");
@@ -96,6 +96,10 @@ app.get("/api/photos", async (req, res) => {
 
         try {
           await processImage(sourcePath, cachePath);
+
+          // Get formatted date (EXIF or birthtime)
+          const date = await getPhotoDate(sourcePath);
+
           const isBackground =
             path.parse(filename).name.toLowerCase() === "background" ||
             path.parse(filename).name.toLowerCase() === "arena";
@@ -105,6 +109,7 @@ app.get("/api/photos", async (req, res) => {
             filename,
             type: "image/webp",
             isBackground,
+            date,
           };
         } catch (error) {
           logger.error(`Failed to process ${filename}:`, error);

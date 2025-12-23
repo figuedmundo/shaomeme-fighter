@@ -1,0 +1,1 @@
+in the pictures reward , the picture is taken all the width of the screen, and because the picture is actually to see in portrait, the picture cant be seen all, can we update the ken burn efect to move the picture from top to down so we can see the whole picture ?
