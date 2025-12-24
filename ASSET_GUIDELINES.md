@@ -2,16 +2,23 @@
 
 To ensure the best visual quality and performance on mobile devices (especially iPhone), please follow these guidelines when adding new characters or arenas.
 
-## 1. Arena Backgrounds (Photos)
+## 1. Backgrounds
 
-These are the photos you add to the `photos/` directory.
+### 1.1 Arena Backgrounds (Photos)
+
+These are the photos you add to the `photos/` directory for the fight stages.
 
 - **Recommended Resolution:** `1920 x 1080` (1080p) or `2560 x 1440` (1440p).
-- **Aspect Ratio:** `16:9` is standard, but since modern iPhones are wider (~19.5:9), `21:9` photos also work well.
-- **Format:** `.jpg` or `.png`. The server automatically converts these to `.webp` for the game, which saves data.
-- **Quality:**
-  - Avoid extremely high-resolution photos (like 8K) as they will slow down the loading time on mobile data.
-  - Ensure the "ground" in your photo is roughly in the bottom 20% of the image so characters have a place to stand.
+- **Aspect Ratio:** `16:9` standard, or `21:9` for modern wide iPhones.
+- **Quality:** Ensure the "ground" is in the bottom 20% of the image.
+
+### 1.2 Menu Backgrounds
+
+Used for the Character Select and Main Menu screens.
+
+- **Style:** Cinematic, dark, and high-contrast (e.g., the current `select_bg.png`).
+- **Resolution:** Minimum `2048 x 1536` (to look sharp on iPad Retina).
+- **Preparation:** These should be "clean" backgrounds without UI elements or characters pre-baked into them.
 
 ## 2. Character Sprites
 

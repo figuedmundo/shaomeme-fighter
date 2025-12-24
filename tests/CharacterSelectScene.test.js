@@ -41,14 +41,23 @@ vi.mock("phaser", () => {
         }),
         graphics: vi.fn().mockReturnValue({
           fillGradientStyle: vi.fn().mockReturnThis(),
-          fillRect: vi.fn().mockReturnThis(),
+          fillCircle: vi.fn().mockReturnThis(),
+          clear: vi.fn().mockReturnThis(),
+          lineStyle: vi.fn().mockReturnThis(),
+          strokeRect: vi.fn().mockReturnThis(),
+          on: vi.fn().mockReturnThis(),
         }),
         rectangle: vi.fn().mockReturnValue({
           setStrokeStyle: vi.fn().mockReturnThis(),
           setFillStyle: vi.fn().mockReturnThis(),
+          setInteractive: vi.fn().mockReturnThis(),
+          on: vi.fn().mockReturnThis(),
         }),
         container: vi.fn().mockReturnValue({
-          add: vi.fn(),
+          add: vi.fn().mockReturnThis(),
+          scaleX: 1,
+          scaleY: 1,
+          setAlpha: vi.fn().mockReturnThis(),
         }),
       };
       this.scale = { width: 1024, height: 768 };
@@ -86,12 +95,33 @@ describe("CharacterSelectScene", () => {
       setInteractive: vi.fn().mockReturnThis(),
       on: vi.fn().mockReturnThis(),
       setTexture: vi.fn().mockReturnThis(),
+      width: 100,
+      height: 100,
+      setScale: vi.fn().mockReturnThis(),
+      setScrollFactor: vi.fn().mockReturnThis(),
     });
 
     scene.add.graphics = vi.fn().mockReturnValue({
       fillGradientStyle: vi.fn().mockReturnThis(),
       fillCircle: vi.fn().mockReturnThis(),
+      clear: vi.fn().mockReturnThis(),
+      lineStyle: vi.fn().mockReturnThis(),
+      strokeRect: vi.fn().mockReturnThis(),
       alpha: 0.5,
+      setAlpha: vi.fn().mockReturnThis(),
+    });
+
+    scene.add.container = vi.fn().mockReturnValue({
+      add: vi.fn().mockReturnThis(),
+      scaleX: 1,
+      scaleY: 1,
+      setAlpha: vi.fn().mockReturnThis(),
+    });
+
+    scene.add.rectangle = vi.fn().mockReturnValue({
+      setInteractive: vi.fn().mockReturnThis(),
+      on: vi.fn().mockReturnThis(),
+      setOrigin: vi.fn().mockReturnThis(),
     });
 
     scene.leftPortrait = {
@@ -101,6 +131,7 @@ describe("CharacterSelectScene", () => {
       setScale: vi.fn().mockReturnThis(),
       width: 200,
       height: 400,
+      scale: 1,
     };
     scene.rightPortrait = {
       setTexture: vi.fn(),
@@ -176,9 +207,11 @@ describe("CharacterSelectScene", () => {
   });
 
   it("should select character and update state", () => {
-    // Manually setup grid items mock
+    // Manually setup grid items mock to match new structure
     scene.gridItems = rosterConfig.map(() => ({
-      border: { setStrokeStyle: vi.fn() },
+      container: { scaleX: 1, scaleY: 1 },
+      border: { clear: vi.fn(), lineStyle: vi.fn(), strokeRect: vi.fn() },
+      icon: { setAlpha: vi.fn() },
     }));
 
     // Select first character
@@ -192,11 +225,8 @@ describe("CharacterSelectScene", () => {
       rosterConfig[0].displayName.toUpperCase(),
     );
 
-    // Check visual highlight
-    expect(scene.gridItems[0].border.setStrokeStyle).toHaveBeenCalledWith(
-      4,
-      0xffd700,
-    );
+    // Check visual highlight (drawMetallicBorder called)
+    expect(scene.gridItems[0].border.strokeRect).toHaveBeenCalled();
   });
 
   it("should confirm selection and transition to ArenaSelectScene", async () => {

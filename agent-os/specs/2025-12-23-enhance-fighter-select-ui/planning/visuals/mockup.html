@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MK11 Character Select Replica</title>
+    <style>
+        /* --- 1. General Page Styling --- */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #050505; /* Deep Black Background */
+            background-image: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* --- 2. The Main Grid Container --- */
+        .roster-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px; /* Vertical gap between rows */
+            padding: 20px;
+            /* Optional: Add a subtle glow behind the grid like the game */
+            box-shadow: 0 0 100px rgba(0, 0, 0, 0.9); 
+        }
+
+        /* --- 3. Row Styling --- */
+        .roster-row {
+            display: flex;
+            justify-content: center; /* This centers the rows with fewer items */
+            gap: 6px; /* Horizontal gap between characters */
+        }
+
+        /* --- 4. Character Slot (The Card) --- */
+        .char-slot {
+            width: 80px;  /* Adjustable width */
+            height: 105px; /* Aspect ratio approx 3:4 */
+            position: relative;
+            background-color: #111;
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.2s ease;
+            
+            /* The Metallic Border Effect */
+            border: 2px solid #5c4d3c; /* Outer dark bronze */
+            box-shadow: inset 0 0 0 1px #a88d57; /* Inner bright gold line */
+        }
+
+        /* Hover Effect for Selection */
+        .char-slot:hover {
+            transform: scale(1.05);
+            border-color: #ffffff;
+            box-shadow: inset 0 0 0 2px #ffdb76, 0 0 15px #ffdb76;
+            z-index: 10;
+        }
+
+        /* --- 5. Character Image --- */
+        .char-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            opacity: 0.9; /* Slightly dimmed until hovered */
+        }
+
+        .char-slot:hover img {
+            opacity: 1;
+        }
+
+        /* Tooltip for names (Optional, for clarity) */
+        .char-slot::after {
+            content: attr(data-name);
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+            padding: 2px 5px;
+            font-size: 10px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            border: 1px solid #a88d57;
+        }
+
+        .char-slot:hover::after {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="roster-container">
+        
+        <div class="roster-row">
+            <div class="char-slot" data-name="Shang Tsung"><img src="https://placehold.co/80x105/333/gold?text=Shang" alt="Shang Tsung"></div>
+            <div class="char-slot" data-name="Shao Kahn"><img src="https://placehold.co/80x105/333/gold?text=Shao" alt="Shao Kahn"></div>
+            <div class="char-slot" data-name="Frost"><img src="https://placehold.co/80x105/333/gold?text=Frost" alt="Frost"></div>
+            <div class="char-slot" data-name="Nightwolf"><img src="https://placehold.co/80x105/333/gold?text=Night" alt="Nightwolf"></div>
+        </div>
+
+        <div class="roster-row">
+            <div class="char-slot" data-name="The Joker"><img src="https://placehold.co/80x105/333/gold?text=Joker" alt="Joker"></div>
+            <div class="char-slot" data-name="Johnny Cage"><img src="https://placehold.co/80x105/333/gold?text=Johnny" alt="Johnny Cage"></div>
+            <div class="char-slot" data-name="Sonya Blade"><img src="https://placehold.co/80x105/333/gold?text=Sonya" alt="Sonya Blade"></div>
+            <div class="char-slot" data-name="Cassie Cage"><img src="https://placehold.co/80x105/333/gold?text=Cassie" alt="Cassie Cage"></div>
+            <div class="char-slot" data-name="Jax"><img src="https://placehold.co/80x105/333/gold?text=Jax" alt="Jax"></div>
+            <div class="char-slot" data-name="Spawn"><img src="https://placehold.co/80x105/333/gold?text=Spawn" alt="Spawn"></div>
+        </div>
+
+        <div class="roster-row">
+            <div class="char-slot" data-name="Scorpion"><img src="https://placehold.co/80x105/333/gold?text=Scorpion" alt="Scorpion"></div>
+            <div class="char-slot" data-name="Noob Saibot"><img src="https://placehold.co/80x105/333/gold?text=Noob" alt="Noob Saibot"></div>
+            <div class="char-slot" data-name="Baraka"><img src="https://placehold.co/80x105/333/gold?text=Baraka" alt="Baraka"></div>
+            <div class="char-slot" data-name="Raiden"><img src="https://placehold.co/80x105/333/gold?text=Raiden" alt="Raiden"></div>
+            <div class="char-slot" data-name="Jacqui Briggs"><img src="https://placehold.co/80x105/333/gold?text=Jacqui" alt="Jacqui Briggs"></div>
+            <div class="char-slot" data-name="Sub-Zero"><img src="https://placehold.co/80x105/333/gold?text=SubZero" alt="Sub-Zero"></div>
+        </div>
+
+        <div class="roster-row">
+            <div class="char-slot" data-name="Kano"><img src="https://placehold.co/80x105/333/gold?text=Kano" alt="Kano"></div>
+            <div class="char-slot" data-name="Kabal"><img src="https://placehold.co/80x105/333/gold?text=Kabal" alt="Kabal"></div>
+            <div class="char-slot" data-name="Liu Kang"><img src="https://placehold.co/80x105/333/gold?text=Liu" alt="Liu Kang"></div>
+            <div class="char-slot" data-name="Kitana"><img src="https://placehold.co/80x105/333/gold?text=Kitana" alt="Kitana"></div>
+            <div class="char-slot" data-name="Kung Lao"><img src="https://placehold.co/80x105/333/gold?text=KungLao" alt="Kung Lao"></div>
+            <div class="char-slot" data-name="Jade"><img src="https://placehold.co/80x105/333/gold?text=Jade" alt="Jade"></div>
+        </div>
+
+        <div class="roster-row">
+            <div class="char-slot" data-name="RoboCop"><img src="https://placehold.co/80x105/333/gold?text=Robo" alt="RoboCop"></div>
+            <div class="char-slot" data-name="Skarlet"><img src="https://placehold.co/80x105/333/gold?text=Skarlet" alt="Skarlet"></div>
+            <div class="char-slot" data-name="Erron Black"><img src="https://placehold.co/80x105/333/gold?text=Erron" alt="Erron Black"></div>
+            <div class="char-slot" data-name="D'Vorah"><img src="https://placehold.co/80x105/333/gold?text=D'Vorah" alt="D'Vorah"></div>
+            <div class="char-slot" data-name="Kotal Kahn"><img src="https://placehold.co/80x105/333/gold?text=Kotal" alt="Kotal Kahn"></div>
+            <div class="char-slot" data-name="Sheeva"><img src="https://placehold.co/80x105/333/gold?text=Sheeva" alt="Sheeva"></div>
+        </div>
+
+        <div class="roster-row">
+            <div class="char-slot" data-name="Rambo"><img src="https://placehold.co/80x105/333/gold?text=Rambo" alt="Rambo"></div>
+            <div class="char-slot" data-name="Terminator"><img src="https://placehold.co/80x105/333/gold?text=Term" alt="The Terminator"></div>
+            <div class="char-slot" data-name="Geras"><img src="https://placehold.co/80x105/333/gold?text=Geras" alt="Geras"></div>
+            <div class="char-slot" data-name="Kollector"><img src="https://placehold.co/80x105/333/gold?text=Koll" alt="The Kollector"></div>
+            <div class="char-slot" data-name="Sindel"><img src="https://placehold.co/80x105/333/gold?text=Sindel" alt="Sindel"></div>
+            <div class="char-slot" data-name="Mileena"><img src="https://placehold.co/80x105/333/gold?text=Mileena" alt="Mileena"></div>
+        </div>
+
+        <div class="roster-row">
+            <div class="char-slot" data-name="Cetrion"><img src="https://placehold.co/80x105/333/gold?text=Cetrion" alt="Cetrion"></div>
+            <div class="char-slot" data-name="Fujin"><img src="https://placehold.co/80x105/333/gold?text=Fujin" alt="Fujin"></div>
+            <div class="char-slot" data-name="Rain"><img src="https://placehold.co/80x105/333/gold?text=Rain" alt="Rain"></div>
+        </div>
+
+    </div>
+
+</body>
+</html>

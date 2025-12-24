@@ -24,6 +24,8 @@ export default class CharacterSelectScene extends Phaser.Scene {
   }
 
   preload() {
+    this.load.image("select_bg", "/assets/images/backgrounds/select_bg.png");
+
     // Load Roster Assets
     rosterConfig.forEach((character) => {
       // Use absolute root paths for assets in public/
@@ -60,8 +62,14 @@ export default class CharacterSelectScene extends Phaser.Scene {
       this.audioManager.playMusic("select_music");
     }
 
-    // Background (Dark)
-    this.add.rectangle(width / 2, height / 2, width, height, 0x050505);
+    // Background (Image)
+    const bg = this.add
+      .image(width / 2, height / 2, "select_bg")
+      .setOrigin(0.5);
+    const scaleX = width / bg.width;
+    const scaleY = height / bg.height;
+    const scale = Math.max(scaleX, scaleY);
+    bg.setScale(scale).setScrollFactor(0);
 
     // 0. Dynamic Spotlights (Glows behind fighters)
     this.p1Spotlight = this.add.graphics();
@@ -209,49 +217,114 @@ export default class CharacterSelectScene extends Phaser.Scene {
 
   buildGrid() {
     const { width, height } = this.scale;
-    const cols = 3; // 3 columns
+    const cols = 2; // 2 columns as requested (3 rows for 6 characters)
     const rows = Math.ceil(rosterConfig.length / cols);
-    const iconSize = 100;
-    const gap = 10;
+    const slotWidth = 80;
+    const slotHeight = 105;
+    const gap = 4;
 
-    const gridWidth = cols * iconSize + (cols - 1) * gap;
-    const gridHeight = rows * iconSize + (rows - 1) * gap;
+    const gridWidth = cols * slotWidth + (cols - 1) * gap;
+    const gridHeight = rows * slotHeight + (rows - 1) * gap;
 
-    const startX = width / 2 - gridWidth / 2 + iconSize / 2;
-    const startY = height / 2 - gridHeight / 2 + iconSize / 2;
+    // Center the grid perfectly in the middle (vertically and horizontally)
+    const startX = width / 2 - gridWidth / 2 + slotWidth / 2;
+    const startY = height * 0.5 - gridHeight / 2 + slotHeight / 2;
 
     rosterConfig.forEach((char, index) => {
       const col = index % cols;
       const row = Math.floor(index / cols);
 
-      const x = startX + col * (iconSize + gap);
-      const y = startY + row * (iconSize + gap);
+      const x = startX + col * (slotWidth + gap);
+      const y = startY + row * (slotHeight + gap);
 
-      // Icon
-      const icon = this.add
-        .image(x, y, `icon_${char.id}`)
-        .setDisplaySize(iconSize, iconSize)
+      // Container for Scale Effect
+      const container = this.add.container(x, y);
+
+      // Metallic Border (Graphics)
+      const border = this.add.graphics();
+      this.drawMetallicBorder(
+        border,
+        -slotWidth / 2,
+        -slotHeight / 2,
+        slotWidth,
+        slotHeight,
+        false,
+      );
+      container.add(border);
+
+      // Icon (Masked or Fitted)
+      const icon = this.add.image(0, 0, `icon_${char.id}`);
+      this.fitInArea(icon, slotWidth - 4, slotHeight - 4); // Fit inside border
+      container.add(icon);
+
+      // Interaction Zone (Transparent Image/Rect)
+      const hitArea = this.add
+        .rectangle(0, 0, slotWidth, slotHeight, 0x000000, 0)
         .setInteractive({ useHandCursor: true })
         .on("pointerdown", () => {
           if (this.audioManager) this.audioManager.playUi("ui_move");
           this.selectCharacter(index);
         });
+      container.add(hitArea);
 
-      // Border
-      const border = this.add
-        .rectangle(x, y, iconSize + 6, iconSize + 6)
-        .setStrokeStyle(2, 0x444444); // Default grey
-
-      this.gridItems.push({ icon, border });
+      // Store references
+      this.gridItems.push({ container, border, icon, charId: char.id });
     });
+  }
+
+  drawMetallicBorder(graphics, x, y, w, h, isSelected, isP1 = true) {
+    graphics.clear();
+
+    // Outer Border (Dark Bronze)
+    graphics.lineStyle(2, 0x5c4d3c);
+    graphics.strokeRect(x, y, w, h);
+
+    // Inner Border (Bright Gold)
+    graphics.lineStyle(1, isSelected ? 0xffffff : 0xa88d57);
+    graphics.strokeRect(x + 2, y + 2, w - 4, h - 4);
+
+    if (isSelected) {
+      // Inner Glow / Tint Effect
+      const color = isP1 ? 0xff0000 : 0x0000ff; // Red for P1, Blue for AI
+      graphics.lineStyle(2, color, 0.8);
+      graphics.strokeRect(x - 2, y - 2, w + 4, h + 4); // External Glow Ring
+    }
   }
 
   selectCharacter(index) {
     if (index < 0 || index >= rosterConfig.length) return;
 
+    // Deselect previous
+    if (this.gridItems[this.selectedCharacterIndex]) {
+      const prev = this.gridItems[this.selectedCharacterIndex];
+      this.tweens.add({
+        targets: prev.container,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: "Sine.easeOut",
+      });
+      prev.icon.setAlpha(0.9);
+      this.drawMetallicBorder(prev.border, -40, -52.5, 80, 105, false); // Hardcoded size for now
+    }
+
     this.selectedCharacterIndex = index;
     const char = rosterConfig[index];
     logger.debug(`Selected character index: ${index}, name: ${char.id}`);
+
+    // Select New
+    const curr = this.gridItems[index];
+    if (curr) {
+      this.tweens.add({
+        targets: curr.container,
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 100,
+        ease: "Sine.easeOut",
+      });
+      curr.icon.setAlpha(1);
+      this.drawMetallicBorder(curr.border, -40, -52.5, 80, 105, true, true); // P1 Select
+    }
 
     // Update Portrait (Full Body)
     this.leftPortrait.setTexture(`full_body_${char.id}`);
@@ -272,15 +345,6 @@ export default class CharacterSelectScene extends Phaser.Scene {
 
     // Update Name
     this.nameText.setText(char.displayName.toUpperCase());
-
-    // Update Grid Highlights
-    this.gridItems.forEach((item, i) => {
-      if (i === index) {
-        item.border.setStrokeStyle(4, 0xffd700); // Gold
-      } else {
-        item.border.setStrokeStyle(2, 0x444444); // Grey
-      }
-    });
   }
 
   async confirmSelection() {
@@ -300,8 +364,7 @@ export default class CharacterSelectScene extends Phaser.Scene {
     this.tweens.add({
       targets: [
         this.selectBtn,
-        ...this.gridItems.map((item) => item.icon),
-        ...this.gridItems.map((item) => item.border),
+        ...this.gridItems.map((item) => item.container),
       ],
       alpha: 0,
       duration: 300,

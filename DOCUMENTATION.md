@@ -103,7 +103,9 @@ The game follows a strict, linear scene-based state machine:
    - Displays game logo and a single START action
 
 5. **CharacterSelectScene**
-   - MK-style grid selection
+   - Cinematic background with responsive scaling
+   - Mortal Kombat 11 style grid with vertical rectangular portraits
+   - Metallic border effects and dynamic selection glows
    - Stable portrait scaling to avoid visual jitter
 
 6. **ArenaSelectScene**

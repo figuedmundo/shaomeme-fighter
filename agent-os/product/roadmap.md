@@ -155,6 +155,7 @@ _Professional polish_
 
 ### 5.2 Character Select
 
+- [x] **MK11 Style Grid** — Vertical rectangular portraits with metallic borders and cinematic background `M`
 - [x] **Stage Preview** — Inprove arena preview when selected `S`
 - [x] **Zoom Camera** — Close-up on selected character `S`
 - [x] **Voice Lines** — Characters speak when selected `M`
