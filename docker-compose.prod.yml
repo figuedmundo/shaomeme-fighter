@@ -1,0 +1,26 @@
+services:
+  shaomeme-fighter:
+    build: .
+    container_name: shaomeme-fighter
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - LOG_LEVEL=info
+    # No ports exposed to host, Caddy connects via the network
+    volumes:
+      # Persist photos and cache on the host
+      - ./photos:/app/photos
+      - ./cache:/app/cache
+    # Healthcheck to ensure the server is responsive
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/cities"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - homelab_net
+
+networks:
+  homelab_net:
+    external: true

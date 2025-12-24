@@ -203,6 +203,12 @@
       "blockRate": 0.7,
       "reactionTime": { "min": 150, "max": 300 },
       "mistakeChance": 0.05
+    },
+    "nightmare": {
+      "aggression": 0.95,
+      "blockRate": 0.9,
+      "reactionTime": { "min": 50, "max": 150 },
+      "mistakeChance": 0.01
     }
   },
   "roster": [

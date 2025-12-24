@@ -23,8 +23,11 @@ RUN pnpm install
 # Copy source code
 COPY . .
 
-# Default ports
-EXPOSE 3000 7600
+# Build the frontend (Vite -> dist/)
+RUN pnpm run build
 
-# The command is overridden in docker-compose.yml
+# Expose the backend port
+EXPOSE 3000
+
+# Default command (can be overridden)
 CMD ["pnpm", "run", "server"]
