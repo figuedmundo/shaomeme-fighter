@@ -42,7 +42,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.audio("arena", "/assets/audio/music/arena.mp3");
 
     // Announcer/KO
-    this.load.audio("KO", "/assets/audio/announcer/KO.mp3");
+    this.load.audio("KO", "/assets/audio/announcer/ko_1.mp3");
 
     // Combat Sounds - Impact variations (punch/kick)
     this.load.audio("attack1", "/assets/audio/sfx/attack1.mp3");

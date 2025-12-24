@@ -210,48 +210,54 @@
       "id": "ann",
       "displayName": "Ann",
       "portraitPath": "/assets/fighters/ann/portrait.png",
-      "iconPath": "/assets/fighters/ann/icon.png",
+      "iconPath": "/assets/fighters/ann/portrait.png",
       "fullBodyPath": "/assets/fighters/ann/fullBody.png",
+      "victoryPath": "/assets/fighters/ann/victory.png",
       "personality": "balanced"
     },
     {
       "id": "mom",
       "displayName": "Mom",
       "portraitPath": "/assets/fighters/mom/portrait.png",
-      "iconPath": "/assets/fighters/mom/icon.png",
+      "iconPath": "/assets/fighters/mom/portrait.png",
       "fullBodyPath": "/assets/fighters/mom/fullBody.png",
+      "victoryPath": "/assets/fighters/mom/victory.png",
       "personality": "defensive"
     },
     {
       "id": "dad",
       "displayName": "Dad",
       "portraitPath": "/assets/fighters/dad/portrait.png",
-      "iconPath": "/assets/fighters/dad/icon.png",
+      "iconPath": "/assets/fighters/dad/portrait.png",
       "fullBodyPath": "/assets/fighters/dad/fullBody.png",
+      "victoryPath": "/assets/fighters/dad/victory.png",
       "personality": "aggressive"
     },
     {
       "id": "brother",
       "displayName": "Brother",
       "portraitPath": "/assets/fighters/brother/portrait.png",
-      "iconPath": "/assets/fighters/brother/icon.png",
+      "iconPath": "/assets/fighters/brother/portrait.png",
       "fullBodyPath": "/assets/fighters/brother/fullBody.png",
+      "victoryPath": "/assets/fighters/brother/victory.png",
       "personality": "aggressive"
     },
     {
       "id": "fat",
       "displayName": "Fat",
       "portraitPath": "/assets/fighters/fat/portrait.png",
-      "iconPath": "/assets/fighters/fat/icon.png",
+      "iconPath": "/assets/fighters/fat/portrait.png",
       "fullBodyPath": "/assets/fighters/fat/fullBody.png",
+      "victoryPath": "/assets/fighters/fat/victory.png",
       "personality": "balanced"
     },
     {
       "id": "fresway_worker",
       "displayName": "Fresway Worker",
       "portraitPath": "/assets/fighters/fresway_worker/portrait.png",
-      "iconPath": "/assets/fighters/fresway_worker/icon.png",
+      "iconPath": "/assets/fighters/fresway_worker/portrait.png",
       "fullBodyPath": "/assets/fighters/fresway_worker/fullBody.png",
+      "victoryPath": "/assets/fighters/fresway_worker/victory.png",
       "personality": "defensive"
     }
   ]

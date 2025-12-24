@@ -492,14 +492,55 @@ export default class UIManager {
   }
 
   showVictory(winnerNum) {
-    const portrait = winnerNum === 1 ? this.p1Portrait : this.p2Portrait;
-    if (portrait) {
+    const charId =
+      winnerNum === 1 ? this.config.p1Character : this.config.p2Character;
+    const { width, height } = this.scene.scale;
+    const victoryKey = `victory_${charId}`;
+
+    if (this.scene.textures.exists(victoryKey)) {
+      // 1. Create Victory Portrait
+      // Start off-screen (Left edge for P1, Right edge for P2)
+      const startX = winnerNum === 1 ? -width * 0.5 : width * 1.5;
+      const targetX = winnerNum === 1 ? width * 0.25 : width * 0.75;
+
+      const victoryPortrait = this.scene.add.image(
+        startX,
+        height / 2,
+        victoryKey,
+      );
+
+      // 2. Setup Visuals
+      victoryPortrait.setOrigin(0.5);
+      victoryPortrait.setDepth(5); // Behind fighters (100+) but above background
+      victoryPortrait.setScrollFactor(0);
+
+      // Proportional scale to fit screen height (~90%)
+      const scale = (height * 0.9) / victoryPortrait.height;
+      victoryPortrait.setScale(scale);
+
+      // 3. Slide-in Animation
       this.scene.tweens.add({
-        targets: portrait,
-        scale: 1.5,
-        duration: 500,
+        targets: victoryPortrait,
+        x: targetX,
+        duration: 800,
         ease: "Back.easeOut",
       });
+
+      logger.info(`Signature victory portrait shown for ${charId}`);
+    } else {
+      // Fallback: Scale the small portrait if the signature one isn't loaded
+      const portrait = winnerNum === 1 ? this.p1Portrait : this.p2Portrait;
+      if (portrait) {
+        this.scene.tweens.add({
+          targets: portrait,
+          scale: 1.5,
+          duration: 500,
+          ease: "Back.easeOut",
+        });
+      }
+      logger.warn(
+        `Signature victory portrait ${victoryKey} not found, using fallback.`,
+      );
     }
   }
 

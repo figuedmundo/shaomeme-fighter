@@ -41,6 +41,15 @@ describe("ConfigManager Internal Logic", () => {
       expect(ConfigManager.getCharacterPersonality("unknown")).toBe("balanced");
     });
 
+    it("should include victoryPath in character data", () => {
+      const ann = ConfigManager.getCharacter("ann");
+      expect(ann).toBeDefined();
+      expect(ann.victoryPath).toBe("/assets/fighters/ann/victory.png");
+
+      const dad = ConfigManager.getCharacter("dad");
+      expect(dad.victoryPath).toBe("/assets/fighters/dad/victory.png");
+    });
+
     it("should resolve difficulty parameters with reaction ranges", () => {
       const easy = ConfigManager.getDifficultyConfig("easy");
       expect(easy.aggression).toBe(0.2);

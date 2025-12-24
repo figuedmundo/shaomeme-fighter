@@ -25,8 +25,8 @@ export default class AudioManager {
       grunt: 0.4,
       hitReaction: 0.5,
       block: 0.4,
-      ko: 0.7,
-      announcer: 1.0,
+      ko: 0.5,
+      announcer: 0.8,
       music: 0.3,
     };
 

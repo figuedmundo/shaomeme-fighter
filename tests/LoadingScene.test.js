@@ -95,6 +95,30 @@ describe("LoadingScene (JIT Loading)", () => {
     expect(scene.load.start).toHaveBeenCalled();
   });
 
+  it("should queue victory portraits if they are missing", () => {
+    const data = {
+      targetScene: "FightScene",
+      targetData: {
+        player1: "ann",
+        player2: "dad",
+      },
+    };
+
+    scene.create(data);
+
+    // Should load victory portrait for P1
+    expect(scene.load.image).toHaveBeenCalledWith(
+      "victory_ann",
+      expect.stringContaining("fighters/ann/victory.png"),
+    );
+
+    // Should load victory portrait for P2
+    expect(scene.load.image).toHaveBeenCalledWith(
+      "victory_dad",
+      expect.stringContaining("fighters/dad/victory.png"),
+    );
+  });
+
   it("should NOT queue assets if they already exist", () => {
     scene.textures.exists.mockReturnValue(true); // Assets exist
 

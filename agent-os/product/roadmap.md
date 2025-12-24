@@ -99,6 +99,7 @@ _Make it look premium_
 
 - [x] **Stylized Health Bars** — Smooth depleting animation with delayed red bar `S`
 - [x] **Character Portraits** — Animated expressions during fight (idle/hit/victory) `M`
+- [x] **Signature Victory Portrait** — Unique dynamic pose image that slides in on win `M`
 - [x] **Round Counter** — Visual indicator of current round (1 of 3) `XS`
 - [x] **Match Timer** — 99-second countdown with urgency effects `S`
 - [x] **Combo Counter** — On-screen display with flashy animations `S`

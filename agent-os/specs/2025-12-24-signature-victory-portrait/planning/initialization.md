@@ -1,0 +1,1 @@
+Implement 'Signature Victory Picture' for the winning character. It should be a unique asset (victory.png) displayed on the winner's side of the screen with a dramatic 'Pop' animation, replacing the scaling HUD portrait effect.

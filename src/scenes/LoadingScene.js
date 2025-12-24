@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import UnifiedLogger from "../utils/Logger";
+import ConfigManager from "../config/ConfigManager";
 
 const logger = new UnifiedLogger("LoadingScene");
 
@@ -51,12 +52,22 @@ export default class LoadingScene extends Phaser.Scene {
     const p1Key = targetData.player1 || targetData.playerCharacter;
     if (p1Key) {
       if (!this.textures.exists(p1Key)) {
-        logger.info(`Queuing asset: ${p1Key}`);
+        logger.info(`Queuing spritesheet: ${p1Key}`);
         this.load.spritesheet(p1Key, `/assets/fighters/${p1Key}/${p1Key}.png`, {
           frameWidth: 200,
           frameHeight: 400,
         });
         assetsQueued = true;
+      }
+
+      const p1VictoryKey = `victory_${p1Key}`;
+      if (!this.textures.exists(p1VictoryKey)) {
+        const char = ConfigManager.getCharacter(p1Key);
+        if (char && char.victoryPath) {
+          logger.info(`Queuing victory portrait: ${p1VictoryKey}`);
+          this.load.image(p1VictoryKey, char.victoryPath);
+          assetsQueued = true;
+        }
       }
     }
 
@@ -64,12 +75,22 @@ export default class LoadingScene extends Phaser.Scene {
     const p2Key = targetData.player2 || targetData.opponentCharacter;
     if (p2Key) {
       if (!this.textures.exists(p2Key)) {
-        logger.info(`Queuing asset: ${p2Key}`);
+        logger.info(`Queuing spritesheet: ${p2Key}`);
         this.load.spritesheet(p2Key, `/assets/fighters/${p2Key}/${p2Key}.png`, {
           frameWidth: 200,
           frameHeight: 400,
         });
         assetsQueued = true;
+      }
+
+      const p2VictoryKey = `victory_${p2Key}`;
+      if (!this.textures.exists(p2VictoryKey)) {
+        const char = ConfigManager.getCharacter(p2Key);
+        if (char && char.victoryPath) {
+          logger.info(`Queuing victory portrait: ${p2VictoryKey}`);
+          this.load.image(p2VictoryKey, char.victoryPath);
+          assetsQueued = true;
+        }
       }
     }
 

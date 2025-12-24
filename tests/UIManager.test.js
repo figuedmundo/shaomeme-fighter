@@ -82,6 +82,7 @@ const mockScene = {
       setScale: vi.fn().mockReturnThis(),
     })),
     image: vi.fn(() => ({
+      setOrigin: vi.fn().mockReturnThis(),
       setScrollFactor: vi.fn().mockReturnThis(),
       setDepth: vi.fn().mockReturnThis(),
       setScale: vi.fn().mockReturnThis(),
@@ -91,6 +92,7 @@ const mockScene = {
       setTexture: vi.fn().mockReturnThis(),
       setTint: vi.fn().mockReturnThis(),
       clearTint: vi.fn().mockReturnThis(),
+      height: 500,
     })),
   },
   scale: { width: 1280, height: 720 },
@@ -176,5 +178,33 @@ describe("UIManager", () => {
       uiManager.update();
     }
     expect(uiManager.p1GhostHealth).toBe(50);
+  });
+
+  it("should show signature victory portrait on win", () => {
+    // Setup character data in config
+    uiManager.config.p1Character = "ann";
+
+    // Clear mocks from init() calls
+    mockScene.add.image.mockClear();
+
+    uiManager.showVictory(1);
+
+    // Verify a new victory image is created
+    expect(mockScene.add.image).toHaveBeenCalledWith(
+      expect.any(Number),
+      expect.any(Number),
+      "victory_ann",
+    );
+
+    const victoryImage = mockScene.add.image.mock.results[0].value;
+    expect(victoryImage.setDepth).toHaveBeenCalledWith(5);
+
+    // Verify slide-in tween is triggered
+    expect(mockScene.tweens.add).toHaveBeenCalledWith(
+      expect.objectContaining({
+        targets: victoryImage,
+        x: expect.any(Number),
+      }),
+    );
   });
 });
