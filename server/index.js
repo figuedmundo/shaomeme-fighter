@@ -129,7 +129,7 @@ app.get("/api/photos", async (req, res) => {
   }
 });
 
-// API to list available cities (subdirectories)
+// API to list available cities (subdirectories) with photo counts
 app.get("/api/cities", async (req, res) => {
   try {
     const files = await fs.promises.readdir(PHOTOS_DIR, {
@@ -147,8 +147,50 @@ app.get("/api/cities", async (req, res) => {
       })
       .map((dirent) => dirent.name);
 
-    logger.debug(`Listed ${cities.length} cities`);
-    return res.json(cities);
+    // Calculate photo counts for each city
+    const citiesWithCounts = await Promise.all(
+      cities.map(async (city) => {
+        try {
+          const cityPath = path.join(PHOTOS_DIR, city);
+          const cityFiles = await fs.promises.readdir(cityPath);
+
+          const supportedExtensions = [
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".heic",
+            ".heif",
+            ".webp",
+          ];
+
+          const validPhotos = cityFiles.filter((file) => {
+            // const lowerName = file.toLowerCase(); // Unused
+            const ext = path.extname(file).toLowerCase();
+            const nameWithoutExt = path.parse(file).name.toLowerCase();
+
+            // Check extension
+            if (!supportedExtensions.includes(ext)) return false;
+
+            // Exclude backgrounds and arena images (not rewards)
+            if (nameWithoutExt === "background" || nameWithoutExt === "arena")
+              return false;
+
+            return true;
+          });
+
+          return {
+            name: city,
+            photoCount: validPhotos.length,
+          };
+        } catch (err) {
+          logger.error(`Failed to count photos for ${city}:`, err);
+          return { name: city, photoCount: 0 };
+        }
+      }),
+    );
+
+    logger.debug(`Listed ${citiesWithCounts.length} cities with counts`);
+    return res.json(citiesWithCounts);
   } catch (err) {
     logger.error("Failed to scan cities:", err);
     return res.status(500).json({ error: "Failed to scan cities" });

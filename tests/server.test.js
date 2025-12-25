@@ -12,8 +12,9 @@ describe("Server API Integration", () => {
     const res = await request(app).get("/api/cities");
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
-    // We know 'paris' exists in the repo
-    expect(res.body).toContain("paris");
+    // We know 'paris' exists in the repo, now returned as object { name: 'paris', ... }
+    const paris = res.body.find((c) => c.name === "paris");
+    expect(paris).toBeDefined();
   });
 
   it("GET /api/photos?city=paris should return processed images", async () => {

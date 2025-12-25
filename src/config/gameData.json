@@ -1,17 +1,6 @@
 {
   "cinematicMode": true,
   "arenas": {
-    "paris": {
-      "type": "city",
-      "displayName": "Paris",
-      "presets": {
-        "parallax": "city",
-        "lighting": "outdoor_day",
-        "weather": null,
-        "animation": "city"
-      },
-      "victoryMusic": "soundtrack_walking_on_cars"
-    },
     "dublin": {
       "type": "city",
       "displayName": "Dublin",
@@ -34,17 +23,6 @@
       },
       "victoryMusic": "victory_reward_music"
     },
-    "istambul": {
-      "type": "city",
-      "displayName": "Istanbul",
-      "presets": {
-        "parallax": "city",
-        "lighting": "outdoor_night",
-        "weather": "desert_wind",
-        "animation": "city"
-      },
-      "victoryMusic": "victory_reward_music"
-    },
     "london": {
       "type": "city",
       "displayName": "London",
@@ -56,9 +34,108 @@
       },
       "victoryMusic": "victory_reward_music"
     },
-    "tokyo": {
+    "paris": {
       "type": "city",
-      "displayName": "Tokyo",
+      "displayName": "Paris",
+      "presets": {
+        "parallax": "city",
+        "lighting": "outdoor_day",
+        "weather": null,
+        "animation": "city"
+      },
+      "victoryMusic": "soundtrack_walking_on_cars"
+    },
+    "switzerland": {
+      "type": "mountain",
+      "displayName": "Switzerland",
+      "presets": {
+        "parallax": "mountain",
+        "lighting": "outdoor_day",
+        "weather": "mountain_snow",
+        "animation": "mountain"
+      },
+      "victoryMusic": "victory_reward_music"
+    },
+    "germany": {
+      "type": "city",
+      "displayName": "Germany",
+      "presets": {
+        "parallax": "city",
+        "lighting": "outdoor_day",
+        "weather": null,
+        "animation": "city"
+      },
+      "victoryMusic": "victory_reward_music"
+    },
+    "budapest": {
+      "type": "city",
+      "displayName": "Budapest",
+      "presets": {
+        "parallax": "city",
+        "lighting": "outdoor_day",
+        "weather": null,
+        "animation": "city"
+      },
+      "victoryMusic": "victory_reward_music"
+    },
+    "istambul": {
+      "type": "city",
+      "displayName": "Istanbul",
+      "presets": {
+        "parallax": "city",
+        "lighting": "outdoor_night",
+        "weather": "desert_wind",
+        "animation": "city"
+      },
+      "victoryMusic": "victory_reward_music"
+    },
+    "amsterdam": {
+      "type": "city",
+      "displayName": "Amsterdam",
+      "presets": {
+        "parallax": "city",
+        "lighting": "outdoor_day",
+        "weather": null,
+        "animation": "city"
+      },
+      "victoryMusic": "victory_reward_music"
+    },
+    "malta": {
+      "type": "city",
+      "displayName": "Malta",
+      "presets": {
+        "parallax": "city",
+        "lighting": "outdoor_day",
+        "weather": null,
+        "animation": "city"
+      },
+      "victoryMusic": "victory_reward_music"
+    },
+    "bolivia": {
+      "type": "mountain",
+      "displayName": "Bolivia",
+      "presets": {
+        "parallax": "mountain",
+        "lighting": "outdoor_day",
+        "weather": null,
+        "animation": "mountain"
+      },
+      "victoryMusic": "victory_reward_music"
+    },
+    "sanfrancisco": {
+      "type": "city",
+      "displayName": "San Francisco",
+      "presets": {
+        "parallax": "city",
+        "lighting": "outdoor_day",
+        "weather": "london_fog",
+        "animation": "city"
+      },
+      "victoryMusic": "victory_reward_music"
+    },
+    "taipei": {
+      "type": "city",
+      "displayName": "Taipei",
       "presets": {
         "parallax": "city",
         "lighting": "outdoor_night",
@@ -67,91 +144,14 @@
       },
       "victoryMusic": "victory_reward_music"
     },
-    "new york": {
-      "type": "city",
-      "displayName": "New York",
-      "presets": {
-        "parallax": "city",
-        "lighting": "outdoor_day",
-        "weather": null,
-        "animation": "city"
-      },
-      "victoryMusic": "victory_reward_music"
-    },
-    "alps": {
+    "canada": {
       "type": "mountain",
-      "displayName": "Alps",
+      "displayName": "Canada",
       "presets": {
         "parallax": "mountain",
         "lighting": "outdoor_day",
         "weather": "mountain_snow",
         "animation": "mountain"
-      },
-      "victoryMusic": "victory_reward_music"
-    },
-    "mountains": {
-      "type": "mountain",
-      "displayName": "Mountains",
-      "presets": {
-        "parallax": "mountain",
-        "lighting": "outdoor_day",
-        "weather": "mountain_snow",
-        "animation": "mountain"
-      },
-      "victoryMusic": "victory_reward_music"
-    },
-    "dojo": {
-      "type": "dojo",
-      "displayName": "Dojo",
-      "presets": {
-        "parallax": "dojo",
-        "lighting": "indoor_dojo",
-        "weather": null,
-        "animation": "dojo"
-      },
-      "victoryMusic": "victory_reward_music"
-    },
-    "beach": {
-      "type": "beach",
-      "displayName": "Beach",
-      "presets": {
-        "parallax": null,
-        "lighting": "outdoor_day",
-        "weather": null,
-        "animation": "beach"
-      },
-      "victoryMusic": "victory_reward_music"
-    },
-    "desert": {
-      "type": "desert",
-      "displayName": "Desert",
-      "presets": {
-        "parallax": null,
-        "lighting": "outdoor_day",
-        "weather": "desert_wind",
-        "animation": null
-      },
-      "victoryMusic": "victory_reward_music"
-    },
-    "arena": {
-      "type": "arena",
-      "displayName": "Arena",
-      "presets": {
-        "parallax": null,
-        "lighting": "arena_spotlight",
-        "weather": null,
-        "animation": null
-      },
-      "victoryMusic": "victory_reward_music"
-    },
-    "underground": {
-      "type": "underground",
-      "displayName": "Underground",
-      "presets": {
-        "parallax": null,
-        "lighting": "underground",
-        "weather": null,
-        "animation": null
       },
       "victoryMusic": "victory_reward_music"
     }
@@ -189,25 +189,37 @@
     "easy": {
       "aggression": 0.2,
       "blockRate": 0.1,
-      "reactionTime": { "min": 800, "max": 1200 },
+      "reactionTime": {
+        "min": 800,
+        "max": 1200
+      },
       "mistakeChance": 0.4
     },
     "medium": {
       "aggression": 0.5,
       "blockRate": 0.4,
-      "reactionTime": { "min": 400, "max": 700 },
+      "reactionTime": {
+        "min": 400,
+        "max": 700
+      },
       "mistakeChance": 0.2
     },
     "hard": {
       "aggression": 0.8,
       "blockRate": 0.7,
-      "reactionTime": { "min": 150, "max": 300 },
+      "reactionTime": {
+        "min": 150,
+        "max": 300
+      },
       "mistakeChance": 0.05
     },
     "nightmare": {
       "aggression": 0.95,
       "blockRate": 0.9,
-      "reactionTime": { "min": 50, "max": 150 },
+      "reactionTime": {
+        "min": 50,
+        "max": 150
+      },
       "mistakeChance": 0.01
     }
   },
@@ -219,7 +231,7 @@
       "iconPath": "/assets/fighters/ann/portrait.png",
       "fullBodyPath": "/assets/fighters/ann/fullBody.png",
       "victoryPath": "/assets/fighters/ann/victory.png",
-      "personality": "balanced"
+      "personality": "aggressive"
     },
     {
       "id": "mom",
@@ -228,7 +240,7 @@
       "iconPath": "/assets/fighters/mom/portrait.png",
       "fullBodyPath": "/assets/fighters/mom/fullBody.png",
       "victoryPath": "/assets/fighters/mom/victory.png",
-      "personality": "defensive"
+      "personality": "aggressive"
     },
     {
       "id": "dad",
@@ -255,7 +267,7 @@
       "iconPath": "/assets/fighters/fat/portrait.png",
       "fullBodyPath": "/assets/fighters/fat/fullBody.png",
       "victoryPath": "/assets/fighters/fat/victory.png",
-      "personality": "balanced"
+      "personality": "aggressive"
     },
     {
       "id": "fresway_worker",
@@ -264,7 +276,7 @@
       "iconPath": "/assets/fighters/fresway_worker/portrait.png",
       "fullBodyPath": "/assets/fighters/fresway_worker/fullBody.png",
       "victoryPath": "/assets/fighters/fresway_worker/victory.png",
-      "personality": "defensive"
+      "personality": "aggressive"
     }
   ]
 }

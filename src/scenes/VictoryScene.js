@@ -76,9 +76,11 @@ export default class VictoryScene extends Phaser.Scene {
       .text(width / 2, height * 0.7, "CLAIM REWARD >", {
         fontFamily: '"Press Start 2P"',
         fontSize: "32px",
-        fill: "#00ff00",
-        backgroundColor: "#003300",
+        fill: "#ffd700", // Gold text
+        backgroundColor: "#330000", // Dark Red/Brown bg
         padding: { x: 20, y: 15 },
+        stroke: "#000000",
+        strokeThickness: 4,
       })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });

@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import UnifiedLogger from "../utils/Logger.js";
 import { addTransitions, TransitionPresets } from "../utils/SceneTransition";
 import rosterConfig from "../config/rosterConfig";
+import gameData from "../config/gameData.json";
 
 const logger = new UnifiedLogger("Frontend:ArenaSelectScene");
 
@@ -138,39 +139,74 @@ export default class ArenaSelectScene extends Phaser.Scene {
     try {
       const apiBase = ""; // Use relative paths, Vite will proxy to :3000 in dev
 
-      // Fetch Cities
+      // Fetch Cities (now returns { name, photoCount })
       const citiesRes = await fetch(`${apiBase}/api/cities`);
       if (!citiesRes.ok) throw new Error("Failed to fetch cities");
       const cities = await citiesRes.json();
 
       // Fetch one photo for each city to use as preview
-      const arenaPromises = cities.map(async (city) => {
+      const arenaPromises = cities.map(async (cityObj) => {
+        // Handle backwards compatibility if API returns strings
+        const cityName = typeof cityObj === "string" ? cityObj : cityObj.name;
+        const photoCount = typeof cityObj === "string" ? 1 : cityObj.photoCount;
+
         try {
-          logger.debug(`Fetching photos for city: ${city}`);
-          const photosRes = await fetch(`${apiBase}/api/photos?city=${city}`);
+          logger.debug(`Fetching photos for city: ${cityName}`);
+          const photosRes = await fetch(
+            `${apiBase}/api/photos?city=${cityName}`,
+          );
           const photos = await photosRes.json();
           if (photos && photos.length > 0) {
             // Find the background image if it exists, otherwise use the first one
             const bgPhoto = photos.find((p) => p.isBackground) || photos[0];
 
             logger.debug(
-              `Found ${photos.length} photos for ${city}. Using ${bgPhoto.filename} as preview.`,
+              `Found ${photos.length} photos for ${cityName}. Using ${bgPhoto.filename} as preview.`,
             );
             return {
-              name: city,
+              name: cityName,
               url: `${apiBase}${bgPhoto.url}`,
+              photoCount,
             };
           }
-          logger.warn(`No photos found for city: ${city}`);
+          // If photoCount is 0 but we have a background via API (unlikely but possible if logic differs)
+          // or if we decide to show it anyway (we need a url)
+          // If no photos, we can't show preview unless we have a fallback or specific logic
+          // For now returning null if no images found at all
+
+          logger.warn(`No photos found for city: ${cityName}`);
         } catch (e) {
-          logger.error(`Failed to fetch photos for ${city}`, e);
+          logger.error(`Failed to fetch photos for ${cityName}`, e);
         }
         return null;
       });
 
       const results = await Promise.all(arenaPromises);
-      this.arenas = results.filter((a) => a !== null);
-      logger.info(`Loaded ${this.arenas.length} valid arenas`);
+      const validArenas = results.filter((a) => a !== null);
+      logger.info(`Loaded ${validArenas.length} valid arenas`);
+
+      // Sort arenas based on order in gameData.json
+      if (gameData && gameData.arenas) {
+        const orderedKeys = Object.keys(gameData.arenas);
+        validArenas.sort((a, b) => {
+          const indexA = orderedKeys.indexOf(a.name.toLowerCase());
+          const indexB = orderedKeys.indexOf(b.name.toLowerCase());
+
+          // If both found in config, sort by config order
+          if (indexA !== -1 && indexB !== -1) {
+            return indexA - indexB;
+          }
+          // If only A found, it comes first
+          if (indexA !== -1) return -1;
+          // If only B found, it comes first
+          if (indexB !== -1) return 1;
+          // If neither found, sort alphabetically
+          return a.name.localeCompare(b.name);
+        });
+        logger.debug("Sorted arenas based on gameData configuration");
+      }
+
+      this.arenas = validArenas;
 
       if (this.arenas.length > 0) {
         this.loadArenaImages();
@@ -185,6 +221,7 @@ export default class ArenaSelectScene extends Phaser.Scene {
         {
           name: "Training Ground",
           url: "resources/combat-arena.png", // Use the local resource directly
+          photoCount: 1,
         },
       ];
       this.loadArenaImages();
@@ -218,18 +255,26 @@ export default class ArenaSelectScene extends Phaser.Scene {
     const thumbnailWidth = 200;
     const thumbnailHeight = 120;
     const gap = 20;
-    const startX =
-      width / 2 -
-      (this.arenas.length * (thumbnailWidth + gap)) / 2 +
-      thumbnailWidth / 2;
-    const yPos = height - 200;
+
+    // Calculate Grid Layout (3 Rows)
+    const itemsPerRow = Math.ceil(this.arenas.length / 3);
+    const totalRowWidth = itemsPerRow * (thumbnailWidth + gap) - gap;
+    const startX = width / 2 - totalRowWidth / 2 + thumbnailWidth / 2;
+    // Move grid higher to accommodate 3 larger rows (Total height ~400px)
+    const startY = height - 480;
 
     this.arenas.forEach((arena, index) => {
       const key = `arena_bg_${index}`;
 
+      // Calculate Grid Position
+      const row = Math.floor(index / itemsPerRow);
+      const col = index % itemsPerRow;
+      const xPos = startX + col * (thumbnailWidth + gap);
+      const yPos = startY + row * (thumbnailHeight + gap);
+
       // Thumbnail Image
       const thumb = this.add
-        .image(startX + index * (thumbnailWidth + gap), yPos, key)
+        .image(xPos, yPos, key)
         .setDisplaySize(thumbnailWidth, thumbnailHeight)
         .setInteractive({ useHandCursor: true })
         .on("pointerdown", () => {
@@ -239,16 +284,49 @@ export default class ArenaSelectScene extends Phaser.Scene {
 
       // Border (initially invisible or grey)
       const border = this.add
-        .rectangle(
-          startX + index * (thumbnailWidth + gap),
-          yPos,
-          thumbnailWidth + 8,
-          thumbnailHeight + 8,
-        )
+        .rectangle(xPos, yPos, thumbnailWidth + 8, thumbnailHeight + 8)
         .setStrokeStyle(4, 0x333333)
         .setFillStyle(); // Transparent fill
 
-      this.thumbnails.push({ img: thumb, border });
+      // Lock Visuals (if photoCount === 0)
+      let lockContainer = null;
+      if (arena.photoCount === 0) {
+        // Apply Grayscale
+        if (thumb.preFX) {
+          thumb.preFX.addColorMatrix().grayscale(1.0);
+        } else {
+          thumb.setTint(0x555555); // Fallback if FX not supported/enabled
+        }
+
+        // Create "Coming Soon" Stamp
+        lockContainer = this.add.container(xPos, yPos);
+
+        // Stamp Graphics (Border)
+        const stampGraphics = this.add.graphics();
+        stampGraphics.lineStyle(4, 0xff0000, 1); // Red thick border
+        stampGraphics.strokeRoundedRect(
+          -thumbnailWidth / 2 + 10,
+          -20,
+          thumbnailWidth - 20,
+          40,
+          8,
+        );
+
+        // Stamp Text
+        const stampText = this.add
+          .text(0, 0, "COMING SOON", {
+            fontFamily: '"Press Start 2P"',
+            fontSize: "14px",
+            color: "#ff0000",
+            align: "center",
+          })
+          .setOrigin(0.5);
+
+        lockContainer.add([stampGraphics, stampText]);
+        lockContainer.setAngle(-10); // Angled
+      }
+
+      this.thumbnails.push({ img: thumb, border, lockContainer });
     });
   }
 
@@ -277,10 +355,24 @@ export default class ArenaSelectScene extends Phaser.Scene {
         t.border.setStrokeStyle(4, 0x333333); // Dark grey for others
       }
     });
+
+    // Handle Lock State
+    if (arena.photoCount === 0) {
+      this.fightBtn.setVisible(false);
+    } else {
+      this.fightBtn.setVisible(true);
+      this.fightBtn.setInteractive({ useHandCursor: true });
+    }
   }
 
   async confirmSelection() {
     const arena = this.arenas[this.selectedArenaIndex];
+
+    // Double check lock
+    if (arena.photoCount === 0) {
+      if (this.audioManager) this.audioManager.playUi("ui_cancel"); // Error sound
+      return;
+    }
 
     // Disable button
     this.fightBtn.disableInteractive();

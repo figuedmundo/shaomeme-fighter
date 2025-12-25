@@ -97,7 +97,11 @@ describe("ArenaSelectScene", () => {
 
     // Mock loading text for the method to update
     scene.loadingText = { setText: vi.fn(), setVisible: vi.fn() };
-    scene.fightBtn = { setVisible: vi.fn() };
+    scene.fightBtn = {
+      setVisible: vi.fn(),
+      setInteractive: vi.fn(),
+      disableInteractive: vi.fn(),
+    };
 
     // Mock UI elements required by selectArena() which is called inside fetchArenas flow
     scene.heroBackground = { setTexture: vi.fn(), setDisplaySize: vi.fn() };
@@ -131,18 +135,29 @@ describe("ArenaSelectScene", () => {
     expect(scene.arenas[0]).toEqual({
       name: "paris",
       url: "/cache/paris/1.webp",
+      photoCount: 1,
+    });
+    expect(scene.arenas[1]).toEqual({
+      name: "tokyo",
+      url: "/cache/tokyo/2.webp",
+      photoCount: 1,
     });
   });
 
   it("should update selected arena state", () => {
     scene.arenas = [
-      { name: "paris", url: "/cache/paris/1.webp" },
-      { name: "tokyo", url: "/cache/tokyo/2.webp" },
+      { name: "paris", url: "/cache/paris/1.webp", photoCount: 1 },
+      { name: "tokyo", url: "/cache/tokyo/2.webp", photoCount: 1 },
     ];
 
     // Mock UI elements that would exist after create()
     scene.heroBackground = { setTexture: vi.fn(), setDisplaySize: vi.fn() };
     scene.titleText = { setText: vi.fn() };
+    scene.fightBtn = {
+      setVisible: vi.fn(),
+      setInteractive: vi.fn(),
+      disableInteractive: vi.fn(),
+    };
     scene.thumbnails = [
       { border: { setStrokeStyle: vi.fn() } },
       { border: { setStrokeStyle: vi.fn() } },

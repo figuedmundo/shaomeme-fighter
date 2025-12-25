@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="/resources/logo.png">
@@ -80,6 +81,24 @@
                 min-height: 100dvh;
             }
         }
+        /* Device Block Overlay */
+        #device-warning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: black;
+            color: white;
+            z-index: 10000; /* Higher than everything */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-family: 'Press Start 2P', cursive;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
@@ -88,11 +107,44 @@
         <div style="font-size: 50px; margin-top: 20px;">🔄</div>
     </div>
 
+    <div id="device-warning">
+        <div style="font-size: 24px; color: #ff0000; margin-bottom: 20px;">ACCESS RESTRICTED</div>
+        <div style="line-height: 1.5;">IPAD DEVICES ONLY</div>
+        <div style="line-height: 1.5; margin-top: 20px">SHAOMEME QQ ❤️</div>
+        <div style="font-size: 50px; margin-top: 20px;">📱</div>
+    </div>
+
     <div id="game-container">
         <!-- Phaser Canvas will be injected here -->
     </div>
 
     <script>
+        // Device Detection Logic
+        const checkDevice = () => {
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const isIPad = /iPad/.test(userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            
+            // Allow dev mode on localhost for testing
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            
+            // Screen size check (approximate min width for tablets)
+            const isTabletSize = Math.min(window.screen.width, window.screen.height) >= 768;
+
+            if (!isIPad && !isTabletSize && !isLocalhost) {
+                document.getElementById('device-warning').style.display = 'flex';
+                // Stop Phaser from initializing by clearing the container
+                document.getElementById('game-container').innerHTML = '';
+                // Prevent loading the main script
+                return false; 
+            }
+            return true;
+        };
+
+        // Run check immediately
+        if (!checkDevice()) {
+            throw new Error("Device blocked: Not an iPad/Tablet");
+        }
+
         // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

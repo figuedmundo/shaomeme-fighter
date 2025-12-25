@@ -156,6 +156,12 @@ export default class FightScene extends Phaser.Scene {
     // Fade in from curtain effect
     this.transition.fadeIn(400);
 
+    // Force disable physics debug to prevent "green square" glitch
+    if (this.physics.world.debugGraphic) {
+      this.physics.world.debugGraphic.setVisible(false);
+      this.physics.world.drawDebug = false;
+    }
+
     // Get AudioManager from registry
     this.audioManager = this.registry.get("audioManager");
     if (this.audioManager) {

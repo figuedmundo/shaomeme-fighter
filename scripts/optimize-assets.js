@@ -3,9 +3,57 @@ import path from "path";
 import sharp from "sharp";
 
 const ASSETS_DIR = path.resolve("public/assets");
+const PHOTOS_DIR = path.resolve("photos");
 const MAX_WIDTH = 2048; // Max reasonable width for mobile
 const MAX_HEIGHT = 2048;
 const LARGE_FILE_THRESHOLD = 1024 * 1024; // 1MB
+
+async function optimizeFile(filePath, stats) {
+  try {
+    const ext = path.extname(filePath).toLowerCase();
+    const image = sharp(filePath);
+    const metadata = await image.metadata();
+
+    let pipeline = image;
+
+    // 1. Resize if too large
+    if (metadata.width > MAX_WIDTH || metadata.height > MAX_HEIGHT) {
+      console.log(
+        `  -> Resizing ${metadata.width}x${metadata.height} to fit ${MAX_WIDTH}x${MAX_HEIGHT}`,
+      );
+      pipeline = pipeline.resize({
+        width: MAX_WIDTH,
+        height: MAX_HEIGHT,
+        fit: "inside",
+        withoutEnlargement: true,
+      });
+    }
+
+    // 2. Compress
+    if (ext === ".png") {
+      pipeline = pipeline.png({ quality: 80, compressionLevel: 9 });
+    } else if (ext === ".jpg" || ext === ".jpeg") {
+      pipeline = pipeline.jpeg({ quality: 80, mozjpeg: true });
+    }
+
+    // Process to buffer first to check result size
+    const buffer = await pipeline.toBuffer();
+
+    if (buffer.length < stats.size) {
+      const saved = (stats.size - buffer.length) / 1024 / 1024;
+      await fs.writeFile(filePath, buffer);
+      console.log(
+        `  [Optimized] Saved ${saved.toFixed(2)} MB (${((buffer.length / stats.size) * 100).toFixed(0)}% of original)`,
+      );
+    } else {
+      console.log(
+        `  [Skipped] Optimization resulted in larger file (likely already compressed).`,
+      );
+    }
+  } catch (err) {
+    console.error(`  [Error] Failed to optimize ${filePath}:`, err.message);
+  }
+}
 
 async function checkAndOptimize(filePath) {
   try {
@@ -13,45 +61,56 @@ async function checkAndOptimize(filePath) {
 
     if (stats.size > LARGE_FILE_THRESHOLD) {
       console.log(
-        `[Large File] ${filePath} (${(stats.size / 1024 / 1024).toFixed(2)} MB)`,
+        `[Processing] ${path.basename(filePath)} (${(stats.size / 1024 / 1024).toFixed(2)} MB)`,
       );
-
-      const metadata = await sharp(filePath).metadata();
-
-      if (metadata.width > MAX_WIDTH || metadata.height > MAX_HEIGHT) {
-        console.log(
-          `  -> Dimensions ${metadata.width}x${metadata.height} exceed max. Recommendation: Resize.`,
-        );
-      } else {
-        console.log(`  -> Dimensions OK. Recommendation: Compress.`);
-      }
+      await optimizeFile(filePath, stats);
     }
   } catch (err) {
     console.error(`Error processing ${filePath}:`, err);
   }
 }
 
-async function scanAndOptimize(dir) {
-  const entries = await fs.readdir(dir, { withFileTypes: true });
+async function scanAndOptimize(dir, filterFn = () => true) {
+  try {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
 
-  // Using Promise.all with map to avoid for...of and await in loop
-  await Promise.all(
-    entries.map(async (entry) => {
-      const fullPath = path.join(dir, entry.name);
+    await Promise.all(
+      entries.map(async (entry) => {
+        const fullPath = path.join(dir, entry.name);
 
-      if (entry.isDirectory()) {
-        await scanAndOptimize(fullPath);
-      } else if (entry.isFile()) {
-        const ext = path.extname(entry.name).toLowerCase();
-        if (ext === ".png" || ext === ".jpg" || ext === ".jpeg") {
-          await checkAndOptimize(fullPath);
+        if (entry.isDirectory()) {
+          await scanAndOptimize(fullPath, filterFn);
+        } else if (entry.isFile()) {
+          const ext = path.extname(entry.name).toLowerCase();
+          if (
+            (ext === ".png" || ext === ".jpg" || ext === ".jpeg") &&
+            filterFn(entry.name)
+          ) {
+            await checkAndOptimize(fullPath);
+          }
         }
-      }
-    }),
-  );
+      }),
+    );
+  } catch (err) {
+    // Directory might not exist, just warn
+    console.warn(`Skipping scan for ${dir}:`, err.message);
+  }
 }
 
-console.log("Starting Asset Scan...");
+console.log("Starting Asset Optimization...");
+
+// 1. Optimize Game Assets (All images)
+console.log("--- Scanning Game Assets (public/assets) ---");
 scanAndOptimize(ASSETS_DIR)
-  .then(() => console.log("Scan complete."))
-  .catch((err) => console.error("Scan failed:", err));
+  .then(async () => {
+    // 2. Optimize Photo Backgrounds (Only background.png)
+    console.log(
+      "\n--- Scanning Arena Backgrounds (photos/**/background.png) ---",
+    );
+    await scanAndOptimize(
+      PHOTOS_DIR,
+      (filename) => filename.toLowerCase() === "background.png",
+    );
+  })
+  .then(() => console.log("\nOptimization complete."))
+  .catch((err) => console.error("Fatal error:", err));

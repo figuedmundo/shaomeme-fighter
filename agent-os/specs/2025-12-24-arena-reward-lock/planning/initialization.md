@@ -1,0 +1,1 @@
+if the arena doesn't have pictures reward, the arena should show a message in the middle of the game screen, somthing like "coming soon" and only the arenas that have pictures reward should be able to play
