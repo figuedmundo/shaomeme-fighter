@@ -38,6 +38,10 @@ export default class PreloadScene extends Phaser.Scene {
       "victory_reward_music",
       "/assets/audio/music/soundtrack_walking_on_cars.mp3",
     );
+    this.load.audio(
+      "soundtrack_apocalypse",
+      "/assets/audio/music/soundtrack_apocalypse.mp3",
+    );
     this.load.audio("menu_music", "/assets/audio/music/menu_music.mp3");
     this.load.audio("arena", "/assets/audio/music/arena.mp3");
 

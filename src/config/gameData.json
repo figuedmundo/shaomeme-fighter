@@ -10,7 +10,7 @@
         "weather": "london_fog",
         "animation": "city"
       },
-      "victoryMusic": "victory_reward_music"
+      "victoryMusic": "soundtrack_walking_on_cars"
     },
     "galway": {
       "type": "mountain",
@@ -21,7 +21,7 @@
         "weather": "tokyo_rain",
         "animation": "mountain"
       },
-      "victoryMusic": "victory_reward_music"
+      "victoryMusic": "soundtrack_apocalypse"
     },
     "london": {
       "type": "city",
@@ -32,7 +32,7 @@
         "weather": "london_fog",
         "animation": "city"
       },
-      "victoryMusic": "victory_reward_music"
+      "victoryMusic": "soundtrack_apocalypse"
     },
     "paris": {
       "type": "city",
@@ -65,7 +65,7 @@
         "weather": null,
         "animation": "city"
       },
-      "victoryMusic": "victory_reward_music"
+      "victoryMusic": "soundtrack_walking_on_cars"
     },
     "budapest": {
       "type": "city",
@@ -120,7 +120,7 @@
         "weather": null,
         "animation": "mountain"
       },
-      "victoryMusic": "victory_reward_music"
+      "victoryMusic": "soundtrack_apocalypse"
     },
     "sanfrancisco": {
       "type": "city",
@@ -142,7 +142,7 @@
         "weather": "tokyo_rain",
         "animation": "city"
       },
-      "victoryMusic": "victory_reward_music"
+      "victoryMusic": "soundtrack_apocalypse"
     },
     "canada": {
       "type": "mountain",
