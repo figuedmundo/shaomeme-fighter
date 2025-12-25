@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libgif-dev \
     librsvg2-dev \
+    curl \
     && npm install -g pnpm \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

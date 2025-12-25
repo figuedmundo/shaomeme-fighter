@@ -5,13 +5,15 @@
 Before running the game, verify:
 
 ### Files Added ✅
+
 - [x] `src/components/ParallaxBackground.js` exists
-- [x] `src/components/AnimatedBackgroundManager.js` exists  
+- [x] `src/components/AnimatedBackgroundManager.js` exists
 - [x] `src/systems/DynamicLightingSystem.js` exists
 - [x] `src/systems/WeatherSystem.js` exists
 - [x] `src/scenes/StageEffectsTestScene.js` exists
 
 ### Files Modified ✅
+
 - [x] `src/index.js` - Test scene added to config
 - [x] `src/scenes/BootScene.js` - Test toggle added
 - [x] `src/scenes/FightScene.js` - Fully integrated
@@ -21,16 +23,19 @@ Before running the game, verify:
 ## Testing Sequence
 
 ### Test 1: Build & Start ✅
+
 ```bash
 npm run dev
 ```
 
 **Expected:**
+
 - [ ] No build errors
 - [ ] Game starts successfully
 - [ ] Console shows no errors
 
 ### Test 2: Navigation Flow ✅
+
 1. [ ] Main Menu loads
 2. [ ] Character Select works
 3. [ ] Arena Select shows cities
@@ -39,23 +44,27 @@ npm run dev
 ### Test 3: Visual Effects ✅
 
 #### Background
+
 - [ ] Background is slightly darker/desaturated
 - [ ] Background moves slower than fighters (parallax)
 - [ ] Background alpha is around 70%
 
 #### Particles
+
 - [ ] Small particles floating upward
 - [ ] Approximately 15 particles visible
 - [ ] Particles fade out smoothly
 - [ ] Don't block fighter visibility
 
 #### Lighting
+
 - [ ] Screen brightness looks normal (day)
 - [ ] No dark overlay by default
 
 ### Test 4: Gameplay Effects ✅
 
 #### Hit Effect
+
 - [ ] Land a punch (tap or press SPACE)
 - [ ] White flash appears
 - [ ] Flash lasts ~100ms
@@ -63,6 +72,7 @@ npm run dev
 - [ ] Combined with existing hit freeze
 
 #### Victory Sequence
+
 - [ ] Win the fight (reduce opponent to 0 HP)
 - [ ] "KO!" appears
 - [ ] Music stops
@@ -75,12 +85,14 @@ npm run dev
 - [ ] After 2 more seconds: slideshow starts
 
 ### Test 5: Performance ✅
+
 - [ ] FPS counter shows 55-60 FPS
 - [ ] Smooth fighter movement
 - [ ] No lag when effects trigger
 - [ ] Camera pan is fluid
 
 ### Test 6: Memory Management ✅
+
 - [ ] Play 3 matches in a row
 - [ ] FPS remains stable
 - [ ] No increasing lag
@@ -90,11 +102,13 @@ npm run dev
 ### Test 7: Test Scene (Optional) ✅
 
 **Enable:**
+
 1. Open `src/scenes/BootScene.js`
 2. Uncomment line 24
 3. Save and refresh
 
 **Test:**
+
 - [ ] Test scene loads
 - [ ] Keyboard controls work:
   - [ ] 1-5 = Weather changes
@@ -112,21 +126,25 @@ npm run dev
 Test different cities if available:
 
 ### Paris
+
 - [ ] Clouds visible
 - [ ] Day lighting (bright)
 - [ ] City atmosphere
 
-### Tokyo  
+### Tokyo
+
 - [ ] Rain falling
 - [ ] Night lighting (dark)
 - [ ] Moody atmosphere
 
 ### London
+
 - [ ] Fog overlay
 - [ ] Night lighting
 - [ ] Mysterious vibe
 
 ### Alps/Mountains
+
 - [ ] Snow falling
 - [ ] Day lighting
 - [ ] Serene atmosphere
@@ -138,16 +156,19 @@ Test different cities if available:
 Test on each device:
 
 ### Desktop
+
 - [ ] 60 FPS solid
 - [ ] All effects smooth
 - [ ] No stuttering
 
 ### iPad
+
 - [ ] 55-60 FPS
 - [ ] Effects visible
 - [ ] No lag
 
 ### iPhone
+
 - [ ] 50-60 FPS
 - [ ] Essential effects work
 - [ ] Playable smoothly
@@ -157,6 +178,7 @@ Test on each device:
 ## Customization Tests ✅
 
 ### Change Particle Count
+
 1. Open `FightScene.js`
 2. In `setupAnimatedBackground()`
 3. Change `count: 15` to `count: 25`
@@ -164,11 +186,13 @@ Test on each device:
 5. [ ] FPS still acceptable
 
 ### Add Weather to City
+
 1. In `getWeatherPresetForCity()`
 2. Add city to presets
 3. [ ] Weather appears for that city
 
 ### Change Lighting
+
 1. In `getLightingPresetForCity()`
 2. Change preset for a city
 3. [ ] Lighting changes appropriately
@@ -178,6 +202,7 @@ Test on each device:
 ## Bug Checks ✅
 
 ### Common Issues
+
 - [ ] No "Cannot find module" errors
 - [ ] No undefined variable errors
 - [ ] No missing texture warnings
@@ -185,6 +210,7 @@ Test on each device:
 - [ ] Systems destroy cleanly
 
 ### Visual Issues
+
 - [ ] Effects don't block gameplay
 - [ ] Particles not too distracting
 - [ ] Flash not too bright/dark
@@ -213,12 +239,14 @@ Phase 3.1 is COMPLETE when:
 ## Post-Integration Steps
 
 ### Document
+
 - [x] `PHASE_3.1_COMPLETE.md` created
 - [x] `PHASE_3.1_SUMMARY.md` created
 - [x] Integration guide provided
 - [x] Visual testing guide created
 
 ### Next Phase Prep
+
 - [ ] Review Phase 3.2 requirements (UI Polish)
 - [ ] Plan health bar implementation
 - [ ] Design character portraits
@@ -228,36 +256,44 @@ Phase 3.1 is COMPLETE when:
 
 ## Sign-Off
 
-**Tested by:** ___________________
+**Tested by:** ********\_\_\_********
 
-**Date:** ___________________
+**Date:** ********\_\_\_********
 
-**FPS Result:** ___________________
+**FPS Result:** ********\_\_\_********
 
-**Overall Grade:** ___________________
+**Overall Grade:** ********\_\_\_********
 
 **Notes:**
-_____________________________________________
-_____________________________________________
-_____________________________________________
+
+---
+
+---
+
+---
 
 ---
 
 ## Quick Reference
 
 ### Enable Test Scene
+
 `src/scenes/BootScene.js` line 24
 
 ### Adjust Particles
+
 `FightScene.js` → `setupAnimatedBackground()` → `count: 15`
 
 ### Change Lighting
+
 `FightScene.js` → `getLightingPresetForCity()`
 
 ### Add Weather
+
 `FightScene.js` → `getWeatherPresetForCity()`
 
 ### Flash Intensity
+
 `FightScene.js` → hit detection → `flashIntensity`
 
 ---
@@ -272,4 +308,4 @@ _____________________________________________
 
 ---
 
-*Made with ❤️ - Ready to impress!*
+_Made with ❤️ - Ready to impress!_
