@@ -103,14 +103,9 @@ console.log("Starting Asset Optimization...");
 console.log("--- Scanning Game Assets (public/assets) ---");
 scanAndOptimize(ASSETS_DIR)
   .then(async () => {
-    // 2. Optimize Photo Backgrounds (Only background.png)
-    console.log(
-      "\n--- Scanning Arena Backgrounds (photos/**/background.png) ---",
-    );
-    await scanAndOptimize(
-      PHOTOS_DIR,
-      (filename) => filename.toLowerCase() === "background.png",
-    );
+    // 2. Optimize ALL Photo Reward Assets (Backgrounds + Memories)
+    console.log("\n--- Scanning All Photo Arena Assets (photos/) ---");
+    await scanAndOptimize(PHOTOS_DIR);
   })
   .then(() => console.log("\nOptimization complete."))
   .catch((err) => console.error("Fatal error:", err));

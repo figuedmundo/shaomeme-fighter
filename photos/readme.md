@@ -37,12 +37,49 @@ photos/
 3. **Add Photos**: Place any number of personal photos inside.
 4. **Register in Config**: Add the city key to `src/config/gameData.json` to define its display name, lighting, and weather presets.
 
-## Optimization
+## Production Management (SSH/CLI)
 
-To ensure smooth performance on mobile devices, use the project's optimization script:
+When running the game on a production server without a GUI, use the following methods to manage your photos.
+
+### 1. Uploading Photos via SSH
+
+The most efficient way to upload a large number of photos from your local machine to the server is using `rsync`.
+
+**Run this from your local computer:**
+
+```bash
+rsync -avzP ./photos/ user@your-server-ip:/path/to/shaomeme-fighter/photos/
+```
+
+- **`-avzP`**: Preserves structure, compresses data during transfer, and allows **resuming** if the connection drops.
+
+### 2. Docker Integration
+
+In production, the `photos/` directory is mounted as a **Docker Volume**.
+
+- Any files you upload to the host's `photos/` folder are **immediately visible** to the game.
+- You do **not** need to restart the Docker containers when adding or removing photos.
+
+### 3. Server-side Optimization
+
+After uploading high-resolution photos to your server, you should run the optimization script to ensure they don't lag mobile devices.
+
+**Run inside the project folder on the server:**
 
 ```bash
 node scripts/optimize-assets.js
 ```
 
-This will compress the assets in `public/assets`, but it is also recommended to manually compress `background.png` files before committing them.
+_Note: If running inside Docker, you can execute this via:_
+
+```bash
+docker exec -it shaomeme-fighter node scripts/optimize-assets.js
+```
+
+## Optimization Policy
+
+To ensure smooth performance on mobile devices, the `optimize-assets.js` script:
+
+1. Resizes giant images to fit within **2048x2048**.
+2. Preserves the **Aspect Ratio** (no stretching).
+3. Compresses files to **80% quality** (industry standard).
