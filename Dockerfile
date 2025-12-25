@@ -24,6 +24,9 @@ RUN pnpm install
 # Copy source code
 COPY . .
 
+# Ensure an empty .env exists so 'node --env-file=.env' doesn't crash if it's missing
+RUN touch .env
+
 # Build the frontend (Vite -> dist/)
 RUN pnpm run build
 
