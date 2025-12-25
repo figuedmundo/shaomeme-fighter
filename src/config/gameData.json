@@ -54,7 +54,7 @@
         "weather": "mountain_snow",
         "animation": "mountain"
       },
-      "victoryMusic": "victory_reward_music"
+      "victoryMusic": "soundtrack_walking_on_cars"
     },
     "germany": {
       "type": "city",
@@ -76,7 +76,7 @@
         "weather": null,
         "animation": "city"
       },
-      "victoryMusic": "victory_reward_music"
+      "victoryMusic": "soundtrack_walking_on_cars"
     },
     "istambul": {
       "type": "city",
@@ -87,7 +87,7 @@
         "weather": "desert_wind",
         "animation": "city"
       },
-      "victoryMusic": "victory_reward_music"
+      "victoryMusic": "soundtrack_walking_on_cars"
     },
     "amsterdam": {
       "type": "city",
@@ -98,7 +98,7 @@
         "weather": null,
         "animation": "city"
       },
-      "victoryMusic": "victory_reward_music"
+      "victoryMusic": "soundtrack_walking_on_cars"
     },
     "malta": {
       "type": "city",
@@ -109,7 +109,7 @@
         "weather": null,
         "animation": "city"
       },
-      "victoryMusic": "victory_reward_music"
+      "victoryMusic": "soundtrack_walking_on_cars"
     },
     "bolivia": {
       "type": "mountain",
@@ -131,7 +131,7 @@
         "weather": "london_fog",
         "animation": "city"
       },
-      "victoryMusic": "victory_reward_music"
+      "victoryMusic": "soundtrack_walking_on_cars"
     },
     "taipei": {
       "type": "city",
@@ -153,7 +153,7 @@
         "weather": "mountain_snow",
         "animation": "mountain"
       },
-      "victoryMusic": "victory_reward_music"
+      "victoryMusic": "soundtrack_walking_on_cars"
     }
   },
   "combat": {

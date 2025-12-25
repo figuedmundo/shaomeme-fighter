@@ -202,7 +202,7 @@ class ConfigManager {
 
   getVictoryMusicForCity(city) {
     const arena = this.getArenaConfig(city);
-    return arena?.victoryMusic || "victory_reward_music";
+    return arena?.victoryMusic || "soundtrack_walking_on_cars";
   }
 
   // --- Combat ---

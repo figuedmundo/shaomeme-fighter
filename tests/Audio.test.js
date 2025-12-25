@@ -50,7 +50,7 @@ describe("Audio Logic", () => {
     try {
       slideshow.handleAudio("paris");
 
-      // Now it uses ConfigManager to get music, which defaults to victory_reward_music for Paris
+      // Now it uses ConfigManager to get music
       expect(mockAudioManager.playMusic).toHaveBeenCalledWith(
         "soundtrack_walking_on_cars",
         expect.anything(),
