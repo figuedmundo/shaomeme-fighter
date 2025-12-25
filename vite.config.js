@@ -18,6 +18,9 @@ export default defineConfig(({ mode }) => {
         "/photos": apiUrl,
         "/cache": apiUrl,
       },
+      watch: {
+        usePolling: true, // Required for some Docker setups to detect file changes
+      },
     },
   };
 });
