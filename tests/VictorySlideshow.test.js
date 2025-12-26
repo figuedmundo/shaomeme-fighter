@@ -31,6 +31,8 @@ describe("VictorySlideshow Component", () => {
         }),
       },
     };
+    // Mock Element.animate removed as WAAPI is no longer used
+
     slideshow = new VictorySlideshow(mockScene);
     document.body.innerHTML = ""; // Clear DOM
   });
@@ -54,7 +56,7 @@ describe("VictorySlideshow Component", () => {
     const smoke = document.querySelector(".smoke-border");
     expect(smoke).not.toBeNull();
 
-    const img = document.querySelector(".victory-image");
+    const img = document.querySelector(".victory-image-buffer");
     expect(img).not.toBeNull();
   });
 
@@ -74,6 +76,7 @@ describe("VictorySlideshow Component", () => {
   });
 
   it("should remove overlay and navigate on exit", async () => {
+    vi.useFakeTimers();
     fetch.mockResolvedValueOnce({
       ok: true,
       json: async () => [{ url: "test.jpg" }],
@@ -84,10 +87,37 @@ describe("VictorySlideshow Component", () => {
     const exitBtn = document.querySelector(".victory-close");
     expect(exitBtn).not.toBeNull();
 
-    exitBtn.click();
+    // Trigger exit
+    slideshow.exit();
 
+    // 1. Advance enough to clear the first yields and start the fade
+    vi.advanceTimersByTime(100);
+    await vi.runOnlyPendingTimers();
+
+    // Verify Curtain is present and black
     const overlay = document.querySelector(".victory-overlay");
-    expect(overlay).toBeNull(); // Should be removed
+    const curtain = overlay.lastElementChild;
+    expect(curtain.style.backgroundColor).toBe("black");
+    expect(curtain.style.opacity).toBe("1");
+
+    // 2. Advance past the 800ms fade
+    vi.advanceTimersByTime(800);
+    await vi.runOnlyPendingTimers();
+
+    // Verify navigation triggered
     expect(mockScene.scene.start).toHaveBeenCalledWith("MainMenuScene");
+
+    // 3. Fast forward everything else to check cleanup
+    // We use a large jump to clear the 2000ms timer
+    vi.advanceTimersByTime(3000);
+
+    // Use runAllTimersAsync to ensure the cleanup closure executes
+    await vi.runAllTimersAsync();
+
+    // Check overlay removal
+    const overlayAfter = document.querySelector(".victory-overlay");
+    expect(overlayAfter).toBeNull();
+
+    vi.useRealTimers();
   });
 });

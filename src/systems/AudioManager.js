@@ -49,6 +49,16 @@ export default class AudioManager {
   }
 
   /**
+   * Update the scene context for this manager
+   * Useful when moving between scenes to ensure tweens and sounds use the right context
+   * @param {Phaser.Scene} scene - The new active scene
+   */
+  updateScene(scene) {
+    this.scene = scene;
+    logger.debug(`AudioManager scene updated to: ${scene.scene.key}`);
+  }
+
+  /**
    * Initialize all combat sounds
    * Call this in PreloadScene after loading audio
    */
@@ -132,22 +142,37 @@ export default class AudioManager {
    * @param {number} fadeDuration - Fade out duration in ms
    */
   stopMusic(fadeDuration = 0) {
-    if (!this.currentMusic) return;
+    if (!this.currentMusic) {
+      logger.debug("stopMusic: No music playing");
+      return;
+    }
 
     if (fadeDuration > 0 && this.currentMusic.isPlaying) {
+      logger.info(`stopMusic: Fading out over ${fadeDuration}ms`);
       const music = this.currentMusic;
-      this.scene.tweens.add({
-        targets: music,
-        volume: 0,
-        duration: fadeDuration,
-        onComplete: () => {
-          music.stop();
-          if (this.currentMusic === music) {
-            this.currentMusic = null;
-          }
-        },
-      });
+
+      if (this.scene && this.scene.tweens) {
+        this.scene.tweens.add({
+          targets: music,
+          volume: 0,
+          duration: fadeDuration,
+          onComplete: () => {
+            music.stop();
+            if (this.currentMusic === music) {
+              this.currentMusic = null;
+            }
+            logger.info("stopMusic: Fade complete, music stopped");
+          },
+        });
+      } else {
+        logger.warn(
+          "stopMusic: Scene tweens not available, stopping immediately",
+        );
+        music.stop();
+        this.currentMusic = null;
+      }
     } else {
+      logger.info("stopMusic: Stopping immediately");
       this.currentMusic.stop();
       this.currentMusic = null;
     }

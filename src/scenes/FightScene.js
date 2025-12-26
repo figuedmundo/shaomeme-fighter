@@ -165,6 +165,7 @@ export default class FightScene extends Phaser.Scene {
     // Get AudioManager from registry
     this.audioManager = this.registry.get("audioManager");
     if (this.audioManager) {
+      this.audioManager.updateScene(this);
       this.audioManager.playStageMusic(this.city);
       logger.debug(`FightScene: Started stage music for ${this.city}`);
     } else {
@@ -724,13 +725,22 @@ export default class FightScene extends Phaser.Scene {
 
         // PHASE 3.1: Dramatic victory lighting
         if (this.lighting && winner) {
-          this.lighting.setAmbientLight(0.3, 1000);
-          this.lighting.addSpotlight(winner, {
-            radius: 200,
-            intensity: 2.0,
-            color: 0xffffaa,
-          });
-          logger.debug("Victory spotlight activated");
+          logger.info("Triggering victory spotlight...");
+
+          // Pre-flight check for the required texture
+          if (this.textures.exists("soft_light")) {
+            this.lighting.setAmbientLight(0.3, 1000);
+            this.lighting.addSpotlight(winner, {
+              radius: 200,
+              intensity: 2.0,
+              color: 0xffffaa,
+            });
+            logger.debug("Victory spotlight activated successfully.");
+          } else {
+            logger.warn(
+              "Victory spotlight skipped: 'soft_light' texture not found in Texture Manager.",
+            );
+          }
         }
 
         this.time.delayedCall(2000, async () => {

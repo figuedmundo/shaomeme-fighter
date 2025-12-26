@@ -73,6 +73,11 @@ const mockPhaser = {
     FIT: 0,
     CENTER_BOTH: 1,
   },
+  BlendModes: {
+    ADD: 1,
+    MULTIPLY: 2,
+    SCREEN: 3,
+  },
   AUTO: 0,
 };
 
@@ -91,6 +96,7 @@ const createGameObjectMock = () => ({
   setPosition: vi.fn().mockReturnThis(),
   setStrokeStyle: vi.fn().mockReturnThis(),
   setText: vi.fn().mockReturnThis(),
+  setBlendMode: vi.fn().mockReturnThis(),
   clear: vi.fn().mockReturnThis(),
   destroy: vi.fn(),
   emitParticleAt: vi.fn(),
@@ -119,6 +125,14 @@ vi.mock("phaser", () => {
 // We can also export a helper to create a mock scene
 export const createMockScene = () => {
   const scene = {
+    make: {
+      graphics: vi.fn(() => ({
+        fillStyle: vi.fn().mockReturnThis(),
+        fillRect: vi.fn().mockReturnThis(),
+        generateTexture: vi.fn().mockReturnThis(),
+        destroy: vi.fn(),
+      })),
+    },
     add: {
       image: vi.fn(createGameObjectMock),
       sprite: vi.fn(createGameObjectMock),

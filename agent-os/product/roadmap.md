@@ -233,7 +233,7 @@ _The gift wrapping_
 12. Animated backgrounds
 13. Super meter system
 14. Victory screen polish
-15. Photo slideshow enhancements
+15. Photo slideshow enhancements ✅
 
 ---
 

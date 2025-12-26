@@ -18,6 +18,7 @@ export default class MainMenuScene extends Phaser.Scene {
     // Get AudioManager
     this.audioManager = this.registry.get("audioManager");
     if (this.audioManager) {
+      this.audioManager.updateScene(this);
       this.audioManager.playMusic("menu_music");
     }
 

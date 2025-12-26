@@ -21,6 +21,12 @@
   color: white;
   font-family: sans-serif;
   overflow: hidden;
+  transition: opacity 0.8s ease-in-out;
+}
+
+.victory-overlay.exiting {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .victory-image-container {

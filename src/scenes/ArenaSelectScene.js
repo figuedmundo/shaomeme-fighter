@@ -45,6 +45,9 @@ export default class ArenaSelectScene extends Phaser.Scene {
 
     // Get AudioManager
     this.audioManager = this.registry.get("audioManager");
+    if (this.audioManager) {
+      this.audioManager.updateScene(this);
+    }
 
     // 1. Hero Background (Full Screen)
     // Initialize with black or a default until data loads

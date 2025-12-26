@@ -59,6 +59,7 @@ export default class CharacterSelectScene extends Phaser.Scene {
     // Get AudioManager
     this.audioManager = this.registry.get("audioManager");
     if (this.audioManager) {
+      this.audioManager.updateScene(this);
       this.audioManager.playMusic("select_music");
     }
 

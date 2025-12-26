@@ -16,6 +16,9 @@ export default class ContinueScene extends Phaser.Scene {
 
     this.transition = addTransitions(this);
     this.audioManager = this.registry.get("audioManager");
+    if (this.audioManager) {
+      this.audioManager.updateScene(this);
+    }
     this.counter = 10;
 
     // Red Tint Overlay

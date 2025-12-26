@@ -1,0 +1,1 @@
+I noticed that when the picutes are showing in the reward after the 2do or 3rd picture , it becomes very slow , like with lag, and suddendly it jump many pictures and gets better but not smooth, also when click the exit button it doesn't respond immdediately, what we can do to improve the flow , the transiction between pictures, make it more smooth and more responsiveness

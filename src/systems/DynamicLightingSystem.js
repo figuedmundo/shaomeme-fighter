@@ -60,33 +60,37 @@ export default class DynamicLightingSystem {
     }
 
     // Generate shared spotlight texture if it doesn't exist
-    if (
-      this.config.enableSpotlights &&
-      !this.scene.textures.exists("soft_light")
-    ) {
-      const size = 256;
-      // Create a standard HTML5 canvas element
-      const canvas = document.createElement("canvas");
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext("2d");
+    if (this.config.enableSpotlights) {
+      logger.debug("Checking for 'soft_light' texture...");
+      if (!this.scene.textures.exists("soft_light")) {
+        logger.info("Generating 'soft_light' canvas texture...");
+        const size = 256;
+        // Create a standard HTML5 canvas element
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
 
-      const grd = ctx.createRadialGradient(
-        size / 2,
-        size / 2,
-        0,
-        size / 2,
-        size / 2,
-        size / 2,
-      );
-      grd.addColorStop(0, "rgba(255, 255, 255, 1)");
-      grd.addColorStop(1, "rgba(255, 255, 255, 0)");
+        const grd = ctx.createRadialGradient(
+          size / 2,
+          size / 2,
+          0,
+          size / 2,
+          size / 2,
+          size / 2,
+        );
+        grd.addColorStop(0, "rgba(255, 255, 255, 1)");
+        grd.addColorStop(1, "rgba(255, 255, 255, 0)");
 
-      ctx.fillStyle = grd;
-      ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, 0, size, size);
 
-      // Add to Phaser Texture Manager
-      this.scene.textures.addCanvas("soft_light", canvas);
+        // Add to Phaser Texture Manager
+        this.scene.textures.addCanvas("soft_light", canvas);
+        logger.info("'soft_light' texture created successfully.");
+      } else {
+        logger.debug("'soft_light' texture already exists.");
+      }
     }
   }
 
@@ -115,6 +119,21 @@ export default class DynamicLightingSystem {
    * Add a spotlight that follows a game object
    */
   addSpotlight(target, config = {}) {
+    // Safety check for missing texture
+    if (!this.scene.textures.exists("soft_light")) {
+      logger.warn(
+        "Spotlight texture 'soft_light' missing. Attempting to regenerate...",
+      );
+      this.init(); // Try to regenerate textures
+
+      if (!this.scene.textures.exists("soft_light")) {
+        logger.error(
+          "Failed to create spotlight: 'soft_light' texture missing even after regeneration.",
+        );
+        return null;
+      }
+    }
+
     const {
       radius = 150,
       intensity = 1.2,

@@ -18,6 +18,9 @@ export default class VictoryScene extends Phaser.Scene {
     // Initialize Transitions
     this.transition = addTransitions(this);
     this.audioManager = this.registry.get("audioManager");
+    if (this.audioManager) {
+      this.audioManager.updateScene(this);
+    }
 
     // Background (Dark gradient)
     this.add.rectangle(0, 0, width, height, 0x111111).setOrigin(0);

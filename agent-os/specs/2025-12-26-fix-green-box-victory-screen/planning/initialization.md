@@ -1,0 +1,1 @@
+I noticed that after the game ends , and the words "name wins" show up, a green box is showed in the screen, is there a way to fix, or log to see what is happening, I don't remember that was like that at the beggning, but not sure when it happen this
