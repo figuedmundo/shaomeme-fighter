@@ -225,15 +225,47 @@ export default class VictorySlideshow {
     // 3. Trigger Ken Burns
     if (this.polaroidFrame) {
       this.polaroidFrame.classList.remove("ken-burns-active");
+
+      // Calculate dynamic dimensions to fit screen (85% max)
+      const maxWidth = window.innerWidth * 0.85;
+      const maxHeight = window.innerHeight * 0.85;
+
+      const naturalWidth = nextBuffer.naturalWidth || 800;
+      const naturalHeight = nextBuffer.naturalHeight || 600;
+
+      const aspect = naturalWidth / naturalHeight;
+
+      let finalWidth;
+      let finalHeight;
+
+      // Determine dimensions based on "contain" logic
+      if (naturalWidth / maxWidth > naturalHeight / maxHeight) {
+        // Width is the limiting factor
+        finalWidth = Math.min(naturalWidth, maxWidth);
+        finalHeight = finalWidth / aspect;
+      } else {
+        // Height is the limiting factor
+        finalHeight = Math.min(naturalHeight, maxHeight);
+        finalWidth = finalHeight * aspect;
+      }
+
+      // Apply calculated dimensions to the frame
+      this.polaroidFrame.style.width = `${finalWidth}px`;
+      this.polaroidFrame.style.height = `${finalHeight}px`;
+
+      // Keep class logic for potential CSS specific tuning (optional but good for consistency)
       this.polaroidFrame.classList.remove("is-portrait");
+      this.polaroidFrame.classList.remove("is-landscape");
+
+      if (naturalHeight > naturalWidth) {
+        this.polaroidFrame.classList.add("is-portrait");
+      } else {
+        this.polaroidFrame.classList.add("is-landscape");
+      }
+
       // eslint-disable-next-line no-unused-expressions
       this.polaroidFrame.offsetHeight;
       this.polaroidFrame.classList.add("ken-burns-active");
-
-      const isPortrait = nextBuffer.naturalHeight > nextBuffer.naturalWidth;
-      if (isPortrait) {
-        this.polaroidFrame.classList.add("is-portrait");
-      }
     }
 
     // 4. Cross-fade

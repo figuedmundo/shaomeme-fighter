@@ -1,0 +1,1 @@
+if the picture reward is portrait , it is not being displayed in the slideshow , only a small white rectacgule is visible and the picture blured can be seen in the background, but the actual picture in the polaroid frame is not displayed
