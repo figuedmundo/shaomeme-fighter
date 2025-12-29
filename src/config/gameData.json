@@ -56,6 +56,17 @@
       },
       "victoryMusic": "soundtrack_walking_on_cars"
     },
+    "austria": {
+      "type": "city",
+      "displayName": "Austria",
+      "presets": {
+        "parallax": "city",
+        "lighting": "outdoor_day",
+        "weather": null,
+        "animation": "city"
+      },
+      "victoryMusic": "soundtrack_walking_on_cars"
+    },
     "germany": {
       "type": "city",
       "displayName": "Germany",
@@ -85,6 +96,18 @@
         "parallax": "city",
         "lighting": "outdoor_night",
         "weather": "desert_wind",
+        "animation": "city"
+      },
+      "victoryMusic": "soundtrack_walking_on_cars"
+    },
+
+    "avignon": {
+      "type": "city",
+      "displayName": "Avignon",
+      "presets": {
+        "parallax": "city",
+        "lighting": "outdoor_day",
+        "weather": null,
         "animation": "city"
       },
       "victoryMusic": "soundtrack_walking_on_cars"
@@ -235,7 +258,7 @@
     },
     {
       "id": "mom",
-      "displayName": "Mom",
+      "displayName": "媽媽",
       "portraitPath": "/assets/fighters/mom/portrait.png",
       "iconPath": "/assets/fighters/mom/portrait.png",
       "fullBodyPath": "/assets/fighters/mom/fullBody.png",
@@ -244,7 +267,7 @@
     },
     {
       "id": "dad",
-      "displayName": "Dad",
+      "displayName": "爸爸",
       "portraitPath": "/assets/fighters/dad/portrait.png",
       "iconPath": "/assets/fighters/dad/portrait.png",
       "fullBodyPath": "/assets/fighters/dad/fullBody.png",
@@ -253,7 +276,7 @@
     },
     {
       "id": "brother",
-      "displayName": "Brother",
+      "displayName": "柚子",
       "portraitPath": "/assets/fighters/brother/portrait.png",
       "iconPath": "/assets/fighters/brother/portrait.png",
       "fullBodyPath": "/assets/fighters/brother/fullBody.png",
@@ -271,7 +294,7 @@
     },
     {
       "id": "fresway_worker",
-      "displayName": "Fresway Worker",
+      "displayName": "Freshway Worker",
       "portraitPath": "/assets/fighters/fresway_worker/portrait.png",
       "iconPath": "/assets/fighters/fresway_worker/portrait.png",
       "fullBodyPath": "/assets/fighters/fresway_worker/fullBody.png",
