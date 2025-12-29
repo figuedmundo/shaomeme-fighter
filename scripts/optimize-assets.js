@@ -14,7 +14,8 @@ async function optimizeFile(filePath, stats) {
     const image = sharp(filePath);
     const metadata = await image.metadata();
 
-    let pipeline = image;
+    // Auto-rotate based on EXIF orientation tag before processing
+    let pipeline = image.rotate();
 
     // 1. Resize if too large
     if (metadata.width > MAX_WIDTH || metadata.height > MAX_HEIGHT) {
