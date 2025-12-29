@@ -31,6 +31,7 @@ import {
 import rosterConfig, { getCharacterDisplayName } from "../config/rosterConfig";
 
 import UnifiedLogger from "../utils/Logger.js";
+import ConfigManager from "../config/ConfigManager";
 
 const logger = new UnifiedLogger("Frontend:FightScene");
 
@@ -262,7 +263,7 @@ export default class FightScene extends Phaser.Scene {
       this,
       this.player2,
       this.player1,
-      "medium",
+      ConfigManager.getDefaultDifficulty(),
     );
     this.player2.setControls(
       this.aiController.getCursorKeys(),

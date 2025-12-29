@@ -1,5 +1,6 @@
 {
   "cinematicMode": true,
+  "defaultDifficulty": "nightmare",
   "arenas": {
     "dublin": {
       "type": "city",

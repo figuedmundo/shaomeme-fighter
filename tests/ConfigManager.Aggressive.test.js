@@ -26,4 +26,8 @@ describe("ConfigManager Aggressive Overhaul", () => {
       expect(fighter.personality).toBe("aggressive");
     });
   });
+
+  it("should return default difficulty as nightmare", () => {
+    expect(ConfigManager.getDefaultDifficulty()).toBe("nightmare");
+  });
 });

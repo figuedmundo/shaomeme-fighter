@@ -225,6 +225,10 @@ class ConfigManager {
     );
   }
 
+  getDefaultDifficulty() {
+    return this.data.defaultDifficulty || "medium";
+  }
+
   // --- Roster ---
   getRoster() {
     return this.data.roster;
