@@ -1,3 +1,7 @@
+packages:
+  - "."
+  - "tools/*"
+
 onlyBuiltDependencies:
   - canvas
   - esbuild

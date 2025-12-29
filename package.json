@@ -16,6 +16,7 @@
     "lint": "eslint --ext .js .",
     "lint:fix": "pnpm run lint -- --fix",
     "test": "vitest --run",
+    "manager": "pnpm --filter photo-manager-frontend dev",
     "optimize": "node scripts/optimize-assets.js",
     "prepare": "simple-git-hooks"
   },
