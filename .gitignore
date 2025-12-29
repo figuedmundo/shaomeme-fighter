@@ -37,6 +37,9 @@ logs/
 temp_clone/
 
 photos/**/*.jpg
+photos/**/*.jpeg
+photos/**/*.HEIC
+photos/**/*.heic
 cache/
 .vibe/
 # Ignore user photos (source assets)
