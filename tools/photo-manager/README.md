@@ -4,10 +4,10 @@ A standalone visual tool to manage photo notes for Shaomeme Fighter.
 
 ## Features
 
-- **Visual Gallery:** See exactly which photo you are annotating.
-- **Game Preview:** Preview how the photo and note will look in the actual game reward sequence.
-- **Orphan Detection:** Highlights notes in `notes.json` that no longer have a corresponding photo file.
-- **Localhost Only:** Runs independently of the game on your development machine.
+- **Master-Detail Layout:** Quickly scroll through city photos and edit details in a large side-panel.
+- **Real-time Polaroid Preview:** See exactly how your photo, date, and note will look in the game's reward slideshow.
+- **Orphan Detection:** Identifies notes in `notes.json` that no longer have a corresponding photo file (highlighted in red).
+- **Consitency:** Uses the exact same date-parsing and visual rendering logic as the main game engine.
 
 ## Setup & Running
 
@@ -23,18 +23,24 @@ The backend runs at `http://localhost:3000`.
 
 ### 2. Start the Manager Tool
 
+From the root of the project:
+
 ```bash
-cd tools/photo-manager
-pnpm install
-pnpm run dev
+pnpm manager
 ```
 
-The tool will run at `http://localhost:5174`.
+The tool will be accessible at `http://localhost:5174`.
 
 ## Workflow
 
-1. Select a city from the sidebar.
-2. Scroll through the photos.
-3. Hover over a photo and click the **Eye icon** to see a "Game Preview".
-4. Type your memories in the text area.
-5. Click **Save Changes** to update the `notes.json` file for that city.
+1. Select a **City** from the left sidebar.
+2. Select a **Photo** from the center list.
+3. Observe the **Live Preview** in the right panel. It replicates the game's Polaroid frame and handwriting font.
+4. Type your memory in the **Note Box**. The preview updates as you type.
+5. Click **Save All Changes** to update the `notes.json` file for that city.
+
+## Technical Details
+
+- **Architecture:** React + Vite frontend communicating with the Express backend on port 3000.
+- **Storage:** Writes to `photos/[city]/notes.json`.
+- **Date Logic:** Mirrors the game's fallback chain (Filename > EXIF > mtime).
