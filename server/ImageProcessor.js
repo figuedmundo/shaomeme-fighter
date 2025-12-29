@@ -30,6 +30,23 @@ export function formatDate(date) {
  */
 export async function getPhotoDate(sourcePath) {
   try {
+    const filename = path.basename(sourcePath);
+
+    // 1. Try to parse from filename (YYYY-MM-DD_HH-MM-SS)
+    // This trusts the user's manual correction via rename script
+    const filenameMatch = filename.match(
+      /^(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})/,
+    );
+    if (filenameMatch) {
+      const [, year, month, day, hour, minute, second] = filenameMatch;
+      // Note: Month is 0-indexed in JS constructor
+      const d = new Date(year, month - 1, day, hour, minute, second);
+      if (!Number.isNaN(d.getTime())) {
+        logger.debug(`Date parsed from filename for ${filename}: ${d}`);
+        return formatDate(d);
+      }
+    }
+
     const image = sharp(sourcePath);
     const metadata = await image.metadata();
     let dateObj = null;
@@ -40,21 +57,31 @@ export async function getPhotoDate(sourcePath) {
 
         // exif-reader v2+ uses 'Photo' for SubIFD tags like DateTimeOriginal
         const exifTags = parsedExif.Photo || parsedExif.exif || {};
+        const rawDate = exifTags.DateTimeOriginal || exifTags.CreateDate;
 
-        if (exifTags.DateTimeOriginal) {
-          dateObj = new Date(exifTags.DateTimeOriginal);
-        } else if (exifTags.CreateDate) {
-          dateObj = new Date(exifTags.CreateDate);
+        if (rawDate) {
+          if (typeof rawDate === "string" && rawDate.includes(":")) {
+            // Fix EXIF format: "2023:12:25 15:00:00" -> "2023-12-25 15:00:00"
+            const normalized = rawDate.replace(
+              /^(\d{4}):(\d{2}):(\d{2})/,
+              "$1-$2-$3",
+            );
+            dateObj = new Date(normalized);
+          } else {
+            dateObj = new Date(rawDate);
+          }
         }
       } catch (exifErr) {
         logger.warn(`Failed to parse EXIF for ${sourcePath}:`, exifErr);
       }
     }
 
-    // Fallback to file creation time
+    // Fallback to file timestamps
     if (!dateObj || Number.isNaN(dateObj.getTime())) {
       const stats = await fs.stat(sourcePath);
-      dateObj = stats.birthtime;
+      // stats.mtime is updated by scripts/update_photo_date.js
+      // preferring mtime over birthtime as it is more reliably updated via utimes
+      dateObj = stats.mtime || stats.birthtime;
     }
 
     if (dateObj && !Number.isNaN(dateObj.getTime())) {

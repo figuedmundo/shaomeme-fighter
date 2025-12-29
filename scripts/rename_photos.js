@@ -43,11 +43,19 @@ async function getRawPhotoDate(sourcePath) {
       try {
         const parsedExif = exifReader(metadata.exif);
         const exifTags = parsedExif.Photo || parsedExif.exif || {};
+        const rawDate = exifTags.DateTimeOriginal || exifTags.CreateDate;
 
-        if (exifTags.DateTimeOriginal) {
-          dateObj = new Date(exifTags.DateTimeOriginal);
-        } else if (exifTags.CreateDate) {
-          dateObj = new Date(exifTags.CreateDate);
+        if (rawDate) {
+          if (typeof rawDate === "string" && rawDate.includes(":")) {
+            // Fix EXIF format: "2023:12:25 15:00:00" -> "2023-12-25 15:00:00"
+            const normalized = rawDate.replace(
+              /^(\d{4}):(\d{2}):(\d{2})/,
+              "$1-$2-$3",
+            );
+            dateObj = new Date(normalized);
+          } else {
+            dateObj = new Date(rawDate);
+          }
         }
       } catch (exifErr) {
         console.warn(
@@ -57,10 +65,11 @@ async function getRawPhotoDate(sourcePath) {
       }
     }
 
-    // Fallback to file creation time
+    // Fallback to file timestamps (mtime > birthtime)
     if (!dateObj || Number.isNaN(dateObj.getTime())) {
       const stats = await fs.stat(sourcePath);
-      dateObj = stats.birthtime;
+      // stats.mtime is updated by scripts/update_photo_date.js
+      dateObj = stats.mtime || stats.birthtime;
     }
 
     return dateObj;

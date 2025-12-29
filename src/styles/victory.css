@@ -149,6 +149,24 @@
   opacity: 0.9;
 }
 
+/* Handwritten Note */
+.polaroid-note {
+  position: absolute;
+  bottom: 60px; /* Above the date */
+  left: 0;
+  width: 100%;
+  text-align: center;
+  color: #333333;
+  font-family: "BiroScript", "Brush Script MT", "Comic Sans MS", cursive;
+  font-size: 1.4rem;
+  z-index: 10;
+  pointer-events: none;
+  transition: opacity 1s ease-in-out;
+  opacity: 0.8;
+  padding: 0 30px;
+  box-sizing: border-box;
+}
+
 /* Dynamic Classes for additional tuning if needed */
 .polaroid-frame.is-portrait {
   /* Dimensions handled by JS */

@@ -20,12 +20,12 @@ describe("Server API Integration", () => {
   it("GET /api/photos?city=paris should return processed images", async () => {
     const res = await request(app).get("/api/photos?city=paris");
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    // Assuming photos/paris has files. If strictly testing, we might want to ensure it has files,
-    // but the file list shows photos/paris/valid.jpg.
-    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body.photos).toBeDefined();
+    expect(Array.isArray(res.body.photos)).toBe(true);
+    // Assuming photos/paris has files.
+    expect(res.body.photos.length).toBeGreaterThan(0);
 
-    const image = res.body[0];
+    const image = res.body.photos[0];
     expect(image).toHaveProperty("url");
     expect(image).toHaveProperty("filename");
     expect(image).toHaveProperty("type");

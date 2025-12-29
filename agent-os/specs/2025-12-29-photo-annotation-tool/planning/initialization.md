@@ -1,0 +1,1 @@
+we need a visual tool where I can see the picture, and I can see the note assigned to it, have a ton of pictures with almost identical names, makes it crazy to add notes. The tool should allow browsing by city and editing notes stored in the city's notes.json file.

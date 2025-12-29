@@ -29,7 +29,9 @@ export default class VictorySlideshow {
     try {
       const res = await fetch(`/api/photos?city=${city}`);
       if (res.ok) {
-        const allPhotos = await res.json();
+        const data = await res.json();
+        // Handle both new object structure and legacy array structure for safety
+        const allPhotos = Array.isArray(data) ? data : data.photos || [];
         this.photos = allPhotos.filter((p) => !p.isBackground);
       } else {
         console.warn("Failed to fetch photos");
@@ -106,6 +108,11 @@ export default class VictorySlideshow {
     this.dateElement = document.createElement("div");
     this.dateElement.className = "polaroid-date";
     this.polaroidFrame.appendChild(this.dateElement);
+
+    // Note Element
+    this.noteElement = document.createElement("div");
+    this.noteElement.className = "polaroid-note";
+    this.polaroidFrame.appendChild(this.noteElement);
 
     imgContainer.appendChild(this.polaroidFrame);
 
@@ -186,6 +193,7 @@ export default class VictorySlideshow {
     const photoUrl = this.photos[index].url;
     const photoDate =
       this.photos[index].date || this.capitalize(this.currentCity);
+    const photoNote = this.photos[index].note || "";
 
     // Get next buffer
     const nextBufferIndex = (this.activeBufferIndex + 1) % 2;
@@ -204,10 +212,16 @@ export default class VictorySlideshow {
     // 2. Prepare visual state
     if (this.dateElement) {
       this.dateElement.style.opacity = 0;
+      if (this.noteElement) this.noteElement.style.opacity = 0;
+
       setTimeout(() => {
         if (this.dateElement) {
           this.dateElement.innerText = photoDate;
           this.dateElement.style.opacity = 1;
+        }
+        if (this.noteElement) {
+          this.noteElement.innerText = photoNote;
+          this.noteElement.style.opacity = photoNote ? 1 : 0;
         }
       }, 500);
     }

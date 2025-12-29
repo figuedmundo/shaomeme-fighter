@@ -158,7 +158,10 @@ export default class ArenaSelectScene extends Phaser.Scene {
           const photosRes = await fetch(
             `${apiBase}/api/photos?city=${cityName}`,
           );
-          const photos = await photosRes.json();
+          const data = await photosRes.json();
+          // Handle both new object structure and legacy array structure
+          const photos = Array.isArray(data) ? data : data.photos || [];
+
           if (photos && photos.length > 0) {
             // Find the background image if it exists, otherwise use the first one
             const bgPhoto = photos.find((p) => p.isBackground) || photos[0];

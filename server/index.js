@@ -17,6 +17,7 @@ export const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
+app.use(express.json());
 
 // Logging Middleware
 app.use((req, res, next) => {
@@ -71,6 +72,16 @@ app.get("/api/photos", async (req, res) => {
   try {
     const files = await fs.promises.readdir(targetDir);
 
+    // Load notes if they exist
+    let notes = {};
+    try {
+      const notesPath = path.join(targetDir, "notes.json");
+      const notesData = await fs.promises.readFile(notesPath, "utf8");
+      notes = JSON.parse(notesData);
+    } catch (e) {
+      // No notes found, ignore
+    }
+
     // Filter for supported extensions
     const supportedExtensions = [
       ".jpg",
@@ -85,7 +96,7 @@ app.get("/api/photos", async (req, res) => {
       return supportedExtensions.includes(ext);
     });
 
-    // Process images in parallel
+    // 3. Process images
     const processedImages = await Promise.all(
       imageFiles.map(async (filename) => {
         const sourcePath = path.join(targetDir, filename);
@@ -110,6 +121,7 @@ app.get("/api/photos", async (req, res) => {
             type: "image/webp",
             isBackground,
             date,
+            note: notes[filename] || null,
           };
         } catch (error) {
           logger.error(`Failed to process ${filename}:`, error);
@@ -120,12 +132,52 @@ app.get("/api/photos", async (req, res) => {
 
     // Filter out any failures
     const validImages = processedImages.filter((img) => img !== null);
-    logger.debug(`Found ${validImages.length} valid images for city: ${city}`);
 
-    return res.json(validImages);
+    // 4. Handle management-specific data (orphaned notes)
+    // If the request comes from the management tool (indicated by a flag or just always included)
+    const orphanedNotes = [];
+    Object.keys(notes).forEach((filename) => {
+      if (!imageFiles.includes(filename)) {
+        orphanedNotes.push({
+          filename,
+          note: notes[filename],
+        });
+      }
+    });
+
+    logger.debug(
+      `Found ${validImages.length} images and ${orphanedNotes.length} orphans for city: ${city}`,
+    );
+
+    return res.json({
+      photos: validImages,
+      orphanedNotes,
+    });
   } catch (err) {
     logger.error("Failed to scan photos directory:", err);
     return res.status(500).json({ error: "Failed to scan photos directory" });
+  }
+});
+
+// API to save photo notes (Management Only)
+app.post("/api/notes", async (req, res) => {
+  const { city, notes } = req.body;
+
+  if (!city || !notes) {
+    return res.status(400).json({ error: "City and notes are required" });
+  }
+
+  // Sanitize city name
+  const sanitizedCity = city.replace(/[^a-zA-Z0-9_-]/g, "");
+  const notesPath = path.join(PHOTOS_DIR, sanitizedCity, "notes.json");
+
+  try {
+    await fs.promises.writeFile(notesPath, JSON.stringify(notes, null, 2));
+    logger.info(`Saved notes for city: ${sanitizedCity}`);
+    return res.json({ success: true });
+  } catch (err) {
+    logger.error(`Failed to save notes for ${sanitizedCity}:`, err);
+    return res.status(500).json({ error: "Failed to save notes" });
   }
 });
 
