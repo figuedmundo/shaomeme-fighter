@@ -1,0 +1,1 @@
+the AI fighter is too easy to defeact, and I manually updated all fighets in @src/config/gameData.json to be agreesive, but still very easy to defeact, can we please update all fighters to be more aggresive, more smart, and willing to defeact, no need any mechanism to try to make a fare game, if the AI can defeact the player please do it

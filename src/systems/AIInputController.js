@@ -73,8 +73,8 @@ export default class AIInputController {
     this.profile = ConfigManager.getDifficultyConfig(this.difficulty);
     // Decision frequency: also scaled by difficulty
     const intervals = {
-      nightmare: 100,
-      hard: 200,
+      nightmare: 50,
+      hard: 100,
       medium: 400,
     };
     this.moveInterval = intervals[this.difficulty] || 800;
@@ -157,15 +157,8 @@ export default class AIInputController {
     // Base confidence is health ratio vs opponent
     let confidence = (healthRatio + (1 - opponentHealthRatio)) / 2;
 
-    // Desperation/Mercy logic from Spec
+    // Desperation Logic from Spec (Mercy Removed)
     if (
-      this.difficulty !== "nightmare" &&
-      healthRatio > 0.8 &&
-      opponentHealthRatio < 0.3
-    ) {
-      // Mercy: AI is dominating, lower confidence to trigger "hesitation"
-      confidence *= 0.7;
-    } else if (
       this.difficulty === "nightmare" &&
       healthRatio < 0.3 &&
       opponentHealthRatio > 0.8
@@ -216,10 +209,15 @@ export default class AIInputController {
     if (this.difficulty === "nightmare" && this.confidence < 0.3) {
       aggression += 0.2; // Nightmare gets more aggressive when losing
     } else {
-      aggression *= 0.5 + this.confidence * 0.5; // At 0 confidence, aggression is halved
+      // Scale aggression by confidence, but floor it higher for Hard/Nightmare
+      const baseFloor =
+        this.difficulty === "nightmare" || this.difficulty === "hard"
+          ? 0.8
+          : 0.5;
+      aggression *= baseFloor + this.confidence * (1 - baseFloor);
     }
 
-    return Math.max(0.1, Math.min(0.99, aggression));
+    return Math.max(0.1, Math.min(1.0, aggression));
   }
 
   getModifiedBlockRate() {
@@ -243,11 +241,14 @@ export default class AIInputController {
   getModifiedMistakeChance() {
     let { mistakeChance } = this.profile;
 
-    // Adaptive: AI makes more mistakes when winning (mercy)
-    if (this.difficulty !== "nightmare" && this.confidence > 0.8) {
+    // Adaptive: AI makes more mistakes when winning (mercy) - ONLY for Easy/Medium
+    if (
+      (this.difficulty === "easy" || this.difficulty === "medium") &&
+      this.confidence > 0.8
+    ) {
       mistakeChance += 0.2;
-    } else if (this.difficulty === "nightmare" && this.confidence < 0.3) {
-      // Nightmare makes almost NO mistakes when losing
+    } else if (this.difficulty === "nightmare") {
+      // Nightmare makes NO mistakes
       mistakeChance = 0;
     }
 
@@ -255,16 +256,36 @@ export default class AIInputController {
   }
 
   monitorOpponent(delta) {
-    const isOpponentAttacking = this.opponent.currentState === "attack";
+    const isOpponentAttacking =
+      this.opponent.currentState === "attack" || this.opponent.isAttacking;
     const distance = Math.abs(this.fighter.x - this.opponent.x);
 
-    // Whiff Punish Logic
-    if (isOpponentAttacking && distance > 140 && distance < 250) {
+    // 0. Wake-up Pressure (Opponent Knocked Down)
+    // If opponent is grounded (CRUMPLE/HIT) and we are IDLE/SPACING, pressure them
+    if (
+      (this.opponent.currentState === FighterState.CRUMPLE ||
+        this.opponent.currentState === FighterState.HIT) &&
+      this.actionQueue.length === 0 &&
+      (this.difficulty === "nightmare" || this.difficulty === "hard")
+    ) {
+      if (Math.random() < this.getModifiedAggression()) {
+        // Time the approach to hit them on wake-up
+        this.actionQueue = [
+          { type: "APPROACH", duration: distance > 80 ? 300 : 100 }, // Close distance
+          { type: "ATTACK", duration: 200 }, // Meaty attack
+        ];
+        return;
+      }
+    }
+
+    // 1. Whiff Punish Logic
+    if (isOpponentAttacking && distance > 140 && distance < 300) {
       // Opponent is swinging and missing
-      if (
-        Math.random() < this.getModifiedAggression() &&
-        this.actionQueue.length === 0
-      ) {
+      // Nightmare punishes 100% of the time, Hard 80%
+      const punishChance =
+        this.difficulty === "nightmare" ? 1.0 : this.getModifiedAggression();
+
+      if (Math.random() < punishChance && this.actionQueue.length === 0) {
         logger.debug("Whiff punish triggered!");
         this.actionQueue = [
           { type: "APPROACH", duration: 200 },
@@ -274,12 +295,47 @@ export default class AIInputController {
       }
     }
 
+    // 2. Input Reading / God Reflexes (Nightmare Only)
+    if (this.difficulty === "nightmare") {
+      // Instant Block / Counter
+      if (isOpponentAttacking && distance < 150) {
+        // If we are not already attacking/committed, BLOCK instantly
+        if (
+          this.currentAction !== "ATTACK" &&
+          this.fighter.currentState !== "attack"
+        ) {
+          this.currentAction = "BLOCK";
+          this.actionCommitmentTimer = 200; // Hold block briefly
+          return;
+        }
+      }
+
+      // Anti-Air (Instant reaction to Jump)
+      if (
+        (this.opponent.currentState === FighterState.JUMP ||
+          this.opponent.currentState === "jump") &&
+        distance < 200
+      ) {
+        if (
+          this.actionQueue.length === 0 &&
+          Math.random() < 0.8 &&
+          this.currentAction !== "ATTACK"
+        ) {
+          this.currentAction = "ATTACK"; // Anti-air attack (simplified to neutral attack for now)
+          this.actionCommitmentTimer = 300;
+          return;
+        }
+      }
+    }
+
+    // 3. Standard Reaction Logic (Legacy + Adaptive)
     // If opponent starts attacking and we aren't already reacting
     if (
       isOpponentAttacking &&
       !this.pendingReaction &&
       this.actionQueue.length === 0
     ) {
+      // For Nightmare, reactionDelay is basically 0, handled above or here if missed
       this.pendingReaction = {
         type: "BLOCK",
         startTime: 0,

@@ -205,22 +205,22 @@
       "mistakeChance": 0.2
     },
     "hard": {
-      "aggression": 0.8,
-      "blockRate": 0.7,
+      "aggression": 0.9,
+      "blockRate": 0.8,
       "reactionTime": {
         "min": 150,
-        "max": 300
+        "max": 250
       },
       "mistakeChance": 0.05
     },
     "nightmare": {
-      "aggression": 0.95,
-      "blockRate": 0.9,
+      "aggression": 1.0,
+      "blockRate": 1.0,
       "reactionTime": {
-        "min": 50,
-        "max": 150
+        "min": 0,
+        "max": 50
       },
-      "mistakeChance": 0.01
+      "mistakeChance": 0.0
     }
   },
   "roster": [
