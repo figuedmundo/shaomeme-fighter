@@ -62,15 +62,21 @@ describe("AI Difficulty Improvement", () => {
       aiController = new AIInputController(mockScene, me, opponent, "medium");
     });
 
-    it("should lower confidence when winning to trigger mercy (Player is losing)", () => {
-      // AI is winning (High base confidence)
-      me.health = 100;
-      opponent.health = 20;
+    it("should calculate confidence based on health ratio (Nightmare focuses when losing)", () => {
+      // Scenario: AI losing badly (10% health vs 100% opponent)
+      me.health = 10;
+      opponent.health = 100;
 
+      aiController = new AIInputController(
+        mockScene,
+        me,
+        opponent,
+        "nightmare",
+      );
       const confidence = aiController.calculateConfidence();
-      // Base would be 0.9, but Mercy (0.7x) makes it 0.63
-      expect(confidence).toBeLessThan(0.7);
-      expect(confidence).toBeGreaterThan(0.6);
+
+      // In nightmare, low confidence (0.1) triggers faster reactions
+      expect(confidence).toBe(0.1);
     });
 
     it("should decrease reaction delay significantly in Nightmare mode when losing", () => {

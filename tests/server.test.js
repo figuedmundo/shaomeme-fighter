@@ -5,6 +5,7 @@ import { app } from "../server/index.js";
 // Mock processImage to avoid actual image processing overhead/sharp issues
 vi.mock("../server/ImageProcessor.js", () => ({
   processImage: vi.fn(async (source, dest) => dest),
+  getPhotoDate: vi.fn(async () => "May 21, 2023"),
 }));
 
 describe("Server API Integration", () => {
@@ -17,12 +18,12 @@ describe("Server API Integration", () => {
     expect(paris).toBeDefined();
   });
 
-  it("GET /api/photos?city=paris should return processed images", async () => {
-    const res = await request(app).get("/api/photos?city=paris");
+  it("GET /api/photos?city=dublin should return processed images", async () => {
+    const res = await request(app).get("/api/photos?city=dublin");
     expect(res.status).toBe(200);
     expect(res.body.photos).toBeDefined();
     expect(Array.isArray(res.body.photos)).toBe(true);
-    // Assuming photos/paris has files.
+    // Assuming photos/dublin has files.
     expect(res.body.photos.length).toBeGreaterThan(0);
 
     const image = res.body.photos[0];

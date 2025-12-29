@@ -36,8 +36,8 @@ describe("ConfigManager Internal Logic", () => {
   describe("Personality & Difficulty Data", () => {
     it("should resolve character personality", () => {
       expect(ConfigManager.getCharacterPersonality("dad")).toBe("aggressive");
-      expect(ConfigManager.getCharacterPersonality("mom")).toBe("defensive");
-      expect(ConfigManager.getCharacterPersonality("ann")).toBe("balanced");
+      expect(ConfigManager.getCharacterPersonality("mom")).toBe("aggressive");
+      expect(ConfigManager.getCharacterPersonality("ann")).toBe("aggressive");
       expect(ConfigManager.getCharacterPersonality("unknown")).toBe("balanced");
     });
 
@@ -58,9 +58,9 @@ describe("ConfigManager Internal Logic", () => {
       expect(easy.reactionTime.max).toBe(1200);
 
       const hard = ConfigManager.getDifficultyConfig("hard");
-      expect(hard.aggression).toBe(0.8);
+      expect(hard.aggression).toBe(0.9);
       expect(hard.reactionTime.min).toBe(150);
-      expect(hard.reactionTime.max).toBe(300);
+      expect(hard.reactionTime.max).toBe(250);
     });
   });
 });

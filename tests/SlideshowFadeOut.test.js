@@ -26,16 +26,29 @@ describe("VictorySlideshow Fade-Out", () => {
     vi.clearAllMocks();
   });
 
-  it("should apply fade-out transition to overlay on exit", async () => {
+  it("should apply fade-out transition via black curtain on exit", async () => {
     slideshow.createOverlay();
     const overlay = document.querySelector(".victory-overlay");
 
+    vi.useFakeTimers();
     const exitPromise = slideshow.exit();
 
-    expect(overlay.style.opacity).toBe("0");
-    expect(overlay.style.transition).toContain("opacity");
+    // Advance 100ms to allow curtain to be created and initial timeout to pass
+    await vi.advanceTimersByTimeAsync(100);
+
+    const curtain = overlay.lastElementChild;
+    expect(curtain.style.backgroundColor).toBe("black");
+    expect(curtain.style.opacity).toBe("1");
+    expect(curtain.style.transition).toContain("opacity");
+
+    // Advance 800ms to finish fade
+    await vi.advanceTimersByTimeAsync(800);
+
+    // Advance 2000ms to finish deferred cleanup
+    await vi.advanceTimersByTimeAsync(2000);
 
     await exitPromise;
+    vi.useRealTimers();
   });
 
   it("should sync music stop with fade-out duration", async () => {

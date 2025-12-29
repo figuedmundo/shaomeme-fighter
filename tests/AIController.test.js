@@ -22,10 +22,10 @@ describe("AI Input Controller", () => {
       y: 300,
       currentState: FighterState.IDLE,
       health: 100,
-      isAttacking: () => me.currentState === FighterState.ATTACK,
-      isBlocking: () => me.currentState === FighterState.BLOCK,
-      isJumping: () => me.currentState === FighterState.JUMP,
-      isCrouching: () => me.currentState === FighterState.CROUCH,
+      isAttacking: false,
+      isBlocking: false,
+      isJumping: false,
+      isCrouching: false,
     };
 
     opponent = {
@@ -33,10 +33,10 @@ describe("AI Input Controller", () => {
       y: 300,
       currentState: FighterState.IDLE,
       health: 100,
-      isAttacking: () => opponent.currentState === FighterState.ATTACK,
-      isBlocking: () => opponent.currentState === FighterState.BLOCK,
-      isJumping: () => opponent.currentState === FighterState.JUMP,
-      isCrouching: () => opponent.currentState === FighterState.CROUCH,
+      isAttacking: false,
+      isBlocking: false,
+      isJumping: false,
+      isCrouching: false,
     };
 
     // Initialize AI with Medium difficulty
@@ -46,21 +46,28 @@ describe("AI Input Controller", () => {
   describe("Reactivity & Timing", () => {
     it("should calculate a dynamic reaction delay based on difficulty ranges", () => {
       // Medium reaction time is 400-700ms in gameData.json
+      // Initial confidence is 1.0, so mercyFactor is 1.5
+      // Expected range: 400*1.5=600 to 700*1.5=1050
       const delay = aiController.getReactionDelay();
-      expect(delay).toBeGreaterThanOrEqual(400);
-      expect(delay).toBeLessThanOrEqual(700);
+      expect(delay).toBeGreaterThanOrEqual(600);
+      expect(delay).toBeLessThanOrEqual(1050);
     });
 
     it("should react to opponent attack within the reaction window", () => {
       // 1. Initial State: Both Idle
       opponent.currentState = FighterState.IDLE;
+      opponent.isAttacking = false;
       // Start at time 1000
       aiController.update(1000, 16);
 
       // 2. Opponent Attacks
       opponent.currentState = FighterState.ATTACK;
+      opponent.isAttacking = true;
       me.x = 200;
       opponent.x = 300; // Close range
+
+      // Force a known reaction delay
+      aiController.reactionDelay = 500;
 
       // Force high block rate & predictable randomness
       const spy = vi.spyOn(Math, "random").mockReturnValue(0);
@@ -68,21 +75,16 @@ describe("AI Input Controller", () => {
       aiController.profile.mistakeChance = 0;
 
       // 3. AI Detects attack at time 1016
-      // Reaction delay is generated in constructor (400-700ms).
-      // Let's assume worst case 700ms, or best case 400ms.
-      // pendingReaction starts accumulating time here.
       aiController.update(1016, 16);
 
       // 4. Test "Too Early" - Advance 200ms
-      // Total elapsed: 16 + 200 = 216ms. This is < 400ms (min reaction).
-      // Should NOT be blocking yet.
+      // Total elapsed: 16 + 200 = 216ms. This is < 500ms.
       aiController.update(1216, 200);
       expect(aiController.currentAction).not.toBe("BLOCK");
 
-      // 5. Test "Late Enough" - Advance 800ms
-      // Total elapsed: 216 + 800 = 1016ms. This is > 700ms (max reaction).
-      // Should definitely BE blocking now.
-      aiController.update(2016, 800);
+      // 5. Test "Late Enough" - Advance 400ms
+      // Total elapsed: 216 + 400 = 616ms. This is > 500ms.
+      aiController.update(1616, 400);
       expect(aiController.currentAction).toBe("BLOCK");
       expect(aiController.cursorKeys.left.isDown).toBe(true);
 

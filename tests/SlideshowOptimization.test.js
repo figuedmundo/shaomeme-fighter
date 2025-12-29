@@ -102,17 +102,21 @@ describe("VictorySlideshow Optimization", () => {
   });
 
   it("should stop all async operations on exit", async () => {
-    slideshow.photos = [{ url: "p1.jpg" }, { url: "p2.jpg" }];
     slideshow.createOverlay();
+    slideshow.preloadImages(0);
 
-    // Start sequence
-    slideshow.startSlideshow();
+    vi.useFakeTimers();
+    const exitPromise = slideshow.exit();
 
-    // Trigger exit immediately
-    await slideshow.exit();
+    // Advance time to pass all timeouts in exit()
+    // 50ms (curtain) + 800ms (fade) + 2000ms (deferred cleanup)
+    await vi.advanceTimersByTimeAsync(3000);
+    await exitPromise;
 
     expect(slideshow.isExiting).toBe(true);
     expect(slideshow.preloadQueue.size).toBe(0);
     expect(slideshow.buffers.length).toBe(0);
+
+    vi.useRealTimers();
   });
 });

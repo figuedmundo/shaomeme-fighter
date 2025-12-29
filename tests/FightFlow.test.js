@@ -148,6 +148,7 @@ vi.mock("phaser", () => {
           };
           this.registry = {
             get: vi.fn().mockReturnValue({
+              updateScene: vi.fn(),
               playMusic: vi.fn(),
               playUi: vi.fn(),
               playAnnouncer: vi.fn(),

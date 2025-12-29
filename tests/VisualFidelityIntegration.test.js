@@ -209,6 +209,7 @@ describe("Visual Fidelity Integration", () => {
     scene.scale = { width: 1280, height: 720 };
 
     scene.audioManager = {
+      updateScene: vi.fn(),
       playStageMusic: vi.fn(),
       playAnnouncer: vi.fn(),
       playImpact: vi.fn(),

@@ -36,6 +36,7 @@ describe("FightScene Resource Cleanup", () => {
     // Mock Input/Audio
     scene.input = { keyboard: { createCursorKeys: vi.fn(), addKey: vi.fn() } };
     scene.registry.get.mockReturnValue({
+      updateScene: vi.fn(),
       playStageMusic: vi.fn(),
       stopMusic: vi.fn(),
       setMusicRate: vi.fn(),

@@ -18,6 +18,7 @@ describe("VictorySlideshow Date Logic", () => {
 
   beforeEach(() => {
     mockRegistry.get.mockReturnValue({
+      updateScene: vi.fn(),
       playMusic: vi.fn(),
       stopMusic: vi.fn(),
     });

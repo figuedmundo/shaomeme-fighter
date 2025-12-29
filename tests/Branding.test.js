@@ -165,7 +165,7 @@ describe("Branding Scenes", () => {
       scene.registry = game.registry;
 
       // Mock AudioManager
-      const mockAudio = { playUi: vi.fn() };
+      const mockAudio = { updateScene: vi.fn(), playUi: vi.fn() };
       game.registry.get.mockReturnValue(mockAudio);
 
       // Mock display methods

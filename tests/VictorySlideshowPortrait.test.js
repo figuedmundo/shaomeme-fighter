@@ -12,6 +12,7 @@ const mockScene = {
 };
 
 const mockAudioManager = {
+  updateScene: vi.fn(),
   playMusic: vi.fn(),
   stopMusic: vi.fn(),
 };

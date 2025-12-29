@@ -33,6 +33,7 @@ describe("Announcer Integration", () => {
 
     // Registry / AudioManager
     mockAudioManager = {
+      updateScene: vi.fn(),
       playAnnouncer: vi.fn(),
       playImpact: vi.fn(),
       playHitReaction: vi.fn(),
