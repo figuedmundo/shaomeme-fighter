@@ -36,8 +36,9 @@ The tool will be accessible at `http://localhost:5174`.
 1. Select a **City** from the left sidebar.
 2. Select a **Photo** from the center list.
 3. Observe the **Live Preview** in the right panel. It replicates the game's Polaroid frame and handwriting font.
-4. Type your memory in the **Note Box**. The preview updates as you type.
-5. Click **Save All Changes** to update the `notes.json` file for that city.
+4. Type your memory in the **Note Box**. The preview updates as you type. You can add emoticons using the smiley-face button.
+5. To correct the photo's date, use the date/time input field and click **Update Date**. This changes the file's underlying EXIF and filesystem data.
+6. Click **Save All Changes** to update the `notes.json` file for that city.
 
 ## Technical Details
 

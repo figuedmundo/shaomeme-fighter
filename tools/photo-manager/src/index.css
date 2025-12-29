@@ -205,16 +205,78 @@ body {
   resize: vertical;
 }
 
+.note-box-wrapper {
+  position: relative;
+}
+
+.emoji-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #2a2a2a;
+  color: #aaa;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #333;
+}
+.emoji-btn:hover {
+  color: #ffd700;
+  background: #333;
+}
+
+.emoji-picker-wrapper {
+  position: absolute;
+  bottom: 60px;
+  right: 10px;
+  z-index: 1000;
+}
+
 .note-box:focus {
   outline: none;
   border-color: #ffd700;
 }
 
 /* Save Controls */
-.save-controls {
+.controls-section {
   margin-top: 20px;
   display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.save-controls {
+  display: flex;
   gap: 15px;
+  align-items: center;
+}
+
+.dirty-indicator {
+  color: #ffd700;
+  font-size: 0.8rem;
+}
+
+.date-update-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.date-input {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #fff;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color-scheme: dark; /* Ensures dark mode for calendar picker */
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: #ffd700;
 }
 
 .btn {

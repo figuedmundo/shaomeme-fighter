@@ -32,12 +32,21 @@ Shaomeme Fighter aims to provide a unique and personalized gaming experience.
     pnpm install
     ```
 
-2.  **Prepare Photo Assets:**
+2.  **Create Environment File:**
+    The server requires environment variables. Copy the example file:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+    _You may customize the variables in `.env` if needed._
+
+3.  **Prepare Photo Assets:**
     - Place photos in `photos/[city_name]/`.
     - **Rename:** Run `node scripts/rename_photos.js` to standardize names to `YYYY-MM-DD_HH-MM-SS.jpg`.
     - **Optimize:** Run `pnpm optimize` to compress images and fix orientation.
 
-3.  **Start Development Servers:**
+4.  **Start Development Servers:**
     To run the full environment concurrently:
 
     ```bash

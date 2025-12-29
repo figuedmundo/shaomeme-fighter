@@ -1,10 +1,11 @@
 import express from "express";
 import cors from "cors";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import { processImage, getPhotoDate } from "./ImageProcessor.js"; // Import ImageProcessor
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { processImage, getPhotoDate, formatDate } from "./ImageProcessor.js"; // Import ImageProcessor
 import UnifiedLogger from "../src/utils/Logger.js";
+import { updatePhotoDate } from "./dateUpdater.js";
 
 const logger = new UnifiedLogger("Backend");
 if (process.env.LOG_LEVEL) {
@@ -33,14 +34,12 @@ app.use((req, res, next) => {
 const PHOTOS_DIR = process.env.PHOTOS_DIR || path.join(__dirname, "../photos");
 const CACHE_DIR = process.env.CACHE_DIR || path.join(__dirname, "../cache");
 
-// Ensure photos dir exists
-if (!fs.existsSync(PHOTOS_DIR)) {
-  fs.mkdirSync(PHOTOS_DIR, { recursive: true });
-}
-
-// Ensure cache dir exists
-if (!fs.existsSync(CACHE_DIR)) {
-  fs.mkdirSync(CACHE_DIR, { recursive: true });
+// Ensure photos and cache dirs exist (Top-level await)
+try {
+  await fs.mkdir(PHOTOS_DIR, { recursive: true });
+  await fs.mkdir(CACHE_DIR, { recursive: true });
+} catch (err) {
+  logger.error("Failed to ensure directories exist:", err);
 }
 
 // Serve static photos and cache
@@ -64,19 +63,25 @@ app.get("/api/photos", async (req, res) => {
   const sanitizedCity = city ? city.replace(/[^a-zA-Z0-9_-]/g, "") : "";
   const targetDir = path.join(PHOTOS_DIR, sanitizedCity);
 
-  // Return placeholder if city is missing or directory doesn't exist
-  if (!city || !fs.existsSync(targetDir)) {
+  if (!city) {
     return res.json(PLACEHOLDER_IMAGE);
   }
 
   try {
-    const files = await fs.promises.readdir(targetDir);
+    // Check if directory exists
+    try {
+      await fs.access(targetDir);
+    } catch {
+      return res.json(PLACEHOLDER_IMAGE);
+    }
+
+    const files = await fs.readdir(targetDir);
 
     // Load notes if they exist
     let notes = {};
     try {
       const notesPath = path.join(targetDir, "notes.json");
-      const notesData = await fs.promises.readFile(notesPath, "utf8");
+      const notesData = await fs.readFile(notesPath, "utf8");
       notes = JSON.parse(notesData);
     } catch (e) {
       // No notes found, ignore
@@ -100,16 +105,28 @@ app.get("/api/photos", async (req, res) => {
     const processedImages = await Promise.all(
       imageFiles.map(async (filename) => {
         const sourcePath = path.join(targetDir, filename);
-        // Create a unique cache filename (e.g., maintain original name but .webp)
         const cacheFilename = `${path.parse(filename).name}.webp`;
-        // Maintain city structure in cache
         const cachePath = path.join(CACHE_DIR, sanitizedCity, cacheFilename);
 
         try {
-          await processImage(sourcePath, cachePath);
+          // Read the file buffer once
+          const imageBuffer = await fs.readFile(sourcePath);
+          if (!imageBuffer || imageBuffer.length === 0) {
+            throw new Error(`File is empty: ${sourcePath}`);
+          }
 
-          // Get formatted date (EXIF or birthtime)
-          const date = await getPhotoDate(sourcePath);
+          // Check cache and process if needed
+          try {
+            await fs.access(cachePath);
+            logger.debug(`Cache hit for: ${cachePath}`);
+          } catch (error) {
+            logger.debug(`Cache miss for: ${cachePath}. Processing...`);
+            await processImage(imageBuffer, cachePath, sourcePath);
+          }
+
+          const dateObj = await getPhotoDate(imageBuffer, sourcePath);
+          const date = dateObj ? formatDate(dateObj) : null;
+          const isoDate = dateObj ? dateObj.toISOString() : null;
 
           const isBackground =
             path.parse(filename).name.toLowerCase() === "background" ||
@@ -121,6 +138,7 @@ app.get("/api/photos", async (req, res) => {
             type: "image/webp",
             isBackground,
             date,
+            isoDate,
             note: notes[filename] || null,
           };
         } catch (error) {
@@ -172,8 +190,18 @@ app.post("/api/notes", async (req, res) => {
   const notesPath = path.join(PHOTOS_DIR, sanitizedCity, "notes.json");
 
   try {
-    await fs.promises.writeFile(notesPath, JSON.stringify(notes, null, 2));
-    logger.info(`Saved notes for city: ${sanitizedCity}`);
+    // Filter out empty notes before saving
+    const notesToSave = Object.entries(notes).reduce((acc, [key, value]) => {
+      if (value && String(value).trim()) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+
+    await fs.writeFile(notesPath, JSON.stringify(notesToSave, null, 2));
+    logger.info(
+      `Saved notes for city: ${sanitizedCity}. Kept ${Object.keys(notesToSave).length} of ${Object.keys(notes).length} notes.`,
+    );
     return res.json({ success: true });
   } catch (err) {
     logger.error(`Failed to save notes for ${sanitizedCity}:`, err);
@@ -181,10 +209,69 @@ app.post("/api/notes", async (req, res) => {
   }
 });
 
+// API to update photo date (Management Only)
+app.post("/api/photo/date", async (req, res) => {
+  const { city, filename, newDate } = req.body;
+
+  if (!city || !filename || !newDate) {
+    return res
+      .status(400)
+      .json({ error: "City, filename, and newDate are required" });
+  }
+
+  const sanitizedCity = city.replace(/[^a-zA-Z0-9_-]/g, "");
+  const sanitizedFilename = filename.replace(/[^a-zA-Z0-9_.-]/g, "");
+  const photoPath = path.join(PHOTOS_DIR, sanitizedCity, sanitizedFilename);
+  const notesPath = path.join(PHOTOS_DIR, sanitizedCity, "notes.json");
+
+  try {
+    // 1. Update Date & Rename File
+    const newFilename = await updatePhotoDate(photoPath, newDate);
+    logger.info(
+      `Updated date for ${sanitizedFilename} -> ${newFilename} in ${sanitizedCity}`,
+    );
+
+    // 2. Migrate Note (if exists)
+    if (newFilename !== sanitizedFilename) {
+      try {
+        let notes = {};
+        try {
+          const notesData = await fs.readFile(notesPath, "utf8");
+          notes = JSON.parse(notesData);
+        } catch (e) {
+          // No notes or read error, ignore
+        }
+
+        if (notes[sanitizedFilename]) {
+          notes[newFilename] = notes[sanitizedFilename];
+          delete notes[sanitizedFilename];
+          await fs.writeFile(notesPath, JSON.stringify(notes, null, 2));
+          logger.info(
+            `Migrated note from ${sanitizedFilename} to ${newFilename}`,
+          );
+        }
+      } catch (noteErr) {
+        logger.warn("Failed to migrate note during rename:", noteErr);
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: "Date updated and file renamed successfully",
+      newFilename,
+    });
+  } catch (err) {
+    logger.error(`Failed to update date for ${sanitizedFilename}:`, err);
+    return res
+      .status(500)
+      .json({ error: "Failed to update date", details: err.message });
+  }
+});
+
 // API to list available cities (subdirectories) with photo counts
 app.get("/api/cities", async (req, res) => {
   try {
-    const files = await fs.promises.readdir(PHOTOS_DIR, {
+    const files = await fs.readdir(PHOTOS_DIR, {
       withFileTypes: true,
     });
 
@@ -204,7 +291,7 @@ app.get("/api/cities", async (req, res) => {
       cities.map(async (city) => {
         try {
           const cityPath = path.join(PHOTOS_DIR, city);
-          const cityFiles = await fs.promises.readdir(cityPath);
+          const cityFiles = await fs.readdir(cityPath);
 
           const supportedExtensions = [
             ".jpg",

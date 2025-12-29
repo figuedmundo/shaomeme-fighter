@@ -3,9 +3,9 @@
  * @description
  * Scans all subdirectories in the `photos/` folder and renames images based on their creation date.
  *
- * It attempts to read the date from:
- * 1. EXIF Metadata (DateTimeOriginal or CreateDate)
- * 2. File System Creation Time (Birthtime) - Fallback
+ * Logic for determining date:
+ * 1. File System Creation Time (mtime) - PRIMARY SOURCE (User uses update_photo_date.js to set this).
+ * 2. EXIF Metadata - Secondary source (used for verification or if mtime is invalid).
  *
  * The resulting filename format is: YYYY-MM-DD_HH-MM-SS.ext
  *
@@ -33,48 +33,65 @@ async function fileExists(targetPath) {
   }
 }
 
-async function getRawPhotoDate(sourcePath) {
+/**
+ * Extracts the best available date from an image.
+ * Priorities:
+ * 1. File Stats (mtime) - Because the user manually sets this to fix issues.
+ * 2. EXIF - Fallback / Reference.
+ */
+async function getBestPhotoDate(sourcePath) {
   try {
-    const image = sharp(sourcePath);
-    const metadata = await image.metadata();
-    let dateObj = null;
+    const filename = path.basename(sourcePath);
 
-    if (metadata.exif) {
-      try {
+    // 1. Get Filesystem Date (mtime)
+    // This is our primary source of truth because update_photo_date.js sets it.
+    let mtimeDate = null;
+    try {
+      const stats = await fs.stat(sourcePath);
+      mtimeDate = stats.mtime;
+    } catch (statErr) {
+      console.warn(`   [Warn] Could not stat file ${filename}`);
+    }
+
+    // 2. Get EXIF (for logging/comparison, or if mtime is somehow missing)
+    let exifDate = null;
+    try {
+      const image = sharp(sourcePath);
+      const metadata = await image.metadata();
+      if (metadata.exif) {
         const parsedExif = exifReader(metadata.exif);
         const exifTags = parsedExif.Photo || parsedExif.exif || {};
         const rawDate = exifTags.DateTimeOriginal || exifTags.CreateDate;
 
         if (rawDate) {
           if (typeof rawDate === "string" && rawDate.includes(":")) {
-            // Fix EXIF format: "2023:12:25 15:00:00" -> "2023-12-25 15:00:00"
             const normalized = rawDate.replace(
               /^(\d{4}):(\d{2}):(\d{2})/,
               "$1-$2-$3",
             );
-            dateObj = new Date(normalized);
+            exifDate = new Date(normalized);
           } else {
-            dateObj = new Date(rawDate);
+            exifDate = new Date(rawDate);
           }
         }
-      } catch (exifErr) {
-        console.warn(
-          `Failed to parse EXIF for ${sourcePath}:`,
-          exifErr.message,
-        );
       }
+    } catch (exifErr) {
+      // Ignore EXIF errors, we rely on mtime
     }
 
-    // Fallback to file timestamps (mtime > birthtime)
-    if (!dateObj || Number.isNaN(dateObj.getTime())) {
-      const stats = await fs.stat(sourcePath);
-      // stats.mtime is updated by scripts/update_photo_date.js
-      dateObj = stats.mtime || stats.birthtime;
+    // Decision Logic
+    if (mtimeDate && !Number.isNaN(mtimeDate.getTime())) {
+      // Use mtime as the authority
+      return { date: mtimeDate, source: "filesystem (mtime)" };
     }
 
-    return dateObj;
+    if (exifDate && !Number.isNaN(exifDate.getTime())) {
+      return { date: exifDate, source: "exif" };
+    }
+
+    return null;
   } catch (err) {
-    console.error(`Error getting date for ${sourcePath}:`, err.message);
+    console.error(`   [Error] getting date for ${sourcePath}:`, err.message);
     return null;
   }
 }
@@ -109,11 +126,11 @@ async function renamePhotosInCity(cityDir) {
     /* eslint-disable no-await-in-loop, no-restricted-syntax */
     for (const file of imageFiles) {
       const oldPath = path.join(cityDir, file);
-      const date = await getRawPhotoDate(oldPath);
+      const result = await getBestPhotoDate(oldPath);
 
-      if (date && !Number.isNaN(date.getTime())) {
+      if (result && result.date) {
         const ext = path.extname(file);
-        const baseName = formatDateForFilename(date);
+        const baseName = formatDateForFilename(result.date);
         let newName = `${baseName}${ext}`;
         let newPath = path.join(cityDir, newName);
 
@@ -127,9 +144,11 @@ async function renamePhotosInCity(cityDir) {
 
         if (oldPath !== newPath) {
           await fs.rename(oldPath, newPath);
-          console.log(`Renamed: ${file} -> ${newName}`);
+          console.log(
+            `Renamed: ${file} -> ${newName} (Source: ${result.source})`,
+          );
         } else {
-          console.log(`Skipped: ${file} (Already named correctly)`);
+          // console.log(`Skipped: ${file} (Already correct)`);
         }
       } else {
         console.warn(`Could not determine date for ${file}, skipping.`);

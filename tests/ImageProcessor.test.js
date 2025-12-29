@@ -1,171 +1,103 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import path from "path";
-import * as fs from "node:fs/promises"; // Use direct node:fs/promises import
-import sharp from "sharp"; // Will be mocked
+import sharp from "sharp";
 import heicConvert from "heic-convert";
-
+import * as fs from "node:fs/promises";
 import { processImage } from "../server/ImageProcessor";
 
-// Mock sharp instance
+// Mock dependencies
 const mockSharpInstance = {
   rotate: vi.fn().mockReturnThis(),
   resize: vi.fn().mockReturnThis(),
   webp: vi.fn().mockReturnThis(),
-  toBuffer: vi.fn(async () => Buffer.from("mocked-webp-data")),
-  toFile: vi.fn(async () => {}),
-  metadata: vi.fn(async () => ({ format: "jpeg" })),
+  toFile: vi.fn().mockResolvedValue(true),
 };
+vi.mock("sharp", () => ({
+  __esModule: true,
+  default: vi.fn(() => mockSharpInstance),
+}));
 
-vi.mock("sharp", () => {
-  const sharpMock = vi.fn((input) => {
-    // Simulate failure for HEIC buffer if we want to test fallback
-    // In the test setup below, HEIC files return "mocked-heic-data" buffer
-    if (
-      Buffer.isBuffer(input) &&
-      input.toString().includes("mocked-heic-data")
-    ) {
-      // Verify if we are being called with the raw HEIC buffer or the converted JPEG
-      // This is tricky. Let's make the FIRST call fail if it's heic data.
-      // But sharpMock returns an instance. We can't throw here easily unless we track calls.
-      // Instead, let's make .toFile() throw if it's the raw HEIC buffer?
-      // Or just let the test logic handle the rejection.
-    }
-    return mockSharpInstance;
-  });
-  sharpMock.concurrency = vi.fn();
-  return { default: sharpMock };
+vi.mock("heic-convert", () => ({
+  __esModule: true,
+  default: vi.fn().mockResolvedValue(Buffer.from("mock-jpeg-data")),
+}));
+
+// We need a partial mock for fs.promises to just mock mkdir
+vi.mock("node:fs/promises", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    mkdir: vi.fn(() => Promise.resolve()),
+  };
 });
 
-// Mock node:fs/promises
-vi.mock("node:fs/promises", () => ({
-  access: vi.fn(async (filePath) => {
-    if (filePath.includes("cached_image.webp")) {
-      return Promise.resolve();
-    }
-    return Promise.reject(new Error("File not found"));
-  }),
-  mkdir: vi.fn(async () => {}),
-  readdir: vi.fn(async () => []),
-  readFile: vi.fn(async (filePath) => {
-    if (filePath.includes("heic")) {
-      return Buffer.from("mocked-heic-data");
-    }
-    return Buffer.from("mocked-image-data");
-  }),
-  writeFile: vi.fn(async () => {}),
-}));
-
-// Mock heic-convert
-vi.mock("heic-convert", () => ({
-  default: vi.fn(async () => Buffer.from("mocked-converted-jpeg-data")),
-}));
-
 describe("ImageProcessor", () => {
-  const PHOTOS_DIR = "/mock/photos";
-  const CACHE_DIR = "/mock/cache";
-
-  const mockedFs = vi.mocked(fs); // Cast to mocked version
-
   beforeEach(() => {
     vi.clearAllMocks();
-    mockedFs.access.mockImplementation(async (targetPath) => {
-      if (targetPath.includes("cached_image.webp")) {
-        return Promise.resolve();
-      }
-      return Promise.reject(new Error("File not found"));
-    });
-    mockedFs.mkdir.mockResolvedValue(undefined);
-    mockedFs.readFile.mockImplementation(async (filePath) => {
-      if (filePath.includes("heic")) {
-        return Buffer.from("mocked-heic-data");
-      }
-      return Buffer.from("mocked-image-data");
-    });
-    mockedFs.writeFile.mockResolvedValue(undefined);
-
-    // Reset sharp mock behavior
-    mockSharpInstance.toFile.mockResolvedValue(undefined);
   });
 
-  it("should process a JPG image to WebP and save to cache", async () => {
-    const sourcePath = path.join(PHOTOS_DIR, "city", "image.jpg");
-    const cachedPath = path.join(CACHE_DIR, "city", "image.webp");
+  const dummyBuffer = Buffer.from("dummy-image-data");
+  const cachePath = "/mock/cache/image.webp";
 
-    mockedFs.access.mockRejectedValue(new Error("File not found"));
+  it("should process a standard image with sharp", async () => {
+    const sourcePath = "/mock/photos/image.jpg";
 
-    await processImage(sourcePath, cachedPath);
+    await processImage(dummyBuffer, cachePath, sourcePath);
 
-    expect(mockedFs.mkdir).toHaveBeenCalledWith(path.dirname(cachedPath), {
+    expect(fs.mkdir).toHaveBeenCalledWith(path.dirname(cachePath), {
       recursive: true,
     });
-    expect(mockedFs.readFile).toHaveBeenCalledWith(sourcePath);
-    expect(sharp).toHaveBeenCalledWith(expect.any(Buffer));
+    expect(sharp).toHaveBeenCalledWith(dummyBuffer);
     expect(mockSharpInstance.rotate).toHaveBeenCalled();
-    expect(mockSharpInstance.toFile).toHaveBeenCalledWith(cachedPath);
+    expect(mockSharpInstance.resize).toHaveBeenCalled();
+    expect(mockSharpInstance.webp).toHaveBeenCalled();
+    expect(mockSharpInstance.toFile).toHaveBeenCalledWith(cachePath);
     expect(heicConvert).not.toHaveBeenCalled();
   });
 
-  it("should process an HEIC image via fallback if direct sharp fails", async () => {
-    const sourcePath = path.join(PHOTOS_DIR, "city", "iphone.heic");
-    const cachedPath = path.join(CACHE_DIR, "city", "iphone.webp");
+  it("should use heic-convert fallback if sharp fails for a .heic file", async () => {
+    const sourcePath = "/mock/photos/image.heic";
 
-    mockedFs.access.mockRejectedValue(new Error("File not found"));
-
-    // Make sharp fail ONCE (for the HEIC buffer) then succeed (for the converted JPEG)
+    // Make sharp fail on the first call, succeed on the second
     mockSharpInstance.toFile
-      .mockRejectedValueOnce(new Error("unsupported image format"))
-      .mockResolvedValueOnce(undefined);
+      .mockRejectedValueOnce(new Error("Sharp fail"))
+      .mockResolvedValueOnce(true);
 
-    await processImage(sourcePath, cachedPath);
+    await processImage(dummyBuffer, cachePath, sourcePath);
 
-    expect(mockedFs.readFile).toHaveBeenCalledWith(sourcePath);
+    // Ensure mkdir was still called
+    expect(fs.mkdir).toHaveBeenCalledWith(path.dirname(cachePath), {
+      recursive: true,
+    });
 
-    // Should have tried sharp first
+    // Sharp was attempted twice
     expect(sharp).toHaveBeenCalledTimes(2);
-    // 1st call with raw heic
-    expect(sharp).toHaveBeenNthCalledWith(1, Buffer.from("mocked-heic-data"));
+    expect(sharp).toHaveBeenCalledWith(dummyBuffer); // First attempt
+    expect(sharp).toHaveBeenCalledWith(Buffer.from("mock-jpeg-data")); // Second attempt
 
-    // Then heic-convert
+    // heic-convert was called in between
+    expect(heicConvert).toHaveBeenCalledOnce();
     expect(heicConvert).toHaveBeenCalledWith({
-      buffer: expect.any(Buffer),
+      buffer: dummyBuffer,
       format: "JPEG",
       quality: 1,
     });
 
-    // Then sharp again with converted data
-    expect(sharp).toHaveBeenNthCalledWith(
-      2,
-      Buffer.from("mocked-converted-jpeg-data"),
-    );
-
-    expect(mockSharpInstance.toFile).toHaveBeenCalledTimes(2); // One fail, one success
+    // toFile was attempted twice
+    expect(mockSharpInstance.toFile).toHaveBeenCalledTimes(2);
   });
 
-  it("should process an HEIC image directly if sharp supports it", async () => {
-    const sourcePath = path.join(PHOTOS_DIR, "city", "iphone.heic");
-    const cachedPath = path.join(CACHE_DIR, "city", "iphone.webp");
+  it("should throw error if non-heic file fails in sharp", async () => {
+    const sourcePath = "/mock/photos/image.jpg";
 
-    mockedFs.access.mockRejectedValue(new Error("File not found"));
-    // sharp.toFile succeeds by default in our mock setup
+    // Make sharp fail
+    mockSharpInstance.toFile.mockRejectedValueOnce(new Error("Sharp fail"));
 
-    await processImage(sourcePath, cachedPath);
+    await expect(
+      processImage(dummyBuffer, cachePath, sourcePath),
+    ).rejects.toThrow("Sharp fail");
 
-    expect(mockedFs.readFile).toHaveBeenCalledWith(sourcePath);
-    expect(sharp).toHaveBeenCalledTimes(1);
-    expect(sharp).toHaveBeenCalledWith(Buffer.from("mocked-heic-data"));
-    expect(heicConvert).not.toHaveBeenCalled(); // No fallback needed
-  });
-
-  it("should return cached path if the processed file already exists", async () => {
-    const sourcePath = path.join(PHOTOS_DIR, "city", "cached_image.jpg");
-    const cachedPath = path.join(CACHE_DIR, "city", "cached_image.webp");
-
-    mockedFs.access.mockResolvedValue(undefined);
-
-    const result = await processImage(sourcePath, cachedPath);
-
-    expect(mockedFs.access).toHaveBeenCalledWith(cachedPath);
-    expect(mockedFs.mkdir).not.toHaveBeenCalled();
-    expect(result).toBe(cachedPath);
+    // Ensure fallback was not attempted
+    expect(heicConvert).not.toHaveBeenCalled();
   });
 });

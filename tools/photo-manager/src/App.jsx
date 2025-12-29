@@ -1,8 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { Save, AlertCircle, ImageIcon } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Save, AlertCircle, ImageIcon, SmilePlus, History } from 'lucide-react';
+import EmojiPicker from 'emoji-picker-react';
 
 const SERVER_BASE = 'http://localhost:3000';
 const API_BASE = `${SERVER_BASE}/api`;
+
+// Helper to format date for datetime-local input
+const toDateTimeLocal = (dateString) => {
+  if (!dateString) return "";
+  try {
+    // Handle both ISO strings and "YYYY-MM-DD HH:MM:SS"
+    const normalized = dateString.includes('T') ? dateString : dateString.replace(' ', 'T');
+    const date = new Date(normalized);
+    
+    if (isNaN(date.getTime())) return "";
+    
+    // Format to YYYY-MM-DDTHH:MM:SS
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+  } catch {
+    return "";
+  }
+};
 
 function App() {
   const [cities, setCities] = useState([]);
@@ -13,6 +37,11 @@ function App() {
   const [localNotes, setLocalNotes] = useState({});
   const [loading, setLoading] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef(null);
+  const [newDate, setNewDate] = useState('');
+
+  const currentPhoto = photos[selectedPhotoIndex];
 
   useEffect(() => {
     fetchCities();
@@ -23,6 +52,35 @@ function App() {
       fetchPhotos(selectedCity);
     }
   }, [selectedCity]);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+        if (!event.target.closest('.emoji-btn')) {
+          setShowEmojiPicker(false);
+        }
+      }
+    }
+
+    if (showEmojiPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showEmojiPicker]);
+
+  useEffect(() => {
+    if (currentPhoto) {
+      // Prefer ISO date for accurate time, fallback to display date
+      const dateSource = currentPhoto.isoDate || currentPhoto.date;
+      setNewDate(toDateTimeLocal(dateSource));
+    }
+  }, [currentPhoto]);
+
 
   const fetchCities = async () => {
     try {
@@ -43,7 +101,6 @@ function App() {
       const res = await fetch(`${API_BASE}/photos?city=${city}`);
       const data = await res.json();
       
-      // Filter out backgrounds and arena assets as they are not reward photos
       const filteredPhotos = (data.photos || []).filter(p => !p.isBackground);
       
       setPhotos(filteredPhotos);
@@ -68,6 +125,14 @@ function App() {
     setIsDirty(true);
   };
 
+  const onEmojiClick = (emojiObject) => {
+    const filename = currentPhoto.filename;
+    const currentNote = localNotes[filename] || '';
+    const newNote = currentNote + emojiObject.emoji;
+    handleNoteChange(filename, newNote);
+    setShowEmojiPicker(false);
+  };
+
   const saveNotes = async () => {
     try {
       const res = await fetch(`${API_BASE}/notes`, {
@@ -83,7 +148,38 @@ function App() {
     }
   };
 
-  const currentPhoto = photos[selectedPhotoIndex];
+  const handleUpdateDate = async () => {
+    if (!newDate || !currentPhoto) return;
+    try {
+      const res = await fetch(`${API_BASE}/photo/date`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          city: selectedCity,
+          filename: currentPhoto.filename,
+          newDate: newDate.replace('T', ' '),
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Refresh photos to get the new date and filename
+        await fetchPhotos(selectedCity);
+        
+        // If the file was renamed, we might want to try and find it again to keep it selected
+        // But for now, staying on the same index is usually fine as the list sort order might change
+        if (data.newFilename && data.newFilename !== currentPhoto.filename) {
+             console.log(`File renamed to ${data.newFilename}`);
+        }
+      } else {
+        const errorData = await res.json();
+        alert(`Failed to update date: ${errorData.error}`);
+      }
+    } catch (err) {
+      console.error('Failed to update date', err);
+      alert('An error occurred while updating the date.');
+    }
+  };
 
   return (
     <div className="app-container">
@@ -175,22 +271,56 @@ function App() {
                 </div>
               </div>
 
-              <textarea 
-                className="note-box"
-                placeholder="Type your memory here..."
-                value={localNotes[currentPhoto.filename] || ''}
-                onChange={(e) => handleNoteChange(currentPhoto.filename, e.target.value)}
-              />
-
-              <div className="save-controls">
-                <button 
-                  className="btn btn-primary" 
-                  onClick={saveNotes} 
-                  disabled={!isDirty}
+              <div className="note-box-wrapper">
+                <textarea 
+                  className="note-box"
+                  placeholder="Type your memory here..."
+                  value={localNotes[currentPhoto.filename] || ''}
+                  onChange={(e) => handleNoteChange(currentPhoto.filename, e.target.value)}
+                />
+                <button
+                  className="btn emoji-btn"
+                  title="Add Emoji"
+                  onClick={() => setShowEmojiPicker(val => !val)}
                 >
-                  <Save size={18} /> Save All Changes
+                  <SmilePlus size={18} />
                 </button>
-                {isDirty && <span style={{ color: '#ffd700', fontSize: '0.8rem', alignSelf: 'center' }}>Unsaved changes in city</span>}
+                {showEmojiPicker && (
+                  <div className="emoji-picker-wrapper" ref={emojiPickerRef}>
+                    <EmojiPicker
+                      onEmojiClick={onEmojiClick}
+                      autoFocusSearch={false}
+                      lazyLoadEmojis={true}
+                      theme="dark"
+                    />
+                  </div>
+                )}
+              </div>
+              
+              <div className="controls-section">
+                <div className="save-controls">
+                  <button 
+                    className="btn btn-primary" 
+                    onClick={saveNotes} 
+                    disabled={!isDirty}
+                  >
+                    <Save size={18} /> Save All Changes
+                  </button>
+                  {isDirty && <span className="dirty-indicator">Unsaved changes in city</span>}
+                </div>
+
+                <div className="date-update-controls">
+                  <input
+                    type="datetime-local"
+                    step="1"
+                    value={newDate}
+                    onChange={(e) => setNewDate(e.target.value)}
+                    className="date-input"
+                  />
+                  <button className="btn" onClick={handleUpdateDate}>
+                    <History size={18} /> Update Date
+                  </button>
+                </div>
               </div>
             </div>
           </>

@@ -23,16 +23,15 @@ vi.mock("node:fs/promises", () => ({
 vi.mock("exif-reader", () => {
   return {
     default: vi.fn((buffer) => {
-      // Return mocked parsed EXIF
       if (buffer.toString() === "valid_exif") {
         return {
-          exif: {
+          Photo: {
             DateTimeOriginal: new Date("2023-05-21T14:30:00"),
           },
         };
       }
       if (buffer.toString() === "no_date_exif") {
-        return { exif: {} };
+        return { Photo: {} };
       }
       throw new Error("Invalid EXIF");
     }),
@@ -44,6 +43,8 @@ describe("ImageProcessor Date Logic", () => {
     vi.clearAllMocks();
   });
 
+  const dummyBuffer = Buffer.from("test");
+
   describe("getPhotoDate", () => {
     it("should extract DateTimeOriginal when available in EXIF", async () => {
       // Setup sharp mock
@@ -54,7 +55,7 @@ describe("ImageProcessor Date Logic", () => {
         metadata: vi.fn().mockResolvedValue(mockMetadata),
       });
 
-      const date = await getPhotoDate("some/path.jpg");
+      const date = await getPhotoDate(dummyBuffer, "some/path.jpg");
       expect(date).toBe("May 21, 2023");
     });
 
@@ -69,7 +70,7 @@ describe("ImageProcessor Date Logic", () => {
         birthtime: new Date("2023-12-25T10:00:00"),
       });
 
-      const date = await getPhotoDate("some/path.jpg");
+      const date = await getPhotoDate(dummyBuffer, "some/path.jpg");
       expect(date).toBe("December 25, 2023");
     });
 
@@ -87,7 +88,7 @@ describe("ImageProcessor Date Logic", () => {
         birthtime: new Date("2023-11-01T10:00:00"),
       });
 
-      const date = await getPhotoDate("some/path.jpg");
+      const date = await getPhotoDate(dummyBuffer, "some/path.jpg");
       expect(date).toBe("November 1, 2023");
     });
   });

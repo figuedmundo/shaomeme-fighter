@@ -60,6 +60,8 @@ async function updateJpegExif(targetPath, date) {
   const newBuffer = Buffer.from(newBinary, "binary");
 
   await fs.writeFile(targetPath, newBuffer);
+  // Important: Set utimes AFTER writing the file, otherwise writeFile resets it to 'now'
+  await fs.utimes(targetPath, date, date);
   console.log(`✅ Updated JPEG EXIF data (DateTimeOriginal: ${exifDate}).`);
 }
 
@@ -88,21 +90,16 @@ async function updateDate() {
       `Updating ${path.basename(fullPath)} to ${targetDate.toString()}...`,
     );
 
-    // 1. Update Filesystem Timestamps (mtime, atime)
-    // This serves as the fallback for all file types
-    await fs.utimes(fullPath, targetDate, targetDate);
-    console.log("✅ Updated filesystem timestamps.");
-
-    // 2. Update EXIF if JPEG
+    // 1. Update EXIF if JPEG (this handles write + utimes)
     const ext = path.extname(fullPath).toLowerCase();
     if (ext === ".jpg" || ext === ".jpeg") {
       await updateJpegExif(fullPath, targetDate);
     } else {
+      // 2. Fallback: Just update filesystem timestamps for non-JPEGs
+      await fs.utimes(fullPath, targetDate, targetDate);
+      console.log("✅ Updated filesystem timestamps (non-JPEG).");
       console.warn(
         `⚠️  File is ${ext}. Only filesystem dates were updated. Internal EXIF data might still remain incorrect (tools like piexifjs only support JPEG).`,
-      );
-      console.warn(
-        "   If the rename script still fails, you might need to convert this file to JPG or use an external tool like 'exiftool' to fix the internal metadata.",
       );
     }
   } catch (err) {
