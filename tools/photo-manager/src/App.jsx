@@ -48,7 +48,7 @@ function App() {
       const data = await res.json();
       setCities(data);
       if (data.length > 0 && !selectedCity) {
-        setSelectedCity(data[0]);
+        setSelectedCity(data[0].name);
       }
     } catch (err) {
       console.error('Failed to fetch cities', err);
@@ -100,17 +100,20 @@ function App() {
   return (
     <div className="app-container">
       <div className="sidebar">
-        <h2>Cities</h2>
+        <h2 style={{ color: '#ffd700', marginBottom: '20px' }}>Cities</h2>
         {cities.map(city => (
           <div 
-            key={city} 
-            className={`city-item ${selectedCity === city ? 'active' : ''}`}
+            key={city.name} 
+            className={`city-item ${selectedCity === city.name ? 'active' : ''}`}
             onClick={() => {
               if (isDirty && !confirm('Discard unsaved changes?')) return;
-              setSelectedCity(city);
+              setSelectedCity(city.name);
             }}
           >
-            {city}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>{city.name}</span>
+              <span style={{ fontSize: '0.7rem', opacity: 0.6 }}>{city.photoCount}</span>
+            </div>
           </div>
         ))}
       </div>
