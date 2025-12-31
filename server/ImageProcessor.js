@@ -28,7 +28,7 @@ export function formatDate(date) {
  * @param {string} sourcePath
  * @returns {Promise<Date|null>} Date object or null if fails
  */
-export async function getPhotoDate(imageBuffer, sourcePath) {
+export async function getPhotoDate(sourcePath) {
   try {
     const filename = path.basename(sourcePath);
 
@@ -52,7 +52,7 @@ export async function getPhotoDate(imageBuffer, sourcePath) {
       }
     }
 
-    const image = sharp(imageBuffer);
+    const image = sharp(sourcePath);
     const metadata = await image.metadata();
     let dateObj = null;
 
@@ -94,17 +94,17 @@ export async function getPhotoDate(imageBuffer, sourcePath) {
 
 /**
  * Processes an image, resizing and converting it to WebP if necessary, and saves it to a cache directory.
- * @param {string} imageBuffer - The buffer of the original image file.
  * @param {string} cachePath - The full path where the processed image should be saved.
+ * @param {string} sourcePath - The full path of the source image.
  * @returns {Promise<string>} The path to the processed (cached) image.
  */
-export async function processImage(imageBuffer, cachePath, sourcePath) {
+export async function processImage(cachePath, sourcePath) {
   // Ensure the cache directory exists
   await fs.mkdir(path.dirname(cachePath), { recursive: true });
 
   // Process with sharp
   try {
-    await sharp(imageBuffer)
+    await sharp(sourcePath)
       .rotate() // Auto-rotate based on EXIF
       .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: "inside" })
       .webp({ quality: WEBP_QUALITY })
@@ -120,6 +120,8 @@ export async function processImage(imageBuffer, cachePath, sourcePath) {
     if (fileExtension === ".heic" || fileExtension === ".heif") {
       try {
         logger.info(`Fallback: Converting HEIC to JPEG: ${sourcePath}`);
+        // Read buffer only when needed for heic-convert
+        const imageBuffer = await fs.readFile(sourcePath);
         const jpegBuffer = await heicConvert({
           buffer: imageBuffer,
           format: "JPEG",

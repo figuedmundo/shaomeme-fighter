@@ -130,64 +130,62 @@ app.get("/api/photos", async (req, res) => {
     });
 
     // 3. Process images
-    const processedImages = await Promise.all(
-      imageFiles.map(async (filename) => {
-        const sourcePath = path.join(targetDir, filename);
-        const cacheFilename = `${path.parse(filename).name}.webp`;
-        const cachePath = path.join(CACHE_DIR, sanitizedCity, cacheFilename);
+    const processedImages = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const filename of imageFiles) {
+      const sourcePath = path.join(targetDir, filename);
+      const cacheFilename = `${path.parse(filename).name}.webp`;
+      const cachePath = path.join(CACHE_DIR, sanitizedCity, cacheFilename);
 
+      try {
+        // Check cache and process if needed
+        let cacheIsValid = false;
         try {
-          // Read the file buffer once
-          const imageBuffer = await fs.readFile(sourcePath);
-          if (!imageBuffer || imageBuffer.length === 0) {
-            throw new Error(`File is empty: ${sourcePath}`);
+          // eslint-disable-next-line no-await-in-loop
+          const cacheStats = await fs.stat(cachePath);
+          // eslint-disable-next-line no-await-in-loop
+          const sourceStats = await fs.stat(sourcePath);
+
+          // Cache is valid if it exists AND is newer than source
+          if (cacheStats.mtime > sourceStats.mtime) {
+            cacheIsValid = true;
+            logger.debug(`Cache hit for: ${cachePath}`);
+          } else {
+            logger.debug(`Cache stale for: ${cachePath}`);
           }
-
-          // Check cache and process if needed
-          let cacheIsValid = false;
-          try {
-            const cacheStats = await fs.stat(cachePath);
-            const sourceStats = await fs.stat(sourcePath);
-
-            // Cache is valid if it exists AND is newer than source
-            if (cacheStats.mtime > sourceStats.mtime) {
-              cacheIsValid = true;
-              logger.debug(`Cache hit for: ${cachePath}`);
-            } else {
-              logger.debug(`Cache stale for: ${cachePath}`);
-            }
-          } catch (error) {
-            logger.debug(`Cache miss for: ${cachePath}`);
-          }
-
-          if (!cacheIsValid) {
-            logger.debug(`Processing: ${cachePath}`);
-            await processImage(imageBuffer, cachePath, sourcePath);
-          }
-
-          const dateObj = await getPhotoDate(imageBuffer, sourcePath);
-          const date = dateObj ? formatDate(dateObj) : null;
-          const isoDate = dateObj ? dateObj.toISOString() : null;
-
-          const isBackground =
-            path.parse(filename).name.toLowerCase() === "background" ||
-            path.parse(filename).name.toLowerCase() === "arena";
-
-          return {
-            url: `/cache/${sanitizedCity}/${cacheFilename}`,
-            filename,
-            type: "image/webp",
-            isBackground,
-            date,
-            isoDate,
-            note: notes[filename] || null,
-          };
         } catch (error) {
-          logger.error(`Failed to process ${filename}:`, error);
-          return null;
+          logger.debug(`Cache miss for: ${cachePath}`);
         }
-      }),
-    );
+
+        if (!cacheIsValid) {
+          logger.debug(`Processing: ${cachePath}`);
+          // eslint-disable-next-line no-await-in-loop
+          await processImage(cachePath, sourcePath);
+        }
+
+        // eslint-disable-next-line no-await-in-loop
+        const dateObj = await getPhotoDate(sourcePath);
+        const date = dateObj ? formatDate(dateObj) : null;
+        const isoDate = dateObj ? dateObj.toISOString() : null;
+
+        const isBackground =
+          path.parse(filename).name.toLowerCase() === "background" ||
+          path.parse(filename).name.toLowerCase() === "arena";
+
+        processedImages.push({
+          url: `/cache/${sanitizedCity}/${cacheFilename}`,
+          filename,
+          type: "image/webp",
+          isBackground,
+          date,
+          isoDate,
+          note: notes[filename] || null,
+        });
+      } catch (error) {
+        logger.error(`Failed to process ${filename}:`, error);
+        // Continue to next image instead of failing everything
+      }
+    }
 
     // Filter out any failures
     const validImages = processedImages.filter((img) => img !== null);

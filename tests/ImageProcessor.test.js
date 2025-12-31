@@ -22,16 +22,21 @@ vi.mock("heic-convert", () => ({
   default: vi.fn().mockResolvedValue(Buffer.from("mock-jpeg-data")),
 }));
 
-// We need a partial mock for fs.promises to just mock mkdir
+// We need a partial mock for fs.promises to just mock mkdir and readFile
 vi.mock("node:fs/promises", async (importOriginal) => {
   const actual = await importOriginal();
   const mockedMkdir = vi.fn(() => Promise.resolve());
+  const mockedReadFile = vi.fn(() =>
+    Promise.resolve(Buffer.from("dummy-image-data")),
+  );
   return {
     ...actual,
     mkdir: mockedMkdir,
+    readFile: mockedReadFile,
     default: {
       ...actual,
       mkdir: mockedMkdir,
+      readFile: mockedReadFile,
     },
   };
 });
@@ -41,18 +46,18 @@ describe("ImageProcessor", () => {
     vi.clearAllMocks();
   });
 
-  const dummyBuffer = Buffer.from("dummy-image-data");
   const cachePath = "/mock/cache/image.webp";
 
   it("should process a standard image with sharp", async () => {
     const sourcePath = "/mock/photos/image.jpg";
 
-    await processImage(dummyBuffer, cachePath, sourcePath);
+    await processImage(cachePath, sourcePath);
 
     expect(fs.mkdir).toHaveBeenCalledWith(path.dirname(cachePath), {
       recursive: true,
     });
-    expect(sharp).toHaveBeenCalledWith(dummyBuffer);
+    // First call to sharp uses sourcePath string
+    expect(sharp).toHaveBeenCalledWith(sourcePath);
     expect(mockSharpInstance.rotate).toHaveBeenCalled();
     expect(mockSharpInstance.resize).toHaveBeenCalled();
     expect(mockSharpInstance.webp).toHaveBeenCalled();
@@ -63,12 +68,12 @@ describe("ImageProcessor", () => {
   it("should use heic-convert fallback if sharp fails for a .heic file", async () => {
     const sourcePath = "/mock/photos/image.heic";
 
-    // Make sharp fail on the first call, succeed on the second
+    // Make sharp fail on the first call (direct file load), succeed on the second (buffer)
     mockSharpInstance.toFile
       .mockRejectedValueOnce(new Error("Sharp fail"))
       .mockResolvedValueOnce(true);
 
-    await processImage(dummyBuffer, cachePath, sourcePath);
+    await processImage(cachePath, sourcePath);
 
     // Ensure mkdir was still called
     expect(fs.mkdir).toHaveBeenCalledWith(path.dirname(cachePath), {
@@ -77,13 +82,16 @@ describe("ImageProcessor", () => {
 
     // Sharp was attempted twice
     expect(sharp).toHaveBeenCalledTimes(2);
-    expect(sharp).toHaveBeenCalledWith(dummyBuffer); // First attempt
-    expect(sharp).toHaveBeenCalledWith(Buffer.from("mock-jpeg-data")); // Second attempt
+    expect(sharp).toHaveBeenCalledWith(sourcePath); // First attempt with path
+    expect(sharp).toHaveBeenCalledWith(Buffer.from("mock-jpeg-data")); // Second attempt with buffer
+
+    // fs.readFile should have been called for fallback
+    expect(fs.readFile).toHaveBeenCalledWith(sourcePath);
 
     // heic-convert was called in between
     expect(heicConvert).toHaveBeenCalledOnce();
     expect(heicConvert).toHaveBeenCalledWith({
-      buffer: dummyBuffer,
+      buffer: expect.any(Buffer), // The buffer from fs.readFile mock
       format: "JPEG",
       quality: 1,
     });
@@ -98,11 +106,12 @@ describe("ImageProcessor", () => {
     // Make sharp fail
     mockSharpInstance.toFile.mockRejectedValueOnce(new Error("Sharp fail"));
 
-    await expect(
-      processImage(dummyBuffer, cachePath, sourcePath),
-    ).rejects.toThrow("Sharp fail");
+    await expect(processImage(cachePath, sourcePath)).rejects.toThrow(
+      "Sharp fail",
+    );
 
     // Ensure fallback was not attempted
     expect(heicConvert).not.toHaveBeenCalled();
+    expect(fs.readFile).not.toHaveBeenCalled();
   });
 });
