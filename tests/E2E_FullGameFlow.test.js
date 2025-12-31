@@ -55,6 +55,7 @@ vi.mock("phaser", () => {
             image: vi.fn(),
             spritesheet: vi.fn(),
             audio: vi.fn(),
+            json: vi.fn(),
             start: vi.fn(),
             once: vi.fn((e, cb) => cb && cb()),
             on: vi.fn(),

@@ -1,0 +1,1 @@
+right now the arena has a music victory that is declared in gamedata json, but that makes the gift a little all the time the same, i want intrduce some randominized , with the music, I mean we can create a folder for soundtracks, and I can put there many soundtracks and the game reward will randomically load a soundtrack with the slideshow starts

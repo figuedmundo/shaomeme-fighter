@@ -200,11 +200,6 @@ class ConfigManager {
     return presetKey ? ANIMATION_PRESETS[presetKey] : null;
   }
 
-  getVictoryMusicForCity(city) {
-    const arena = this.getArenaConfig(city);
-    return arena?.victoryMusic || "soundtrack_walking_on_cars";
-  }
-
   // --- Combat ---
   getCombatConfig() {
     return this.data.combat;

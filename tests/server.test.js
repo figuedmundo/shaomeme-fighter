@@ -5,7 +5,8 @@ import { app } from "../server/index.js";
 // Mock processImage to avoid actual image processing overhead/sharp issues
 vi.mock("../server/ImageProcessor.js", () => ({
   processImage: vi.fn(async (source, dest) => dest),
-  getPhotoDate: vi.fn(async () => "May 21, 2023"),
+  getPhotoDate: vi.fn(async () => new Date("2023-05-21")), // Return a Date object
+  formatDate: vi.fn((date) => "May 21, 2023"), // Mock formatDate
 }));
 
 describe("Server API Integration", () => {

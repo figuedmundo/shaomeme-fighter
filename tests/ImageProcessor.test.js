@@ -25,9 +25,14 @@ vi.mock("heic-convert", () => ({
 // We need a partial mock for fs.promises to just mock mkdir
 vi.mock("node:fs/promises", async (importOriginal) => {
   const actual = await importOriginal();
+  const mockedMkdir = vi.fn(() => Promise.resolve());
   return {
     ...actual,
-    mkdir: vi.fn(() => Promise.resolve()),
+    mkdir: mockedMkdir,
+    default: {
+      ...actual,
+      mkdir: mockedMkdir,
+    },
   };
 });
 

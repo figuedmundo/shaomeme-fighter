@@ -48,6 +48,26 @@ export default class PreloadScene extends Phaser.Scene {
     // Announcer/KO
     this.load.audio("KO", "/assets/audio/announcer/ko_1.mp3");
 
+    // Dynamic Soundtracks (Randomized Victory Music)
+    this.load.json("soundtracks_list", "/api/soundtracks");
+    this.load.on("filecomplete-json-soundtracks_list", (key, type, data) => {
+      if (Array.isArray(data)) {
+        logger.info(`Loading ${data.length} dynamic soundtracks...`);
+        const soundtrackKeys = [];
+        data.forEach((filename, index) => {
+          const trackKey = `victory_track_${index}`;
+          const path = `/assets/audio/soundtracks/${filename}`;
+          this.load.audio(trackKey, path);
+          soundtrackKeys.push(trackKey);
+        });
+        // Store keys in registry for random selection later
+        this.registry.set("soundtracks", soundtrackKeys);
+      } else {
+        logger.warn("Failed to load soundtracks list or empty.");
+        this.registry.set("soundtracks", []);
+      }
+    });
+
     // Combat Sounds - Impact variations (punch/kick)
     this.load.audio("attack1", "/assets/audio/sfx/attack1.mp3");
     this.load.audio("attack2", "/assets/audio/sfx/attack2.mp3");

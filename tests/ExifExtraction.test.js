@@ -7,12 +7,22 @@ import { getPhotoDate, formatDate } from "../server/ImageProcessor.js";
 vi.mock("sharp");
 
 // Mock fs/promises
-vi.mock("node:fs/promises", () => ({
-  stat: vi.fn(),
-  access: vi.fn(),
-  mkdir: vi.fn(),
-  readFile: vi.fn(),
-}));
+vi.mock("node:fs/promises", () => {
+  const mockStat = vi.fn();
+  const mockOthers = vi.fn();
+  return {
+    stat: mockStat,
+    access: mockOthers,
+    mkdir: mockOthers,
+    readFile: mockOthers,
+    default: {
+      stat: mockStat,
+      access: mockOthers,
+      mkdir: mockOthers,
+      readFile: mockOthers,
+    },
+  };
+});
 
 // Mock exif-reader since we haven't installed it yet,
 // BUT for the unit test of 'getPhotoDate' we want to mock the 'metadata' call of sharp.
@@ -56,7 +66,10 @@ describe("ImageProcessor Date Logic", () => {
       });
 
       const date = await getPhotoDate(dummyBuffer, "some/path.jpg");
-      expect(date).toBe("May 21, 2023");
+      expect(date).toBeInstanceOf(Date);
+      expect(date.toISOString()).toBe(
+        new Date("2023-05-21T14:30:00").toISOString(),
+      );
     });
 
     it("should fallback to birthtime when EXIF is missing", async () => {
@@ -71,7 +84,10 @@ describe("ImageProcessor Date Logic", () => {
       });
 
       const date = await getPhotoDate(dummyBuffer, "some/path.jpg");
-      expect(date).toBe("December 25, 2023");
+      expect(date).toBeInstanceOf(Date);
+      expect(date.toISOString()).toBe(
+        new Date("2023-12-25T10:00:00").toISOString(),
+      );
     });
 
     it("should fallback to birthtime when EXIF exists but has no date", async () => {
@@ -89,7 +105,10 @@ describe("ImageProcessor Date Logic", () => {
       });
 
       const date = await getPhotoDate(dummyBuffer, "some/path.jpg");
-      expect(date).toBe("November 1, 2023");
+      expect(date).toBeInstanceOf(Date);
+      expect(date.toISOString()).toBe(
+        new Date("2023-11-01T10:00:00").toISOString(),
+      );
     });
   });
 

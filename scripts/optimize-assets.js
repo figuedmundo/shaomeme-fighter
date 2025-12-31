@@ -16,6 +16,12 @@ async function optimizeFile(filePath, stats) {
 
     // Auto-rotate based on EXIF orientation tag before processing
     let pipeline = image.rotate();
+    let mustSave = false;
+
+    if (metadata.orientation && metadata.orientation !== 1) {
+      mustSave = true; // Force save if we are fixing orientation
+      console.log(`  -> Fixing orientation (was ${metadata.orientation})`);
+    }
 
     // 1. Resize if too large
     if (metadata.width > MAX_WIDTH || metadata.height > MAX_HEIGHT) {
@@ -40,11 +46,11 @@ async function optimizeFile(filePath, stats) {
     // Process to buffer first to check result size
     const buffer = await pipeline.toBuffer();
 
-    if (buffer.length < stats.size) {
+    if (buffer.length < stats.size || mustSave) {
       const saved = (stats.size - buffer.length) / 1024 / 1024;
       await fs.writeFile(filePath, buffer);
       console.log(
-        `  [Optimized] Saved ${saved.toFixed(2)} MB (${((buffer.length / stats.size) * 100).toFixed(0)}% of original)`,
+        `  [Optimized] Saved ${saved.toFixed(2)} MB (${((buffer.length / stats.size) * 100).toFixed(0)}% of original)${mustSave ? " (Orientation Fixed)" : ""}`,
       );
     } else {
       console.log(

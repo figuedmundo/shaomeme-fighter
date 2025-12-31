@@ -46,6 +46,15 @@ try {
 app.use("/photos", express.static(PHOTOS_DIR));
 app.use("/cache", express.static(CACHE_DIR));
 
+// Soundtracks Directory
+const SOUNDTRACKS_DIR = path.resolve("public/assets/audio/soundtracks");
+// Ensure it exists
+try {
+  await fs.mkdir(SOUNDTRACKS_DIR, { recursive: true });
+} catch (err) {
+  logger.error("Failed to create soundtracks dir:", err);
+}
+
 // Placeholder response for invalid/missing city
 const PLACEHOLDER_IMAGE = [
   {
@@ -54,6 +63,25 @@ const PLACEHOLDER_IMAGE = [
     type: "image/png",
   },
 ];
+
+// API to list soundtracks
+app.get("/api/soundtracks", async (req, res) => {
+  try {
+    const files = await fs.readdir(SOUNDTRACKS_DIR);
+    const supportedExtensions = [".mp3", ".m4a", ".wav", ".ogg"];
+
+    const audioFiles = files.filter((file) => {
+      const ext = path.extname(file).toLowerCase();
+      return supportedExtensions.includes(ext);
+    });
+
+    logger.info(`Found ${audioFiles.length} soundtracks`);
+    res.json(audioFiles);
+  } catch (err) {
+    logger.error("Error scanning soundtracks:", err);
+    res.json([]);
+  }
+});
 
 // API to list photos
 app.get("/api/photos", async (req, res) => {
@@ -116,11 +144,24 @@ app.get("/api/photos", async (req, res) => {
           }
 
           // Check cache and process if needed
+          let cacheIsValid = false;
           try {
-            await fs.access(cachePath);
-            logger.debug(`Cache hit for: ${cachePath}`);
+            const cacheStats = await fs.stat(cachePath);
+            const sourceStats = await fs.stat(sourcePath);
+
+            // Cache is valid if it exists AND is newer than source
+            if (cacheStats.mtime > sourceStats.mtime) {
+              cacheIsValid = true;
+              logger.debug(`Cache hit for: ${cachePath}`);
+            } else {
+              logger.debug(`Cache stale for: ${cachePath}`);
+            }
           } catch (error) {
-            logger.debug(`Cache miss for: ${cachePath}. Processing...`);
+            logger.debug(`Cache miss for: ${cachePath}`);
+          }
+
+          if (!cacheIsValid) {
+            logger.debug(`Processing: ${cachePath}`);
             await processImage(imageBuffer, cachePath, sourcePath);
           }
 

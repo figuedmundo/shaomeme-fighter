@@ -1,3 +1,4 @@
+import Phaser from "phaser";
 import ConfigManager from "../config/ConfigManager";
 import gameData from "../config/gameData.json";
 import UnifiedLogger from "../utils/Logger";
@@ -333,8 +334,21 @@ export default class VictorySlideshow {
 
   handleAudio(city) {
     if (!this.audioManager) return;
-    const trackKey = ConfigManager.getVictoryMusicForCity(city);
-    this.audioManager.playMusic(trackKey, { loop: true, volume: 0.5 });
+
+    // Stop previous stage music with a fade out
+    this.audioManager.stopMusic(500);
+
+    // Get dynamic soundtracks from registry
+    const soundtracks = this.scene.registry.get("soundtracks");
+
+    if (soundtracks && soundtracks.length > 0) {
+      // Pick random track
+      const randomKey = Phaser.Math.RND.pick(soundtracks);
+      logger.info(`Playing random victory track: ${randomKey}`);
+      this.audioManager.playMusic(randomKey, { loop: true, volume: 0.5 });
+    } else {
+      logger.warn("No dynamic soundtracks found in registry.");
+    }
   }
 
   /**

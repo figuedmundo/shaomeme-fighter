@@ -14,7 +14,7 @@ describe("Asset Availability", () => {
     const filePath = path.join(
       __dirname,
       "../public/assets",
-      "audio/music/soundtrack_walking_on_cars.m4a",
+      "audio/soundtracks/soundtrack_walking_on_cars.m4a",
     );
     expect(fs.existsSync(filePath)).toBe(true);
   });

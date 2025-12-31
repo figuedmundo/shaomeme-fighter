@@ -41,6 +41,7 @@ describe("Branding Integration", () => {
         image: vi.fn(),
         audio: vi.fn(),
         spritesheet: vi.fn(),
+        json: vi.fn(),
         on: vi.fn(),
         start: vi.fn(),
       };
