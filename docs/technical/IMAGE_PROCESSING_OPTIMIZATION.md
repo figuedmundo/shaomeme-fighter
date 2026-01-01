@@ -1,16 +1,12 @@
-# Memory Leak Fix - Backend Image Processing
+# Image Processing Optimization
 
-## Issue
+This document details the high-performance image processing architecture implemented to ensure a low memory footprint during the Victory Slideshow generation.
 
-The backend server was consuming excessive memory (up to 2.05GB) when processing large photo directories.
+## Architectural Goal
 
-## Root Cause Analysis
+Maintain stable and low RAM usage (<200MB) regardless of the number of high-resolution images being processed in a single city directory.
 
-1.  **Unbounded Concurrency**: The `/api/photos` endpoint used `Promise.all()` to process every image in a city directory simultaneously.
-2.  **Memory-Intensive Buffering**: Every image was being read into a full Node.js `Buffer` using `fs.readFile()` before being passed to `sharp`.
-3.  **Parallel Decompression**: `sharp` was decompressing multiple high-resolution images into raw pixel data in parallel, leading to massive RAM spikes.
-
-## Solution implemented
+## Implementation Details
 
 1.  **Path-Based Processing**: Refactored `ImageProcessor.js` to accept file paths instead of buffers. `sharp` now streams from disk, drastically reducing the memory footprint.
 2.  **Sequential Execution**: Changed the processing loop in `server/index.js` from `Promise.all` to a sequential `for...of` loop. This ensures only one image is processed at a time, keeping RAM usage flat and predictable.
