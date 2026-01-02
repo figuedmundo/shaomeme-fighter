@@ -95,4 +95,16 @@ describe("FightScene Resource Cleanup", () => {
       expect.stringContaining("dad"),
     );
   });
+
+  it("should remove victory portrait textures on shutdown", () => {
+    scene.player1 = { texture: { key: "ann" } };
+    scene.player2 = { texture: { key: "dad" } };
+
+    // Run shutdown
+    scene.shutdown();
+
+    // Verify victory portraits cleanup
+    expect(scene.textures.remove).toHaveBeenCalledWith("victory_ann");
+    expect(scene.textures.remove).toHaveBeenCalledWith("victory_dad");
+  });
 });

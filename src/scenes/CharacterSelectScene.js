@@ -492,6 +492,16 @@ export default class CharacterSelectScene extends Phaser.Scene {
     if (this.transition) {
       this.transition.destroy();
     }
+
+    // Aggressive Memory Cleanup
+    // Unload heavy full-body portraits as they are not needed in the next scene
+    rosterConfig.forEach((character) => {
+      const key = `full_body_${character.id}`;
+      if (this.textures.exists(key)) {
+        this.textures.remove(key);
+        logger.debug(`Cleaned up texture: ${key}`);
+      }
+    });
   }
 
   /**

@@ -425,5 +425,15 @@ export default class ArenaSelectScene extends Phaser.Scene {
     if (this.transition) {
       this.transition.destroy();
     }
+
+    // Aggressive Memory Cleanup
+    // Unload all arena background textures
+    this.arenas.forEach((_, index) => {
+      const key = `arena_bg_${index}`;
+      if (this.textures.exists(key)) {
+        this.textures.remove(key);
+      }
+    });
+    logger.debug(`Cleaned up ${this.arenas.length} arena textures`);
   }
 }

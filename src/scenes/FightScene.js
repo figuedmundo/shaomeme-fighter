@@ -841,6 +841,12 @@ export default class FightScene extends Phaser.Scene {
       logger.debug(`Cleaning up texture: ${key}`);
       this.textures.remove(key);
       this.anims.remove(key); // Assuming animations start with key
+
+      // Also clean up victory portrait if loaded
+      const victoryKey = `victory_${key}`;
+      if (this.textures.exists(victoryKey)) {
+        this.textures.remove(victoryKey);
+      }
     }
 
     if (this.player2 && this.player2.texture) {
@@ -848,6 +854,12 @@ export default class FightScene extends Phaser.Scene {
       logger.debug(`Cleaning up texture: ${key}`);
       this.textures.remove(key);
       this.anims.remove(key);
+
+      // Also clean up victory portrait if loaded
+      const victoryKey = `victory_${key}`;
+      if (this.textures.exists(victoryKey)) {
+        this.textures.remove(victoryKey);
+      }
     }
 
     if (this.backgroundKey && this.backgroundKey.startsWith("dynamic_bg_")) {
