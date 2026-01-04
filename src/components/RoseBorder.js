@@ -169,28 +169,31 @@ export default class RoseBorder {
       petals: [],
     };
 
-    const numPetals = 15;
+    const numPetals = 20; // Increased for lushness
     const goldenAngle = Math.PI * (3 - Math.sqrt(5));
 
     for (let i = 0; i < numPetals; i += 1) {
-      const r = 2 + Math.sqrt(i) * 4;
+      const r = 2 + Math.sqrt(i) * 5; // Slightly wider spread
       const theta = i * goldenAngle;
 
-      let color = 0x2a0000;
-      if (i > 3) color = 0x660000;
-      if (i > 7) color = 0xcc0000;
-      if (i > 11) color = 0xff0000;
+      // Smoother Color Gradient
+      // Interpolate between 0x2a0000 (dark) and 0xff0000 (bright)
+      // 0x2a = 42, 0xff = 255. Diff = 213.
+      const brightness = Math.min(1, i / (numPetals - 2));
+      const redComponent = Math.floor(42 + brightness * 213);
+      const color = redComponent * 65536;
 
-      const type = i < 5 ? "arc" : "curve";
+      const type = i < 6 ? "arc" : "cup";
 
       rose.petals.push({
         type,
         rOffset: r,
         thetaOffset: theta,
-        width: 5 + i * 1.5,
-        height: 4 + i * 1.0,
+        width: 6 + i * 1.8,
+        height: 5 + i * 1.2,
         color,
         bloom: 0,
+        skew: (Math.random() - 0.5) * 0.3, // Asymmetry factor
       });
     }
 
@@ -275,8 +278,9 @@ export default class RoseBorder {
   drawHybridRose(g, rose, alpha) {
     if (rose.scale <= 0.01) return;
 
-    g.fillStyle(0x0f3d2e, alpha);
-    g.fillCircle(rose.x, rose.y, 8 * rose.scale);
+    // Draw a dark background circle for depth
+    g.fillStyle(0x1a0000, alpha);
+    g.fillCircle(rose.x, rose.y, 6 * rose.scale);
 
     rose.petals.forEach((petal) => {
       if (petal.bloom <= 0.01) return;
@@ -294,59 +298,90 @@ export default class RoseBorder {
       g.fillStyle(petal.color, alpha);
 
       if (petal.type === "arc") {
-        // Approximated Rotated Ellipse/Arc
-        // Draw a diamond shape as a simple approximation for tight center petals
-        // p1 (0, -h/2), p2 (w/2, 0), p3 (0, h/2), p4 (-w/2, 0)
-        const p1 = this.rotatePoint(0, -h / 2, angle);
-        const p2 = this.rotatePoint(w / 2, 0, angle);
-        const p3 = this.rotatePoint(0, h / 2, angle);
-        const p4 = this.rotatePoint(-w / 2, 0, angle);
+        // Draw filled ellipses for tighter, rounder center petals
+        // Using Phaser's fillEllipse (x, y, width, height) - but we need rotation.
+        // Since graphics.fillEllipse doesn't support rotation directly, we simulate it or use points.
+        // Actually, for "tight bud", circles are fine, but let's use the rotatePoint helper to draw a rotated ellipse approximation (diamond was too sharp).
+        // Let's use a 8-point polygon for a smoother ellipse.
 
         g.beginPath();
-        g.moveTo(px + p1.x, py + p1.y);
-        g.lineTo(px + p2.x, py + p2.y);
-        g.lineTo(px + p3.x, py + p3.y);
-        g.lineTo(px + p4.x, py + p4.y);
+        const steps = 8;
+        for (let i = 0; i <= steps; i += 1) {
+          const t = (i / steps) * Math.PI * 2;
+          const ex = (Math.cos(t) * w) / 2;
+          const ey = (Math.sin(t) * h) / 2;
+          const p = this.rotatePoint(ex, ey, angle);
+          if (i === 0) g.moveTo(px + p.x, py + p.y);
+          else g.lineTo(px + p.x, py + p.y);
+        }
         g.closePath();
         g.fill();
       } else {
-        // Outer Petal: Bézier Curve "Cup"
-        // Start: (0, h/2), Control1: (w, h/2), End: (0, -h/2)
-        // Left Side: Control2: (-w, h/2)
+        // Outer Petal: "Cup" Method using 3 Quadratic Bézier Curves
+        // 1. Base -> Top Left
+        // 2. Top Left -> Top Right (with dip)
+        // 3. Top Right -> Base
 
-        // Base Point
-        const pStart = this.rotatePoint(0, h / 2, angle);
-        // Tip Point
-        const pEnd = this.rotatePoint(0, -h / 2, angle);
+        const skew = petal.skew * w; // Apply skew to width
+
+        // Anchor Points relative to center (unrotated)
+        // Base is at bottom (0, h/2)
+        const pBase = { x: 0, y: h * 0.4 };
+        const pTopLeft = { x: -w * 0.6 + skew, y: -h * 0.6 };
+        const pTopRight = { x: w * 0.6 + skew, y: -h * 0.6 };
 
         // Control Points
-        const pCtrlRight = this.rotatePoint(w, h / 2, angle);
-        const pCtrlLeft = this.rotatePoint(-w, h / 2, angle);
+        // Push sides out for wide cup
+        const cLeft = { x: -w * 0.9 + skew, y: h * 0.1 };
+        const cRight = { x: w * 0.9 + skew, y: h * 0.1 };
 
-        // Phaser Graphics does not support quadraticBezierTo directly, so we generate points
-        const start = new Phaser.Math.Vector2(px + pStart.x, py + pStart.y);
-        const end = new Phaser.Math.Vector2(px + pEnd.x, py + pEnd.y);
-        const ctrlRight = new Phaser.Math.Vector2(
-          px + pCtrlRight.x,
-          py + pCtrlRight.y,
-        );
-        const ctrlLeft = new Phaser.Math.Vector2(
-          px + pCtrlLeft.x,
-          py + pCtrlLeft.y,
-        );
+        // Dip in the middle top (Heart shape)
+        const cTop = { x: 0 + skew, y: -h * 0.3 };
 
-        const curveRight = new Phaser.Curves.QuadraticBezier(
-          start,
-          ctrlRight,
-          end,
+        // Rotate all points
+        const rBase = this.rotatePoint(pBase.x, pBase.y, angle);
+        const rTopLeft = this.rotatePoint(pTopLeft.x, pTopLeft.y, angle);
+        const rTopRight = this.rotatePoint(pTopRight.x, pTopRight.y, angle);
+        const rcLeft = this.rotatePoint(cLeft.x, cLeft.y, angle);
+        const rcRight = this.rotatePoint(cRight.x, cRight.y, angle);
+        const rcTop = this.rotatePoint(cTop.x, cTop.y, angle);
+
+        // Convert to absolute world coordinates vectors
+        const vBase = new Phaser.Math.Vector2(px + rBase.x, py + rBase.y);
+        const vTopLeft = new Phaser.Math.Vector2(
+          px + rTopLeft.x,
+          py + rTopLeft.y,
         );
+        const vTopRight = new Phaser.Math.Vector2(
+          px + rTopRight.x,
+          py + rTopRight.y,
+        );
+        const vcLeft = new Phaser.Math.Vector2(px + rcLeft.x, py + rcLeft.y);
+        const vcRight = new Phaser.Math.Vector2(px + rcRight.x, py + rcRight.y);
+        const vcTop = new Phaser.Math.Vector2(px + rcTop.x, py + rcTop.y);
+
+        // Generate Curves
         const curveLeft = new Phaser.Curves.QuadraticBezier(
-          end,
-          ctrlLeft,
-          start,
+          vBase,
+          vcLeft,
+          vTopLeft,
+        );
+        const curveTop = new Phaser.Curves.QuadraticBezier(
+          vTopLeft,
+          vcTop,
+          vTopRight,
+        );
+        const curveRight = new Phaser.Curves.QuadraticBezier(
+          vTopRight,
+          vcRight,
+          vBase,
         );
 
-        const points = [...curveRight.getPoints(8), ...curveLeft.getPoints(8)];
+        const points = [
+          ...curveLeft.getPoints(6),
+          ...curveTop.getPoints(6),
+          ...curveRight.getPoints(6),
+        ];
 
         g.beginPath();
         if (points.length > 0) {
