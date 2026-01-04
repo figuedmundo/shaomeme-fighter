@@ -4,6 +4,32 @@ import { EventEmitter } from "events";
 import SplashScene from "../src/scenes/SplashScene";
 import CreditsScene from "../src/scenes/CreditsScene";
 
+// Mock Phaser Curves and Math
+Phaser.Curves = {
+  Spline: class {
+    constructor(points) {
+      this.points = points;
+    }
+
+    getPoint() {
+      return { x: 100, y: 100 };
+    }
+
+    getTangent() {
+      return { angle: () => 0 };
+    }
+
+    getPoints(quantity) {
+      return Array(quantity).fill({ x: 0, y: 0 });
+    }
+  },
+};
+Phaser.Math = {
+  Interpolation: {
+    SmoothStep: vi.fn((t, min, max) => min + (max - min) * t),
+  },
+};
+
 // Mock SceneTransition
 vi.mock("../src/utils/SceneTransition", () => {
   return {
@@ -173,8 +199,11 @@ describe("Branding Scenes", () => {
         content,
         setOrigin: vi.fn().mockReturnThis(),
         setInteractive: vi.fn().mockReturnThis(),
-        on: vi.fn(),
-        setStyle: vi.fn(),
+        on: vi.fn().mockReturnThis(),
+        setStyle: vi.fn().mockReturnThis(),
+        setAlpha: vi.fn().mockReturnThis(),
+        setWordWrapWidth: vi.fn().mockReturnThis(),
+        destroy: vi.fn(),
       });
 
       const textObjects = [];
@@ -184,12 +213,49 @@ describe("Branding Scenes", () => {
           textObjects.push(t);
           return t;
         }),
+        graphics: vi.fn().mockReturnValue({
+          clear: vi.fn().mockReturnThis(),
+          lineStyle: vi.fn().mockReturnThis(),
+          fillStyle: vi.fn().mockReturnThis(),
+          beginPath: vi.fn().mockReturnThis(),
+          moveTo: vi.fn().mockReturnThis(),
+          lineTo: vi.fn().mockReturnThis(),
+          strokePath: vi.fn().mockReturnThis(),
+          quadraticBezierTo: vi.fn().mockReturnThis(),
+          fillCircle: vi.fn().mockReturnThis(),
+          fillEllipse: vi.fn().mockReturnThis(),
+          save: vi.fn().mockReturnThis(),
+          restore: vi.fn().mockReturnThis(),
+          translate: vi.fn().mockReturnThis(),
+          rotate: vi.fn().mockReturnThis(),
+          setDepth: vi.fn().mockReturnThis(),
+          setAlpha: vi.fn().mockReturnThis(),
+          destroy: vi.fn(),
+        }),
         image: vi.fn().mockReturnValue({ setScale: vi.fn() }),
         particles: vi.fn().mockReturnValue({ destroy: vi.fn() }),
+        container: vi.fn().mockReturnValue({
+          add: vi.fn(),
+          setAlpha: vi.fn().mockReturnThis(),
+          setDepth: vi.fn().mockReturnThis(),
+          destroy: vi.fn(),
+        }),
       };
       scene.scene = { start: vi.fn() };
-      scene.tweens = { add: vi.fn() };
-      scene.time = { delayedCall: vi.fn() };
+      scene.tweens = {
+        add: vi.fn().mockReturnValue({
+          stop: vi.fn(),
+          destroy: vi.fn(),
+          duration: 4000,
+        }),
+      };
+      scene.time = {
+        delayedCall: vi.fn(),
+      };
+      scene.input = {
+        on: vi.fn(),
+        once: vi.fn(),
+      };
 
       scene.create();
 
@@ -198,11 +264,6 @@ describe("Branding Scenes", () => {
         t.content.includes("Made with love"),
       );
       expect(loveText).toBeDefined();
-
-      let clickHandler;
-      loveText.on.mockImplementation((event, callback) => {
-        if (event === "pointerdown") clickHandler = callback;
-      });
 
       // Re-run logic to capture handler (simulated by manually re-binding if we could,
       // but since create() ran once, we missed the capture if we set implementation AFTER.

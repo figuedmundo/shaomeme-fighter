@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { addTransitions, TransitionPresets } from "../utils/SceneTransition";
+import RoseBorder from "../components/RoseBorder";
 
 export default class CreditsScene extends Phaser.Scene {
   constructor() {
@@ -14,8 +15,59 @@ export default class CreditsScene extends Phaser.Scene {
     // Fade in
     this.transition.fadeIn(500);
 
+    // Letter State
+    this.isShowingLetter = true;
+
+    // Rose Border Animation
+    this.roseBorder = new RoseBorder(this);
+    this.roseBorder.start();
+
+    // Letter Text (Paragraphs)
+    const letterParagraphs = [
+      "Shaomeme QQ, I like mucho your heart, it is kind and selfless, always thinking about other people more than yourself, but that is also your burden when you forget about yourself.",
+      "Also, I like mucho the way you are like a spotlight. When you get into a room, class, or group, everyone fox on you. You don't like it, you would prefer to be unnoticed, but everyone is always mucho attentive to what you say and do. It means you are mucho interesting, that your energy makes other people attracted to you, like a moth to a flame.",
+      "I like mucho your laugh, your sincere amusement when you have something new in front of you, and your desire to learn, visit new places, and live new experiences.",
+    ];
+
+    // Join with double newlines for spacing
+    const letterContent = letterParagraphs.join("\n\n");
+
+    this.letterText = this.add
+      .text(width / 2, height * 0.4, letterContent, {
+        fontFamily: '"Press Start 2P", sans-serif',
+        fontSize: "18px",
+        fill: "#ffffff",
+        align: "center",
+        wordWrap: { width: width * 0.85 },
+        lineSpacing: 14,
+      })
+      .setOrigin(0.5)
+      .setAlpha(0); // Start hidden for fade-in
+
+    // Fade in letter
+    this.tweens.add({
+      targets: this.letterText,
+      alpha: 1,
+      duration: 1000,
+      onComplete: () => {
+        this.showTapPrompt();
+      },
+    });
+
+    this.tapPrompt = this.add
+      .text(width / 2, height * 0.9, "TAP TO CONTINUE", {
+        fontFamily: '"Press Start 2P", sans-serif',
+        fontSize: "18px",
+        fill: "#ffd700",
+      })
+      .setOrigin(0.5)
+      .setAlpha(0);
+
+    // Credits Container (Initially hidden)
+    this.creditsContainer = this.add.container(0, 0).setAlpha(0);
+
     // Header
-    this.add
+    const header = this.add
       .text(width / 2, height * 0.15, "CREDITS", {
         fontFamily: '"Press Start 2P", sans-serif',
         fontSize: "48px",
@@ -24,35 +76,39 @@ export default class CreditsScene extends Phaser.Scene {
         strokeThickness: 6,
       })
       .setOrigin(0.5);
+    this.creditsContainer.add(header);
 
     // Content Container
     const contentY = height * 0.4;
 
     // Created By
-    this.add
+    const createdByLabel = this.add
       .text(width / 2, contentY, "Created by", {
         fontFamily: '"Press Start 2P", sans-serif',
         fontSize: "16px",
         fill: "#aaaaaa",
       })
       .setOrigin(0.5);
+    this.creditsContainer.add(createdByLabel);
 
-    this.add
+    const createdByName = this.add
       .text(width / 2, contentY + 40, "Edmundo", {
         fontFamily: '"Press Start 2P", sans-serif',
         fontSize: "32px",
         fill: "#ffffff",
       })
       .setOrigin(0.5);
+    this.creditsContainer.add(createdByName);
 
     // Dedication
-    this.add
+    const dedication = this.add
       .text(width / 2, contentY + 120, "For Ann", {
         fontFamily: '"Press Start 2P", sans-serif',
         fontSize: "16px",
         fill: "#aaaaaa",
       })
       .setOrigin(0.5);
+    this.creditsContainer.add(dedication);
 
     // Easter Egg Trigger (The "Love" message)
     const loveText = this.add
@@ -63,6 +119,7 @@ export default class CreditsScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
+    this.creditsContainer.add(loveText);
 
     // Easter Egg Logic
     let clickCount = 0;
@@ -91,6 +148,7 @@ export default class CreditsScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
+    this.creditsContainer.add(backBtn);
 
     backBtn.on("pointerover", () => backBtn.setStyle({ fill: "#ffffff" }));
     backBtn.on("pointerout", () => backBtn.setStyle({ fill: "#ffd700" }));
@@ -104,14 +162,54 @@ export default class CreditsScene extends Phaser.Scene {
         TransitionPresets.BACK_TO_MENU.duration,
       );
     });
+
+    // Transition Trigger
+    this.input.on("pointerdown", () => {
+      if (this.isShowingLetter) {
+        this.showActualCredits();
+      }
+    });
+  }
+
+  showTapPrompt() {
+    this.tweens.add({
+      targets: this.tapPrompt,
+      alpha: 1,
+      duration: 500,
+      yoyo: true,
+      repeat: -1,
+    });
+  }
+
+  showActualCredits() {
+    this.isShowingLetter = false;
+
+    if (this.roseBorder) {
+      this.roseBorder.destroy();
+      this.roseBorder = null;
+    }
+
+    // Fade out letter
+    this.tweens.add({
+      targets: [this.letterText, this.tapPrompt],
+      alpha: 0,
+      duration: 500,
+      onComplete: () => {
+        this.letterText.destroy();
+        this.tapPrompt.destroy();
+
+        // Fade in credits
+        this.tweens.add({
+          targets: this.creditsContainer,
+          alpha: 1,
+          duration: 1000,
+        });
+      },
+    });
   }
 
   triggerEasterEgg() {
     if (this.audioManager) {
-      // Play a "secret" sound (or reuse a victory/rare sound)
-      // Ideally we'd have a 'secret_found' sound. For now, let's use a distinct UI sound or check if we can reuse something.
-      // Using 'ui_select' pitched up or similar if possible, or just calling it 'secret_found' and letting AudioManager handle fallback/error gracefully if missing.
-      // Actually, based on previous tasks, we have 'ui_select'. Let's try to mock a special sound key.
       this.audioManager.playUi("secret_found");
     }
 
