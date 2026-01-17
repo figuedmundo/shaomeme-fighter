@@ -65,7 +65,7 @@ describe("ImageProcessor Date Logic", () => {
         metadata: vi.fn().mockResolvedValue(mockMetadata),
       });
 
-      const date = await getPhotoDate(dummyBuffer, "some/path.jpg");
+      const date = await getPhotoDate("some/path.jpg");
       expect(date).toBeInstanceOf(Date);
       expect(date.toISOString()).toBe(
         new Date("2023-05-21T14:30:00").toISOString(),
@@ -83,7 +83,7 @@ describe("ImageProcessor Date Logic", () => {
         birthtime: new Date("2023-12-25T10:00:00"),
       });
 
-      const date = await getPhotoDate(dummyBuffer, "some/path.jpg");
+      const date = await getPhotoDate("some/path.jpg");
       expect(date).toBeInstanceOf(Date);
       expect(date.toISOString()).toBe(
         new Date("2023-12-25T10:00:00").toISOString(),
@@ -104,7 +104,7 @@ describe("ImageProcessor Date Logic", () => {
         birthtime: new Date("2023-11-01T10:00:00"),
       });
 
-      const date = await getPhotoDate(dummyBuffer, "some/path.jpg");
+      const date = await getPhotoDate("some/path.jpg");
       expect(date).toBeInstanceOf(Date);
       expect(date.toISOString()).toBe(
         new Date("2023-11-01T10:00:00").toISOString(),
