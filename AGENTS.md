@@ -1,6 +1,9 @@
-# AGENTS.md
+# Default Agent Instructions
 
-## Required Read Order for Agents
+- You have useful tools available as MCP or command-line. Use them.
+- Unless you are absolutely sure that you have correct and, crucially, up-to-date information in your knowledge, always get information from the web. You can use Tavily for searching and getting information, and you can always use curl to fetch web pages.
+- When working in a git repository, always switch to a new branch, unless explicitly insutrcted not to.
+- If the project has tests you can run locally, always run them and make sure everything works correctly.
 
 All agents must read and internalize the following files before making changes:
 
@@ -8,9 +11,59 @@ All agents must read and internalize the following files before making changes:
 2. AGENTS.md
 3. src/ (existing code)
 
-## AI Memorie
+## Source Control (Git)
 
-- To run any test always use pnpm with --run to don't get stuck wating for the test to complete
+- when invoking `git commit`, always use `--author="AI <figuedmundo+ai@gmail.com>"`
+
+## Useful Command-Line Tools
+
+### JSON
+
+- Use the `jq` command to read and extract information from JSON files.
+
+### RipGrep
+
+- The `rg` (ripgrep) command is available for fast searches in text files.
+
+### Clipboard
+
+- Pipe content into `pbcopy` to copy it into the clipboard. Example: `echo "hello" | pbcopy`.
+- Pipe from `pbpaste` to get the contents of the clipboard. Example: `pbpaste > fromclipboard.txt`.
+
+### Web (HTTP/S)
+
+- Use `curl` to fetch web pages.
+
+## MCP Tools
+
+### markitdown
+
+- Use this to convert various file formats to markdown.
+- Very useful if you need to read files that are not supported natively by the model.
+
+### tavily
+
+- Use this to run web searches. It is always better to search the web than to rely on your own knowledge, which may be outdated.
+- You can also retrieve content in a format easy for ingestion. Use that if needed, but you can also just use curl if you have a URL.
+
+### Context7
+
+- Use the Context7 MCP tool to read the documentation for many libraries and tools.
+- If you're asked to use a library, framework, or tool, it often makes sense to review its documentation first with Context7.
+
+## JavaScript / TypeScript
+
+- Unless instructed otherwise, always use `deno` to run .js or .ts scripts.
+- Use `npx` for running commands directly from npm packages.
+
+## Documentation Sources
+
+- If working with a new library or tool, consider looking for its documentation from its website, GitHub project, or the relevant llms.txt.
+  - It is always better to have accurate, up-to-date documentation at your disposal, rather than relying on your pre-trained knowledge.
+- You can search the following directories for llms.txt collections for many projects:
+  - https://llmstxt.site/
+  - https://directory.llmstxt.cloud/
+- If you find a relevant llms.txt file, follow the links until you have access to the complete documentation.
 
 <skills>
 
@@ -18,218 +71,9 @@ All agents must read and internalize the following files before making changes:
 
 You have new skills. If any skill might be relevant then you MUST read it.
 
-- [Writing Phaser 3 Games](.skills/phaser/SKILL.md) - Provides battle-tested patterns, best practices, and code examples for building Phaser 3 games. Use when writing game code, implementing game mechanics, setting up scenes, handling physics, animations, input, or any Phaser-related development. Covers architecture, performance, algorithms, and common pitfalls.
+- [Writing Phaser 3 Games](.opencode/skill/phaser/SKILL.md) - Provides battle-tested patterns, best practices, and code examples for building Phaser 3 games. Use when writing game code, implementing game mechanics, setting up scenes, handling physics, animations, input, or any Phaser-related development. Covers architecture, performance, algorithms, and common pitfalls.
+- [frontend-design](.opencode/skill/frontend-design/SKILL.md) - Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, or applications. Generates creative, polished code that avoids generic AI aesthetics.
+- [modern-javascript-patterns](.opencode/skill/modern-javascript-patterns/SKILL.md) - Master ES6+ features including async/await, destructuring, spread operators, arrow functions, promises, modules, iterators, generators, and functional programming patterns for writing clean, efficient JavaScript code. Use when refactoring legacy code, implementing modern patterns, or optimizing JavaScript applications.
+- [systematic-debugging](.opencode/skill/systematic-debugging/SKILL.md) - Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes - four-phase framework (root cause investigation, pattern analysis, hypothesis testing, implementation) that ensures understanding before attempting solutions
+- [test-writer](.opencode/skill/test-writer/SKILL.md) - Generate comprehensive Vitest tests for code examples in JavaScript concept documentation pages, following project conventions and referencing source lines
   </skills>
-
-## Purpose
-
-This document defines how **AI agents, contributors, and automated systems** should interact with the _Shaomeme Fighter_ codebase. Its goal is to ensure consistency, quality, and alignment with the project’s vision, mission, and architectural principles.
-
-AGENTS.md is a **behavioral contract**: any human or AI agent contributing to this repository must follow these rules.
-
----
-
-## Project Context
-
-**Project Name:** Shaomeme Fighter
-**Type:** Mobile-first web fighting game
-**Core Technologies:** Phaser 3, Vite, TypeScript/JavaScript
-**Target Platforms:** iOS (Safari), Android (Chrome), tablet-first (iPad priority)
-
-### Vision
-
-Create a fast, expressive, and nostalgic 2D fighting game inspired by arcade games, optimized for modern touch devices, and designed to be _fun first_, not button-heavy.
-
-### Mission
-
-- Deliver an arcade-quality fighting experience on mobile web
-- Replace traditional on-screen buttons with intuitive, touch-driven mechanics
-- Enable personalized content (“Memory Arenas”) that emotionally connects players to victories
-- Maintain a clean, extensible architecture suitable for rapid iteration and AI-assisted development
-
-All agents must prioritize **player feel**, **performance**, and **clarity of design decisions**.
-
----
-
-## Agent Roles and Responsibilities
-
-### 1. Architecture Agent
-
-Responsible for:
-
-- Overall project structure
-- Scene lifecycle management in Phaser
-- Game state separation (menu, combat, unlocks)
-- Avoiding over-engineering
-
-Constraints:
-
-- Prefer simple, explicit patterns over abstractions
-- No unnecessary frameworks (e.g., Three.js is explicitly out of scope)
-- Mobile performance is non-negotiable
-
----
-
-### 2. Gameplay Agent
-
-Responsible for:
-
-- Combat mechanics
-- Input interpretation (touch gestures, zones, timing)
-- Hit detection, frame data, and balance
-
-Principles:
-
-- Fun > realism
-- Responsiveness > visual complexity
-- Every mechanic must be testable on a touchscreen
-
-Do **not**:
-
-- Introduce small UI buttons unless explicitly required
-- Assume keyboard or controller availability
-
----
-
-### 3. UI / UX Agent
-
-Responsible for:
-
-- Menus, overlays, HUD
-- Touch affordances and visual feedback
-- Accessibility and readability
-
-Guidelines:
-
-- Thumb-first design
-- Large hit areas, minimal clutter
-- Visual feedback for _every_ interaction
-
----
-
-### 4. Performance & Build Agent
-
-Responsible for:
-
-- Asset optimization
-- Bundle size control
-- Load times and runtime FPS
-
-Rules:
-
-- Mobile Safari is the lowest common denominator
-- Measure before optimizing, but never ignore regressions
-- Prefer spritesheets over large individual assets
-
----
-
-### 5. Content & Progression Agent
-
-Responsible for:
-
-- Characters
-- Arenas
-- Unlock logic (Memory Arenas, rewards)
-
-Constraints:
-
-- Content must be data-driven
-- No hardcoded unlock conditions
-- Emotional payoff matters as much as difficulty
-
----
-
-## Coding Standards
-
-All agents must adhere to the following:
-
-- Deterministic logic where possible
-- Clear file and function naming
-- One responsibility per module
-- No commented-out dead code
-
-### File Organization (Guideline)
-
-```
-src/
-  core/        # Game engine glue, bootstrapping
-  scenes/      # Phaser scenes (Menu, Fight, Results)
-  systems/     # Combat, Input, AI, Physics abstractions
-  ui/          # HUD and menus
-  assets/      # Raw assets (processed via pipeline)
-```
-
-Agents may propose changes, but must justify them explicitly.
-
----
-
-## AI-Specific Instructions
-
-When an AI agent contributes:
-
-- Assume **no hidden context** beyond repository files
-- Never hallucinate undocumented systems
-- If uncertain, leave TODO comments instead of guessing
-- Respect existing patterns unless instructed otherwise
-
-### Required Output Quality
-
-AI-generated code must:
-
-- Run without manual fixes
-- Be readable by humans
-- Include brief inline comments only where intent is non-obvious
-
----
-
-## Decision-Making Rules
-
-When trade-offs exist, prioritize in this order:
-
-1. Player experience
-2. Mobile performance
-3. Simplicity of implementation
-4. Extensibility
-5. Visual polish
-
----
-
-## What Not to Do
-
-Agents must **not**:
-
-- Introduce desktop-only assumptions
-- Add libraries without clear justification
-- Optimize prematurely at the cost of clarity
-- Drift from the arcade fighting game core loop
-
----
-
-## Alignment With DOCUMENTATION.md
-
-AGENTS.md must always be read **together with** DOCUMENTATION.md.
-
-If a conflict arises:
-
-- DOCUMENTATION.md defines _what_ the project is
-- AGENTS.md defines _how_ work is performed
-
-Conflicts must be resolved explicitly and documented.
-
----
-
-## Updating This File
-
-This file is a living contract.
-
-Any agent proposing changes must:
-
-- Clearly state the reason
-- Explain the impact on other agents
-- Preserve the original vision and mission
-
----
-
-## Final Principle
-
-> _If a contribution does not make the game more fun, more playable, or more maintainable on mobile — it does not belong in this project._
