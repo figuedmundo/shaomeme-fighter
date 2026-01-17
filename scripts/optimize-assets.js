@@ -16,6 +16,12 @@ async function optimizeFile(filePath, stats) {
 
     // Auto-rotate based on EXIF orientation tag before processing
     let pipeline = image.rotate();
+
+    if (filePath.startsWith(PHOTOS_DIR)) {
+      console.log("  -> Preserving metadata (EXIF/Date)");
+      pipeline = pipeline.withMetadata();
+    }
+
     let mustSave = false;
 
     if (metadata.orientation && metadata.orientation !== 1) {
