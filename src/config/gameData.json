@@ -77,7 +77,7 @@
       "displayName": "Istanbul",
       "presets": {
         "parallax": "city",
-        "lighting": "outdoor_night",
+        "lighting": "outdoor_day",
         "weather": "desert_wind",
         "animation": "city"
       }
@@ -138,7 +138,7 @@
       "displayName": "Taipei",
       "presets": {
         "parallax": "city",
-        "lighting": "outdoor_night",
+        "lighting": "outdoor_day",
         "weather": "tokyo_rain",
         "animation": "city"
       }
