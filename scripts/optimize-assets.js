@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import sharp from "sharp";
+import heicConvert from "heic-convert";
 
 const ASSETS_DIR = path.resolve("public/assets");
 const PHOTOS_DIR = path.resolve("photos");
@@ -10,24 +11,39 @@ const LARGE_FILE_THRESHOLD = 1024 * 1024; // 1MB
 
 async function optimizeFile(filePath, stats) {
   try {
-    const ext = path.extname(filePath).toLowerCase();
-    const image = sharp(filePath);
+    let ext = path.extname(filePath).toLowerCase();
+    let inputBuffer = null;
+    let isHeic = false;
+
+    // Handle HEIC conversion first
+    if (ext === ".heic") {
+      isHeic = true;
+      console.log(`  -> Converting HEIC to JPEG: ${path.basename(filePath)}`);
+      const fileBuf = await fs.readFile(filePath);
+      inputBuffer = await heicConvert({
+        buffer: fileBuf,
+        format: "JPEG",
+        quality: 1, // High quality intermediate
+      });
+      // We will save as .jpg
+      ext = ".jpg";
+    }
+
+    const image = inputBuffer ? sharp(inputBuffer) : sharp(filePath);
     const metadata = await image.metadata();
 
-    // Auto-rotate based on EXIF orientation tag before processing
-    let pipeline = image.rotate();
+    // Do NOT auto-rotate. Preserve original orientation pixels and EXIF tags.
+    let pipeline = image;
 
-    if (filePath.startsWith(PHOTOS_DIR)) {
+    if (filePath.startsWith(PHOTOS_DIR) && !isHeic) {
+      // Only preserve metadata for native supported formats.
+      // HEIC->JPEG conversion via heic-convert often strips EXIF,
+      // so we rely on fs.utimes (file date) preservation below.
       console.log("  -> Preserving metadata (EXIF/Date)");
       pipeline = pipeline.withMetadata();
     }
 
-    let mustSave = false;
-
-    if (metadata.orientation && metadata.orientation !== 1) {
-      mustSave = true; // Force save if we are fixing orientation
-      console.log(`  -> Fixing orientation (was ${metadata.orientation})`);
-    }
+    const mustSave = false;
 
     // 1. Resize if too large
     if (metadata.width > MAX_WIDTH || metadata.height > MAX_HEIGHT) {
@@ -52,12 +68,31 @@ async function optimizeFile(filePath, stats) {
     // Process to buffer first to check result size
     const buffer = await pipeline.toBuffer();
 
-    if (buffer.length < stats.size || mustSave) {
+    // Logic: Save if smaller, OR if we fixed orientation, OR if we converted from HEIC
+    if (buffer.length < stats.size || mustSave || isHeic) {
       const saved = (stats.size - buffer.length) / 1024 / 1024;
-      await fs.writeFile(filePath, buffer);
-      console.log(
-        `  [Optimized] Saved ${saved.toFixed(2)} MB (${((buffer.length / stats.size) * 100).toFixed(0)}% of original)${mustSave ? " (Orientation Fixed)" : ""}`,
-      );
+
+      // Determine output path (change extension if HEIC)
+      const dir = path.dirname(filePath);
+      const { name } = path.parse(filePath);
+      const newPath = isHeic ? path.join(dir, `${name}.jpg`) : filePath;
+
+      await fs.writeFile(newPath, buffer);
+
+      // CRITICAL: Preserve file modification time (creation date for the game)
+      await fs.utimes(newPath, stats.atime, stats.mtime);
+
+      if (isHeic) {
+        // Remove original HEIC file
+        await fs.unlink(filePath);
+        console.log(
+          `  [Converted] HEIC -> JPG. Saved ${(buffer.length / 1024 / 1024).toFixed(2)} MB. Original deleted.`,
+        );
+      } else {
+        console.log(
+          `  [Optimized] Saved ${saved.toFixed(2)} MB (${((buffer.length / stats.size) * 100).toFixed(0)}% of original)${mustSave ? " (Orientation Fixed)" : ""}`,
+        );
+      }
     } else {
       console.log(
         `  [Skipped] Optimization resulted in larger file (likely already compressed).`,
@@ -71,8 +106,10 @@ async function optimizeFile(filePath, stats) {
 async function checkAndOptimize(filePath) {
   try {
     const stats = await fs.stat(filePath);
+    const ext = path.extname(filePath).toLowerCase();
 
-    if (stats.size > LARGE_FILE_THRESHOLD) {
+    // Optimize if large OR if it is a HEIC file (always convert HEIC)
+    if (stats.size > LARGE_FILE_THRESHOLD || ext === ".heic") {
       console.log(
         `[Processing] ${path.basename(filePath)} (${(stats.size / 1024 / 1024).toFixed(2)} MB)`,
       );
@@ -96,7 +133,10 @@ async function scanAndOptimize(dir, filterFn = () => true) {
         } else if (entry.isFile()) {
           const ext = path.extname(entry.name).toLowerCase();
           if (
-            (ext === ".png" || ext === ".jpg" || ext === ".jpeg") &&
+            (ext === ".png" ||
+              ext === ".jpg" ||
+              ext === ".jpeg" ||
+              ext === ".heic") &&
             filterFn(entry.name)
           ) {
             await checkAndOptimize(fullPath);
@@ -110,15 +150,28 @@ async function scanAndOptimize(dir, filterFn = () => true) {
   }
 }
 
-console.log("Starting Asset Optimization...");
+async function main() {
+  console.log("Starting Asset Optimization...");
 
-// 1. Optimize Game Assets (All images)
-console.log("--- Scanning Game Assets (public/assets) ---");
-scanAndOptimize(ASSETS_DIR)
-  .then(async () => {
+  const targetArg = process.argv[2];
+
+  if (targetArg) {
+    const targetPath = path.resolve(targetArg);
+    console.log(`--- Scanning Targeted Directory: ${targetPath} ---`);
+    await scanAndOptimize(targetPath);
+  } else {
+    // Default Behavior: Scan known project directories
+
+    // 1. Optimize Game Assets (All images)
+    console.log("--- Scanning Game Assets (public/assets) ---");
+    await scanAndOptimize(ASSETS_DIR);
+
     // 2. Optimize ALL Photo Reward Assets (Backgrounds + Memories)
     console.log("\n--- Scanning All Photo Arena Assets (photos/) ---");
     await scanAndOptimize(PHOTOS_DIR);
-  })
-  .then(() => console.log("\nOptimization complete."))
-  .catch((err) => console.error("Fatal error:", err));
+  }
+
+  console.log("\nOptimization complete.");
+}
+
+main().catch((err) => console.error("Fatal error:", err));
